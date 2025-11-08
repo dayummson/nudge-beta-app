@@ -42,6 +42,7 @@ dependencies:
   # If you intentionally upgraded to google_sign_in 7.x, consider updating
   # `lib/features/auth/domain/auth_service.dart` to the new API instead.
   google_sign_in: ^5.4.0
+  flutter_riverpod: ^3.0.3
 
 dev_dependencies:
   flutter_test:
