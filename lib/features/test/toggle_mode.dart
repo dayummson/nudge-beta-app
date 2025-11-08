@@ -15,8 +15,8 @@ class ToggleMode extends StatefulWidget {
     super.key,
     required this.isExpense,
     required this.onChanged,
-    this.width = 160,
-    this.height = 34,
+    this.width = 200,
+    this.height = 32,
   });
 
   @override
@@ -49,10 +49,17 @@ class _ToggleModeState extends State<ToggleMode> {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
-    final surface = theme.colorScheme.surface;
-    // Use scheme-aware colors so the toggle adapts to light/dark themes.
-    final incomeColor = theme.colorScheme.primary;
-    final expenseColor = theme.colorScheme.error;
+    final isDark = theme.brightness == Brightness.dark;
+
+    // Fun, playful colors
+    final incomeColor = isDark
+        ? const Color(0xFF58CC02) // Duolingo green for dark mode
+        : const Color(0xFF58CC02); // Duolingo green for light mode
+    final expenseColor = isDark
+        ? const Color(0xFFFF6B6B) // Coral red for dark mode
+        : const Color(0xFFEF5350); // Bright red for light mode
+
+    final textColor = isDark ? Colors.white : Colors.black87;
 
     return Semantics(
       button: true,
@@ -62,102 +69,80 @@ class _ToggleModeState extends State<ToggleMode> {
         child: Container(
           width: widget.width,
           height: widget.height,
-          // slightly smaller internal padding to reduce overall footprint
-          padding: const EdgeInsets.symmetric(horizontal: 0.2, vertical: 2.5),
+          padding: const EdgeInsets.all(3),
           decoration: BoxDecoration(
-            color: surface,
-            borderRadius: BorderRadius.circular(widget.height / 2),
-            // subtle outline so the toggle reads on both light/dark themes
-            border: Border.all(color: theme.colorScheme.outline, width: 1),
+            color: Colors.transparent, // Inherit parent background
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: isDark
+                  ? Colors.white.withOpacity(0.2)
+                  : Colors.black.withOpacity(0.15),
+              width: 1.5,
+            ),
           ),
           child: Stack(
-            alignment: Alignment.center,
             children: [
-              // Labels
-              Row(
-                children: [
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => _toggle(true),
-                      borderRadius: BorderRadius.circular(widget.height / 2),
-                      child: Center(
-                        child: Text(
-                          'Expense',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: _isExpense
-                                ? theme.colorScheme.onSurface.withAlpha(0)
-                                : theme.colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-
-                  Expanded(
-                    child: InkWell(
-                      onTap: () => _toggle(false),
-                      borderRadius: BorderRadius.circular(widget.height / 2),
-                      child: Center(
-                        child: Text(
-                          'Income',
-                          style: TextStyle(
-                            fontSize: 12,
-                            color: !_isExpense
-                                ? theme.colorScheme.onSurface.withAlpha(0)
-                                : theme.colorScheme.onSurface,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
-              ),
-
-              // Sliding knob
+              // Sliding knob (behind labels)
               AnimatedAlign(
                 duration: const Duration(milliseconds: 240),
                 curve: Curves.easeOutCubic,
                 alignment: _isExpense
                     ? Alignment.centerLeft
                     : Alignment.centerRight,
-                child: Padding(
-                  padding: const EdgeInsets.symmetric(horizontal: 4),
-                  child: AnimatedContainer(
-                    duration: const Duration(milliseconds: 240),
-                    curve: Curves.easeOutCubic,
-                    // adapt knob sizing for the reduced padding
-                    width: (widget.width - 6) / 2,
-                    height: widget.height - 6,
+                child: FractionallySizedBox(
+                  widthFactor: 0.5,
+                  child: Container(
+                    height: widget.height - 10,
                     decoration: BoxDecoration(
                       color: _isExpense ? expenseColor : incomeColor,
-                      borderRadius: BorderRadius.circular(
-                        (widget.height - 6) / 2,
-                      ),
+                      borderRadius: BorderRadius.circular(10),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withAlpha((0.12 * 255).round()),
-                          blurRadius: 6,
+                          color: (_isExpense ? expenseColor : incomeColor)
+                              .withOpacity(0.3),
+                          blurRadius: 12,
+                          spreadRadius: 0,
                           offset: const Offset(0, 2),
+                        ),
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.1),
+                          blurRadius: 4,
+                          offset: const Offset(0, 1),
                         ),
                       ],
                     ),
+                  ),
+                ),
+              ),
+
+              // Labels (on top)
+              Row(
+                children: [
+                  Expanded(
                     child: Center(
                       child: Text(
-                        _isExpense ? 'Expense' : 'Income',
+                        '- P602.50',
                         style: TextStyle(
-                          color: _isExpense
-                              ? theme.colorScheme.onError
-                              : theme.colorScheme.onPrimary,
-                          fontWeight: FontWeight.bold,
                           fontSize: 12,
+                          color: _isExpense ? Colors.white : textColor,
+                          fontWeight: FontWeight.bold,
                         ),
                       ),
                     ),
                   ),
-                ),
+                  Expanded(
+                    child: Center(
+                      child: Text(
+                        '+ P12.00',
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: !_isExpense ? Colors.white : textColor,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ],
           ),
