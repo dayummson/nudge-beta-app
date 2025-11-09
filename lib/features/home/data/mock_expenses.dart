@@ -45,6 +45,12 @@ const mockCategories = {
     name: 'Groceries',
     description: 'Food and household items',
   ),
+  'salary': Category(
+    id: '8',
+    icon: '💼',
+    name: 'Salary',
+    description: 'Monthly salary',
+  ),
 };
 
 // Mock expenses data
@@ -179,5 +185,92 @@ final mockExpenses = [
     amount: 45.60,
     location: 'Whole Foods',
     createdAt: DateTime.now().subtract(const Duration(days: 8)),
+  ),
+];
+
+// Mock income data
+final mockIncomes = [
+  Income(
+    id: 'i1',
+    title: 'Monthly Salary',
+    description: 'November 2025 paycheck',
+    category: mockCategories['salary']!,
+    amount: 5500.00,
+    createdAt: DateTime.now().subtract(const Duration(days: 1)),
+  ),
+  Income(
+    id: 'i2',
+    title: 'Freelance Web Design',
+    description: 'Website project payment',
+    category: mockCategories['salary']!,
+    amount: 1200.00,
+    location: 'Remote',
+    createdAt: DateTime.now().subtract(const Duration(days: 2)),
+  ),
+  Income(
+    id: 'i3',
+    title: 'Shopping Cashback',
+    description: 'Credit card rewards',
+    category: mockCategories['shopping']!,
+    amount: 85.00,
+    createdAt: DateTime.now().subtract(const Duration(days: 3)),
+  ),
+  Income(
+    id: 'i4',
+    title: 'Sold Old Headphones',
+    description: 'Facebook Marketplace sale',
+    category: mockCategories['shopping']!,
+    amount: 150.00,
+    createdAt: DateTime.now().subtract(const Duration(days: 4)),
+  ),
+  Income(
+    id: 'i5',
+    title: 'Utility Refund',
+    description: 'Overpayment refund',
+    category: mockCategories['bills']!,
+    amount: 45.00,
+    createdAt: DateTime.now().subtract(const Duration(days: 5)),
+  ),
+  Income(
+    id: 'i6',
+    title: 'Part-time Work',
+    description: 'Weekend consulting',
+    category: mockCategories['salary']!,
+    amount: 800.00,
+    createdAt: DateTime.now().subtract(const Duration(days: 5, hours: 3)),
+  ),
+  Income(
+    id: 'i7',
+    title: 'Health Insurance Reimbursement',
+    description: 'Medical expense refund',
+    category: mockCategories['health']!,
+    amount: 120.00,
+    location: 'Insurance Co.',
+    createdAt: DateTime.now().subtract(const Duration(days: 6)),
+  ),
+  Income(
+    id: 'i8',
+    title: 'Grocery Coupon Savings',
+    description: 'Store credit from returns',
+    category: mockCategories['groceries']!,
+    amount: 35.00,
+    createdAt: DateTime.now().subtract(const Duration(days: 7)),
+  ),
+  Income(
+    id: 'i9',
+    title: 'Transport Reimbursement',
+    description: 'Work travel reimbursement',
+    category: mockCategories['transport']!,
+    amount: 95.00,
+    location: 'Company',
+    createdAt: DateTime.now().subtract(const Duration(days: 8)),
+  ),
+  Income(
+    id: 'i10',
+    title: 'Bonus Payment',
+    description: 'Performance bonus',
+    category: mockCategories['salary']!,
+    amount: 2000.00,
+    createdAt: DateTime.now().subtract(const Duration(days: 9)),
   ),
 ];

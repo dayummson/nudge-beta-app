@@ -6,7 +6,6 @@ import "../../widgets/floating_action_buttons.dart";
 import "../../widgets/categories_list.dart";
 import "../../widgets/transactions_list.dart";
 import "../../data/mock_expenses.dart";
-import "../../../room/domain/entities/expense.dart";
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -26,11 +25,14 @@ class _HomePageState extends ConsumerState<HomePage> {
   // Debug mode: 0 = normal, 1 = force-high-blur, 2 = visible-scrim (debug color)
   int _debugMode = 0;
 
-  // Mock expense data
-  final List<Expense> expenses = mockExpenses;
+  // Get current transactions based on toggle
+  List<dynamic> get currentTransactions =>
+      isExpense ? mockExpenses : mockIncomes;
 
-  double get totalAmount =>
-      expenses.fold<double>(0.0, (sum, expense) => sum + expense.amount);
+  double get totalAmount => currentTransactions.fold<double>(
+    0.0,
+    (sum, transaction) => sum + transaction.amount,
+  );
 
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
@@ -80,7 +82,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         lerpDouble(1.0, 0.0, Curves.easeIn.transform(contentFadeT)) ?? 1.0;
     // Theme-aware colors
     final colorScheme = Theme.of(context).colorScheme;
-    final miniTextColor = colorScheme.onSurface.withAlpha((0.72 * 255).round());
+    final miniTextColor = colorScheme.onSurface.withAlpha((0.9 * 255).round());
     // After this frame, measure the header size and update _headerHeight if
     // it changed. We schedule measurement here so it runs after layout.
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -118,11 +120,14 @@ class _HomePageState extends ConsumerState<HomePage> {
                         // Add top spacing equal to header height so first item isn't hidden
                         SizedBox(height: headerHeight),
                         // Horizontal categories
-                        const CategoriesList(),
+                        CategoriesList(
+                          transactions: currentTransactions,
+                          scrollOffset: _scrollOffset,
+                        ),
 
                         // Transactions list with mini total
                         TransactionsList(
-                          expenses: expenses,
+                          transactions: currentTransactions,
                           miniTextColor: miniTextColor,
                           totalAmount: totalAmount,
                         ),
