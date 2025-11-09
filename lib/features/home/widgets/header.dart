@@ -293,24 +293,20 @@ class Header extends StatelessWidget {
                         Container(
                           width: 80,
                           height: 80,
-                          decoration: BoxDecoration(
-                            border: Border.all(
-                              color: Theme.of(context).colorScheme.outline,
-                              width: 2,
-                              style: BorderStyle.solid,
-                            ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
                           child: DashedBorder(
-                            color: Theme.of(context).colorScheme.outline,
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.3),
                             strokeWidth: 2,
                             dashLength: 8,
                             gapLength: 4,
                             child: Center(
                               child: Icon(
                                 Icons.add,
-                                size: 32,
-                                color: Theme.of(context).colorScheme.outline,
+                                size: 24,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outline.withOpacity(0.3),
                               ),
                             ),
                           ),
@@ -337,12 +333,12 @@ class Header extends StatelessWidget {
                         height: 80,
                         decoration: BoxDecoration(
                           color: category.color.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
+                          borderRadius: BorderRadius.circular(16),
                         ),
                         child: Center(
                           child: Text(
                             category.icon,
-                            style: const TextStyle(fontSize: 40),
+                            style: const TextStyle(fontSize: 24),
                           ),
                         ),
                       ),
@@ -351,6 +347,7 @@ class Header extends StatelessWidget {
                         category.name,
                         style: TextStyle(
                           fontSize: 12,
+                          fontWeight: FontWeight.bold,
                           color: Theme.of(context).colorScheme.onSurface,
                         ),
                         textAlign: TextAlign.center,
