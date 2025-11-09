@@ -1,65 +1,8 @@
 import '../../../features/room/domain/entities/expense.dart';
-import '../../../features/room/domain/entities/category.dart';
+import '../../../constants/categories.dart';
 
-// Mock categories
-const mockCategories = {
-  'eatOut': Category(
-    id: '1',
-    icon: '🍔',
-    name: 'Eat out',
-    description: 'Restaurants and dining',
-    color: 0xFFF44336, // Red
-  ),
-  'transport': Category(
-    id: '2',
-    icon: '🚗',
-    name: 'Transport',
-    description: 'Travel and commute',
-    color: 0xFF2196F3, // Blue
-  ),
-  'shopping': Category(
-    id: '3',
-    icon: '🛍️',
-    name: 'Shopping',
-    description: 'Retail purchases',
-    color: 0xFF9C27B0, // Purple
-  ),
-  'entertainment': Category(
-    id: '4',
-    icon: '🎮',
-    name: 'Entertainment',
-    description: 'Movies, games, fun',
-    color: 0xFFFF9800, // Orange
-  ),
-  'bills': Category(
-    id: '5',
-    icon: '💡',
-    name: 'Bills',
-    description: 'Utilities and bills',
-    color: 0xFFFFEB3B, // Yellow
-  ),
-  'health': Category(
-    id: '6',
-    icon: '💊',
-    name: 'Health',
-    description: 'Medical and wellness',
-    color: 0xFFE91E63, // Pink
-  ),
-  'groceries': Category(
-    id: '7',
-    icon: '🛒',
-    name: 'Groceries',
-    description: 'Food and household items',
-    color: 0xFF4CAF50, // Green
-  ),
-  'salary': Category(
-    id: '8',
-    icon: '💼',
-    name: 'Salary',
-    description: 'Monthly salary',
-    color: 0xFF009688, // Teal
-  ),
-};
+// Mock categories map for easy access
+final mockCategories = {for (var category in categories) category.id: category};
 
 // Mock expenses data
 final mockExpenses = [

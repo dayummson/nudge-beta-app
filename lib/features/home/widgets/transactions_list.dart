@@ -119,9 +119,7 @@ class TransactionsList extends StatelessWidget {
                         width: 48,
                         height: 48,
                         decoration: BoxDecoration(
-                          color: Color(
-                            transaction.category.color,
-                          ).withOpacity(0.2),
+                          color: transaction.category.color.withOpacity(0.2),
                           shape: BoxShape.circle,
                         ),
                         child: Center(

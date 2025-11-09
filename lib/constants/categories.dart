@@ -1,18 +1,5 @@
 import 'package:flutter/material.dart';
-
-class Category {
-  final String id;
-  final String name;
-  final String icon;
-  final Color color;
-
-  const Category({
-    required this.id,
-    required this.name,
-    required this.icon,
-    required this.color,
-  });
-}
+import '../features/room/domain/entities/category.dart';
 
 const List<Category> categories = [
   Category(id: 'eatout', name: 'Eat out', icon: '🍔', color: Colors.red),
