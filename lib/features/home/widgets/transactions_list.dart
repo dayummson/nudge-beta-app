@@ -69,133 +69,144 @@ class TransactionsList extends StatelessWidget {
         ...sortedDates.map((dateKey) {
           final dateTransactions = groupedTransactions[dateKey]!;
 
-          return StickyHeader(
-            overlapHeaders: false,
-            header: Container(
-              width: double.infinity,
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 6),
-              alignment: Alignment.centerLeft,
-              color: Theme.of(context).colorScheme.surface,
-              child: ClipRRect(
-                borderRadius: BorderRadius.circular(8),
-                child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
-                  child: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 6,
-                      vertical: 2,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.white.withOpacity(0.1),
-                      borderRadius: BorderRadius.circular(8),
-                      border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
-                        width: 0.5,
+          return Padding(
+            padding: const EdgeInsets.only(bottom: 8),
+            child: StickyHeader(
+              overlapHeaders: false,
+              header: Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 20,
+                  vertical: 6,
+                ),
+                alignment: Alignment.centerLeft,
+                color: Theme.of(context).colorScheme.surface,
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(8),
+                  child: BackdropFilter(
+                    filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 6,
+                        vertical: 2,
                       ),
-                    ),
-                    child: Text(
-                      _formatDateHeader(dateKey),
-                      style: TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.w600,
-                        color: miniTextColor.withOpacity(0.9),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.1),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                          color: Colors.white.withOpacity(0.2),
+                          width: 0.5,
+                        ),
+                      ),
+                      child: Text(
+                        _formatDateHeader(dateKey),
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: miniTextColor.withOpacity(0.9),
+                        ),
                       ),
                     ),
                   ),
                 ),
               ),
-            ),
-            content: Column(
-              children: dateTransactions.map((transaction) {
-                return Padding(
-                  padding: const EdgeInsets.only(bottom: 8.0),
-                  child: ListTile(
-                    leading: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: Color(
-                          transaction.category.color,
-                        ).withOpacity(0.2),
-                        shape: BoxShape.circle,
-                      ),
-                      child: Center(
-                        child: Text(
-                          transaction.category.icon,
-                          style: const TextStyle(fontSize: 24),
+              content: Column(
+                children: dateTransactions.map((transaction) {
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 8),
+                    child: ListTile(
+                      leading: Container(
+                        width: 48,
+                        height: 48,
+                        decoration: BoxDecoration(
+                          color: Color(
+                            transaction.category.color,
+                          ).withOpacity(0.2),
+                          shape: BoxShape.circle,
+                        ),
+                        child: Center(
+                          child: Text(
+                            transaction.category.icon,
+                            style: const TextStyle(fontSize: 24),
+                          ),
                         ),
                       ),
-                    ),
-                    title: Text(
-                      transaction.category.name,
-                      style: const TextStyle(color: Colors.grey, fontSize: 12),
-                    ),
-                    subtitle: transaction.description.isNotEmpty
-                        ? Text(
-                            transaction.description,
-                            style: TextStyle(
-                              color: miniTextColor,
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          )
-                        : null,
-                    trailing: Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 6,
+                      title: Text(
+                        transaction.category.name,
+                        style: const TextStyle(
+                          color: Colors.grey,
+                          fontSize: 12,
+                        ),
                       ),
-                      decoration: BoxDecoration(
-                        color: Colors.grey[800],
-                        borderRadius: BorderRadius.circular(14),
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Container(
-                            width: 16,
-                            height: 16,
-                            decoration: BoxDecoration(
-                              color:
-                                  Theme.of(context).brightness ==
-                                      Brightness.dark
-                                  ? Theme.of(context).colorScheme.onSurface
-                                  : Theme.of(context).colorScheme.surface,
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                transaction.runtimeType.toString() == 'Income'
-                                    ? "+"
-                                    : "-",
-                                style: TextStyle(
-                                  color:
-                                      Theme.of(context).brightness ==
-                                          Brightness.dark
-                                      ? Theme.of(context).colorScheme.surface
-                                      : Theme.of(context).colorScheme.onSurface,
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1,
+                      subtitle: transaction.description.isNotEmpty
+                          ? Text(
+                              transaction.description,
+                              style: TextStyle(
+                                color: miniTextColor,
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            )
+                          : null,
+                      trailing: Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 12,
+                          vertical: 6,
+                        ),
+                        decoration: BoxDecoration(
+                          color: Colors.grey[800],
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Container(
+                              width: 16,
+                              height: 16,
+                              decoration: BoxDecoration(
+                                color:
+                                    Theme.of(context).brightness ==
+                                        Brightness.dark
+                                    ? Theme.of(context).colorScheme.onSurface
+                                    : Theme.of(context).colorScheme.surface,
+                                shape: BoxShape.circle,
+                              ),
+                              child: Center(
+                                child: Text(
+                                  transaction.runtimeType.toString() == 'Income'
+                                      ? "+"
+                                      : "-",
+                                  style: TextStyle(
+                                    color:
+                                        Theme.of(context).brightness ==
+                                            Brightness.dark
+                                        ? Theme.of(context).colorScheme.surface
+                                        : Theme.of(
+                                            context,
+                                          ).colorScheme.onSurface,
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Text(
-                            transaction.amount.toStringAsFixed(2),
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.w600,
-                              fontSize: 12,
+                            const SizedBox(width: 6),
+                            Text(
+                              transaction.amount.toStringAsFixed(2),
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                                fontSize: 12,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                     ),
-                  ),
-                );
-              }).toList(),
+                  );
+                }).toList(),
+              ),
             ),
           );
         }).toList(),
