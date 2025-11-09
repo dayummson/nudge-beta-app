@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'dart:ui';
 import 'toggle_mode.dart';
+import '../../../components/sheet/bottom_sheet_helper.dart';
 
 class Header extends StatelessWidget {
   final double blurSigma;
@@ -40,58 +41,15 @@ class Header extends StatelessWidget {
               return LinearGradient(
                 begin: Alignment.topCenter,
                 end: Alignment.bottomCenter,
-                // Top is solid throughout content area, fade only at bottom edge
                 colors: const [
                   Colors.black, // Solid at top
                   Colors.black, // Keep solid throughout header content
-                  Colors.black, // Solid until near bottom
-                  Color(0xFC000000), // 99% opacity
-                  Color(0xFA000000), // 98% opacity
-                  Color(0xF5000000), // 96% opacity
-                  Color(0xF0000000), // 94% opacity
-                  Color(0xEB000000), // 92% opacity
-                  Color(0xE6000000), // 90% opacity
-                  Color(0xE0000000), // 88% opacity
-                  Color(0xD9000000), // 85% opacity
-                  Color(0xD1000000), // 82% opacity
-                  Color(0xC9000000), // 79% opacity
-                  Color(0xC0000000), // 75% opacity
-                  Color(0xB3000000), // 70% opacity
-                  Color(0xA6000000), // 65% opacity
-                  Color(0x99000000), // 60% opacity
-                  Color(0x80000000), // 50% opacity
-                  Color(0x66000000), // 40% opacity
-                  Color(0x4D000000), // 30% opacity
-                  Color(0x33000000), // 20% opacity
-                  Color(0x1A000000), // 10% opacity
-                  Color(0x0D000000), // 5% opacity
-                  Colors.transparent, // Fully transparent at bottom
+                  Colors.transparent, // Smooth fade at bottom
                 ],
                 stops: const [
                   0.0,
-                  0.85, // Keep solid until 85% (where SafeArea content ends)
-                  0.88, // Start gentle fade
-                  0.89,
-                  0.90,
-                  0.91,
-                  0.92,
-                  0.925,
-                  0.93,
-                  0.935,
-                  0.94,
-                  0.945,
-                  0.95,
-                  0.955,
-                  0.96,
-                  0.965,
-                  0.97,
-                  0.975,
-                  0.98,
-                  0.985,
-                  0.99,
-                  0.995,
-                  0.998,
-                  1.0,
+                  0.85, // Keep solid until 85% (after toggle mode)
+                  1.0, // Smooth fade to transparent
                 ],
               ).createShader(bounds);
             },
@@ -103,60 +61,9 @@ class Header extends StatelessWidget {
                   sigmaY: debugBlurOverride ?? blurSigma,
                 ),
                 child: Container(
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      begin: Alignment.topCenter,
-                      end: Alignment.bottomCenter,
-                      colors: [
-                        // Solid at top with faint dark tint for contrast
-                        colorScheme.surface.withOpacity(overlayOpacity),
-                        colorScheme.surface.withOpacity(overlayOpacity),
-                        Color.lerp(
-                          colorScheme.surface,
-                          Colors.black,
-                          0.02,
-                        )!.withOpacity(overlayOpacity * 0.98),
-                        Color.lerp(
-                          colorScheme.surface,
-                          Colors.black,
-                          0.03,
-                        )!.withOpacity(overlayOpacity * 0.96),
-                        Color.lerp(
-                          colorScheme.surface,
-                          Colors.black,
-                          0.04,
-                        )!.withOpacity(overlayOpacity * 0.92),
-                        // Gentle fade starting around 80-90% (10% from bottom)
-                        Color.lerp(
-                          colorScheme.surface,
-                          Colors.black,
-                          0.04,
-                        )!.withOpacity(overlayOpacity * 0.85),
-                        Color.lerp(
-                          colorScheme.surface,
-                          Colors.black,
-                          0.05,
-                        )!.withOpacity(overlayOpacity * 0.70),
-                        Color.lerp(
-                          colorScheme.surface,
-                          Colors.black,
-                          0.05,
-                        )!.withOpacity(overlayOpacity * 0.40),
-                        Colors.transparent,
-                      ],
-                      stops: const [
-                        0.0,
-                        0.5,
-                        0.65,
-                        0.75,
-                        0.82,
-                        0.88,
-                        0.93,
-                        0.97,
-                        1.0,
-                      ],
-                    ),
-                  ),
+                  color:
+                      debugOverlayColor ??
+                      colorScheme.surface.withOpacity(overlayOpacity),
                   child: SafeArea(
                     bottom: false,
                     child: Padding(
@@ -208,9 +115,7 @@ class Header extends StatelessWidget {
                     children: [
                       const Expanded(child: SizedBox()),
                       IconButton(
-                        onPressed: () {
-                          // TODO: settings
-                        },
+                        onPressed: () => _showSettingsSheet(context),
                         iconSize: 18,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -298,6 +203,53 @@ class Header extends StatelessWidget {
               ),
             ),
           ),
+        ],
+      ),
+    );
+  }
+
+  void _showSettingsSheet(BuildContext context) {
+    showAppBottomSheet(
+      context: context,
+      title: 'Settings',
+
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          ListTile(
+            leading: const Icon(Icons.person),
+            title: const Text('Profile'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Navigate to profile
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.notifications),
+            title: const Text('Notifications'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Navigate to notifications
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.dark_mode),
+            title: const Text('Theme'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Navigate to theme settings
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.help),
+            title: const Text('Help & Support'),
+            onTap: () {
+              Navigator.pop(context);
+              // TODO: Navigate to help
+            },
+          ),
+          const SizedBox(height: 16),
         ],
       ),
     );
