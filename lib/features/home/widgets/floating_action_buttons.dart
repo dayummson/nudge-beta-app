@@ -294,7 +294,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                       ),
                     );
                   },
-                  backgroundColor: Colors.red,
+                  backgroundColor: Color(0xFFEF5350),
                   elevation: 4,
                   shape: const CircleBorder(),
                   child: const Icon(Icons.mic, color: Colors.white, size: 20),

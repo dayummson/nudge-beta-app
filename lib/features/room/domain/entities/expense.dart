@@ -2,7 +2,6 @@ import "category.dart";
 
 class Income {
   final String id;
-  final String title;
   final String description;
   final Category category;
   final double amount;
@@ -12,7 +11,6 @@ class Income {
 
   const Income({
     required this.id,
-    required this.title,
     required this.description,
     required this.category,
     required this.amount,
@@ -24,7 +22,6 @@ class Income {
 
 class Expense {
   final String id;
-  final String title;
   final String description;
   final Category category;
   final double amount;
@@ -34,7 +31,6 @@ class Expense {
 
   const Expense({
     required this.id,
-    required this.title,
     required this.description,
     required this.category,
     required this.amount,

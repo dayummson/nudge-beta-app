@@ -8,48 +8,56 @@ const mockCategories = {
     icon: '🍔',
     name: 'Eat out',
     description: 'Restaurants and dining',
+    color: 0xFFF44336, // Red
   ),
   'transport': Category(
     id: '2',
     icon: '🚗',
     name: 'Transport',
     description: 'Travel and commute',
+    color: 0xFF2196F3, // Blue
   ),
   'shopping': Category(
     id: '3',
     icon: '🛍️',
     name: 'Shopping',
     description: 'Retail purchases',
+    color: 0xFF9C27B0, // Purple
   ),
   'entertainment': Category(
     id: '4',
     icon: '🎮',
     name: 'Entertainment',
     description: 'Movies, games, fun',
+    color: 0xFFFF9800, // Orange
   ),
   'bills': Category(
     id: '5',
     icon: '💡',
     name: 'Bills',
     description: 'Utilities and bills',
+    color: 0xFFFFEB3B, // Yellow
   ),
   'health': Category(
     id: '6',
     icon: '💊',
     name: 'Health',
     description: 'Medical and wellness',
+    color: 0xFFE91E63, // Pink
   ),
   'groceries': Category(
     id: '7',
     icon: '🛒',
     name: 'Groceries',
     description: 'Food and household items',
+    color: 0xFF4CAF50, // Green
   ),
   'salary': Category(
     id: '8',
     icon: '💼',
     name: 'Salary',
     description: 'Monthly salary',
+    color: 0xFF009688, // Teal
   ),
 };
 
@@ -57,7 +65,6 @@ const mockCategories = {
 final mockExpenses = [
   Expense(
     id: '1',
-    title: 'Lunch at Burger King',
     description: 'Quick lunch with colleagues',
     category: mockCategories['eatOut']!,
     amount: 15.50,
@@ -66,7 +73,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '2',
-    title: 'Uber ride',
     description: 'Trip to office',
     category: mockCategories['transport']!,
     amount: 12.30,
@@ -75,7 +81,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '3',
-    title: 'New headphones',
     description: 'Sony WH-1000XM5',
     category: mockCategories['shopping']!,
     amount: 349.99,
@@ -84,7 +89,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '4',
-    title: 'Netflix subscription',
     description: 'Monthly subscription',
     category: mockCategories['entertainment']!,
     amount: 15.99,
@@ -92,7 +96,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '5',
-    title: 'Electricity bill',
     description: 'October 2025',
     category: mockCategories['bills']!,
     amount: 125.00,
@@ -100,7 +103,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '6',
-    title: 'Weekly groceries',
     description: 'Walmart shopping',
     category: mockCategories['groceries']!,
     amount: 87.45,
@@ -109,7 +111,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '7',
-    title: 'Coffee',
     description: 'Starbucks latte',
     category: mockCategories['eatOut']!,
     amount: 5.75,
@@ -118,7 +119,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '8',
-    title: 'Gas station',
     description: 'Full tank',
     category: mockCategories['transport']!,
     amount: 55.00,
@@ -127,7 +127,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '9',
-    title: 'Pharmacy',
     description: 'Vitamins and supplements',
     category: mockCategories['health']!,
     amount: 42.50,
@@ -136,7 +135,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '10',
-    title: 'Movie tickets',
     description: 'Oppenheimer IMAX',
     category: mockCategories['entertainment']!,
     amount: 28.00,
@@ -145,7 +143,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '11',
-    title: 'Dinner at Italian restaurant',
     description: 'Date night',
     category: mockCategories['eatOut']!,
     amount: 95.30,
@@ -154,7 +151,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '12',
-    title: 'Internet bill',
     description: 'Monthly fiber subscription',
     category: mockCategories['bills']!,
     amount: 79.99,
@@ -162,7 +158,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '13',
-    title: 'Sneakers',
     description: 'Nike Air Max',
     category: mockCategories['shopping']!,
     amount: 129.99,
@@ -171,7 +166,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '14',
-    title: 'Subway pass',
     description: 'Weekly metro pass',
     category: mockCategories['transport']!,
     amount: 32.00,
@@ -179,7 +173,6 @@ final mockExpenses = [
   ),
   Expense(
     id: '15',
-    title: 'Grocery run',
     description: 'Fresh produce',
     category: mockCategories['groceries']!,
     amount: 45.60,
@@ -192,7 +185,6 @@ final mockExpenses = [
 final mockIncomes = [
   Income(
     id: 'i1',
-    title: 'Monthly Salary',
     description: 'November 2025 paycheck',
     category: mockCategories['salary']!,
     amount: 5500.00,
@@ -200,7 +192,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i2',
-    title: 'Freelance Web Design',
     description: 'Website project payment',
     category: mockCategories['salary']!,
     amount: 1200.00,
@@ -209,7 +200,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i3',
-    title: 'Shopping Cashback',
     description: 'Credit card rewards',
     category: mockCategories['shopping']!,
     amount: 85.00,
@@ -217,7 +207,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i4',
-    title: 'Sold Old Headphones',
     description: 'Facebook Marketplace sale',
     category: mockCategories['shopping']!,
     amount: 150.00,
@@ -225,7 +214,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i5',
-    title: 'Utility Refund',
     description: 'Overpayment refund',
     category: mockCategories['bills']!,
     amount: 45.00,
@@ -233,7 +221,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i6',
-    title: 'Part-time Work',
     description: 'Weekend consulting',
     category: mockCategories['salary']!,
     amount: 800.00,
@@ -241,7 +228,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i7',
-    title: 'Health Insurance Reimbursement',
     description: 'Medical expense refund',
     category: mockCategories['health']!,
     amount: 120.00,
@@ -250,7 +236,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i8',
-    title: 'Grocery Coupon Savings',
     description: 'Store credit from returns',
     category: mockCategories['groceries']!,
     amount: 35.00,
@@ -258,7 +243,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i9',
-    title: 'Transport Reimbursement',
     description: 'Work travel reimbursement',
     category: mockCategories['transport']!,
     amount: 95.00,
@@ -267,7 +251,6 @@ final mockIncomes = [
   ),
   Income(
     id: 'i10',
-    title: 'Bonus Payment',
     description: 'Performance bonus',
     category: mockCategories['salary']!,
     amount: 2000.00,

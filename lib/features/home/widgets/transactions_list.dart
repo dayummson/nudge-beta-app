@@ -58,7 +58,7 @@ class TransactionsList extends StatelessWidget {
       children: [
         // Mini total (tiny text for context while scrolling)
         Padding(
-          padding: const EdgeInsets.only(top: 12, left: 20),
+          padding: const EdgeInsets.only(top: 12, left: 20, bottom: 20),
           child: Text(
             "Total: \$${totalAmount.toStringAsFixed(2)}",
             style: TextStyle(fontSize: 12, color: miniTextColor),
@@ -79,11 +79,11 @@ class TransactionsList extends StatelessWidget {
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(8),
                 child: BackdropFilter(
-                  filter: ImageFilter.blur(sigmaX: 10, sigmaY: 10),
+                  filter: ImageFilter.blur(sigmaX: 2, sigmaY: 2),
                   child: Container(
                     padding: const EdgeInsets.symmetric(
-                      horizontal: 10,
-                      vertical: 4,
+                      horizontal: 6,
+                      vertical: 2,
                     ),
                     decoration: BoxDecoration(
                       color: Colors.white.withOpacity(0.1),
@@ -107,40 +107,90 @@ class TransactionsList extends StatelessWidget {
             ),
             content: Column(
               children: dateTransactions.map((transaction) {
-                return ListTile(
-                  leading: Text(
-                    transaction.category.icon,
-                    style: const TextStyle(fontSize: 24),
-                  ),
-                  title: Text(
-                    transaction.title,
-                    style: const TextStyle(color: Colors.grey, fontSize: 12),
-                  ),
-                  subtitle: transaction.description.isNotEmpty
-                      ? Text(
-                          transaction.description,
-                          style: TextStyle(
-                            color: miniTextColor,
-                            fontSize: 14,
-                            fontWeight: FontWeight.bold,
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 8.0),
+                  child: ListTile(
+                    leading: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: BoxDecoration(
+                        color: Color(
+                          transaction.category.color,
+                        ).withOpacity(0.2),
+                        shape: BoxShape.circle,
+                      ),
+                      child: Center(
+                        child: Text(
+                          transaction.category.icon,
+                          style: const TextStyle(fontSize: 24),
+                        ),
+                      ),
+                    ),
+                    title: Text(
+                      transaction.category.name,
+                      style: const TextStyle(color: Colors.grey, fontSize: 12),
+                    ),
+                    subtitle: transaction.description.isNotEmpty
+                        ? Text(
+                            transaction.description,
+                            style: TextStyle(
+                              color: miniTextColor,
+                              fontSize: 14,
+                              fontWeight: FontWeight.bold,
+                            ),
+                          )
+                        : null,
+                    trailing: Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: Colors.grey[800],
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Container(
+                            width: 16,
+                            height: 16,
+                            decoration: BoxDecoration(
+                              color:
+                                  Theme.of(context).brightness ==
+                                      Brightness.dark
+                                  ? Theme.of(context).colorScheme.onSurface
+                                  : Theme.of(context).colorScheme.surface,
+                              shape: BoxShape.circle,
+                            ),
+                            child: Center(
+                              child: Text(
+                                transaction.runtimeType.toString() == 'Income'
+                                    ? "+"
+                                    : "-",
+                                style: TextStyle(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Theme.of(context).colorScheme.surface
+                                      : Theme.of(context).colorScheme.onSurface,
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.bold,
+                                  height: 1,
+                                ),
+                              ),
+                            ),
                           ),
-                        )
-                      : null,
-                  trailing: Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 12,
-                      vertical: 6,
-                    ),
-                    decoration: BoxDecoration(
-                      color: Colors.grey[800],
-                      borderRadius: BorderRadius.circular(14),
-                    ),
-                    child: Text(
-                      "\$${transaction.amount.toStringAsFixed(2)}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.w600,
-                        fontSize: 12,
+                          const SizedBox(width: 6),
+                          Text(
+                            transaction.amount.toStringAsFixed(2),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.w600,
+                              fontSize: 12,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ),
@@ -151,7 +201,7 @@ class TransactionsList extends StatelessWidget {
         }).toList(),
 
         // Bottom padding to prevent overlap with floating action buttons
-        const SizedBox(height: 100),
+        const SizedBox(height: 90),
       ],
     );
   }
