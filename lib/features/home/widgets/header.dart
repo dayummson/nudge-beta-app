@@ -2,6 +2,7 @@ import "package:flutter/material.dart";
 import 'dart:ui';
 import 'toggle_mode.dart';
 import '../../../components/sheet/bottom_sheet_helper.dart';
+import '../../../constants/categories.dart';
 
 class Header extends StatelessWidget {
   final double blurSigma;
@@ -212,7 +213,7 @@ class Header extends StatelessWidget {
     showAppBottomSheet(
       context: context,
       title: 'Settings',
-
+      mode: SheetMode.auto,
       child: Column(
         mainAxisSize: MainAxisSize.min,
         crossAxisAlignment: CrossAxisAlignment.start,
@@ -242,6 +243,14 @@ class Header extends StatelessWidget {
             },
           ),
           ListTile(
+            leading: const Icon(Icons.category),
+            title: const Text('Edit Categories'),
+            onTap: () {
+              Navigator.pop(context);
+              _showEditCategoriesSheet(context);
+            },
+          ),
+          ListTile(
             leading: const Icon(Icons.help),
             title: const Text('Help & Support'),
             onTap: () {
@@ -253,5 +262,229 @@ class Header extends StatelessWidget {
         ],
       ),
     );
+  }
+
+  void _showEditCategoriesSheet(BuildContext context) {
+    showAppBottomSheet(
+      context: context,
+      title: 'Categories',
+      mode: SheetMode.auto,
+      child: SizedBox(
+        height: MediaQuery.of(context).size.height * 0.8,
+        child: Column(
+          children: [
+            // Categories Grid
+            Expanded(
+              child: GridView.builder(
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 16,
+                  mainAxisSpacing: 16,
+                  childAspectRatio: 0.85,
+                ),
+                itemCount: categories.length + 1, // +1 for add button
+                itemBuilder: (context, index) {
+                  // Add button at the end
+                  if (index == categories.length) {
+                    return Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          width: 80,
+                          height: 80,
+                          decoration: BoxDecoration(
+                            border: Border.all(
+                              color: Theme.of(context).colorScheme.outline,
+                              width: 2,
+                              style: BorderStyle.solid,
+                            ),
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          child: DashedBorder(
+                            color: Theme.of(context).colorScheme.outline,
+                            strokeWidth: 2,
+                            dashLength: 8,
+                            gapLength: 4,
+                            child: Center(
+                              child: Icon(
+                                Icons.add,
+                                size: 32,
+                                color: Theme.of(context).colorScheme.outline,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        Text(
+                          'Add',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
+                        ),
+                      ],
+                    );
+                  }
+
+                  // Category item
+                  final category = categories[index];
+                  return Column(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Container(
+                        width: 80,
+                        height: 80,
+                        decoration: BoxDecoration(
+                          color: category.color.withOpacity(0.2),
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Center(
+                          child: Text(
+                            category.icon,
+                            style: const TextStyle(fontSize: 40),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Text(
+                        category.name,
+                        style: TextStyle(
+                          fontSize: 12,
+                          color: Theme.of(context).colorScheme.onSurface,
+                        ),
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
+                    ],
+                  );
+                },
+              ),
+            ),
+
+            // Save button
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+              child: SizedBox(
+                child: ElevatedButton(
+                  onPressed: () {
+                    // TODO: Implement save logic
+                    Navigator.pop(context);
+                  },
+                  style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    backgroundColor: Colors.grey[800],
+                    foregroundColor: Colors.grey[400],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                  ),
+                  child: const Text('Save'),
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+// Helper widget for dashed border
+class DashedBorder extends StatelessWidget {
+  final Widget child;
+  final Color color;
+  final double strokeWidth;
+  final double dashLength;
+  final double gapLength;
+
+  const DashedBorder({
+    super.key,
+    required this.child,
+    required this.color,
+    this.strokeWidth = 1,
+    this.dashLength = 5,
+    this.gapLength = 3,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return CustomPaint(
+      painter: DashedBorderPainter(
+        color: color,
+        strokeWidth: strokeWidth,
+        dashLength: dashLength,
+        gapLength: gapLength,
+      ),
+      child: child,
+    );
+  }
+}
+
+class DashedBorderPainter extends CustomPainter {
+  final Color color;
+  final double strokeWidth;
+  final double dashLength;
+  final double gapLength;
+
+  DashedBorderPainter({
+    required this.color,
+    required this.strokeWidth,
+    required this.dashLength,
+    required this.gapLength,
+  });
+
+  @override
+  void paint(Canvas canvas, Size size) {
+    final paint = Paint()
+      ..color = color
+      ..strokeWidth = strokeWidth
+      ..style = PaintingStyle.stroke;
+
+    final path = Path()
+      ..addRRect(
+        RRect.fromRectAndRadius(
+          Rect.fromLTWH(0, 0, size.width, size.height),
+          const Radius.circular(12),
+        ),
+      );
+
+    _drawDashedPath(canvas, path, paint);
+  }
+
+  void _drawDashedPath(Canvas canvas, Path path, Paint paint) {
+    final dashPath = Path();
+    final pathMetrics = path.computeMetrics();
+
+    for (final metric in pathMetrics) {
+      double distance = 0;
+      bool draw = true;
+
+      while (distance < metric.length) {
+        final length = draw ? dashLength : gapLength;
+        final end = distance + length;
+
+        if (draw) {
+          dashPath.addPath(
+            metric.extractPath(distance, end.clamp(0, metric.length)),
+            Offset.zero,
+          );
+        }
+
+        distance = end;
+        draw = !draw;
+      }
+    }
+
+    canvas.drawPath(dashPath, paint);
+  }
+
+  @override
+  bool shouldRepaint(DashedBorderPainter oldDelegate) {
+    return oldDelegate.color != color ||
+        oldDelegate.strokeWidth != strokeWidth ||
+        oldDelegate.dashLength != dashLength ||
+        oldDelegate.gapLength != gapLength;
   }
 }

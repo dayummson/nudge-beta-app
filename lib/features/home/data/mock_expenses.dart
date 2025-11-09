@@ -9,7 +9,7 @@ final mockExpenses = [
   Expense(
     id: '1',
     description: 'Quick lunch with colleagues',
-    category: mockCategories['eatOut']!,
+    category: mockCategories['eatout']!,
     amount: 15.50,
     location: 'Downtown',
     createdAt: DateTime.now().subtract(const Duration(hours: 2)),
@@ -47,7 +47,7 @@ final mockExpenses = [
   Expense(
     id: '6',
     description: 'Walmart shopping',
-    category: mockCategories['groceries']!,
+    category: mockCategories['shopping']!,
     amount: 87.45,
     location: 'Walmart Supercenter',
     createdAt: DateTime.now().subtract(const Duration(days: 2, hours: 4)),
@@ -55,7 +55,7 @@ final mockExpenses = [
   Expense(
     id: '7',
     description: 'Starbucks latte',
-    category: mockCategories['eatOut']!,
+    category: mockCategories['eatout']!,
     amount: 5.75,
     location: 'Starbucks Main St',
     createdAt: DateTime.now().subtract(const Duration(days: 3)),
@@ -71,7 +71,7 @@ final mockExpenses = [
   Expense(
     id: '9',
     description: 'Vitamins and supplements',
-    category: mockCategories['health']!,
+    category: mockCategories['shopping']!,
     amount: 42.50,
     location: 'CVS Pharmacy',
     createdAt: DateTime.now().subtract(const Duration(days: 4)),
@@ -87,7 +87,7 @@ final mockExpenses = [
   Expense(
     id: '11',
     description: 'Date night',
-    category: mockCategories['eatOut']!,
+    category: mockCategories['eatout']!,
     amount: 95.30,
     location: 'La Piazza',
     createdAt: DateTime.now().subtract(const Duration(days: 5, hours: 8)),
@@ -117,7 +117,7 @@ final mockExpenses = [
   Expense(
     id: '15',
     description: 'Fresh produce',
-    category: mockCategories['groceries']!,
+    category: mockCategories['shopping']!,
     amount: 45.60,
     location: 'Whole Foods',
     createdAt: DateTime.now().subtract(const Duration(days: 8)),
@@ -172,7 +172,7 @@ final mockIncomes = [
   Income(
     id: 'i7',
     description: 'Medical expense refund',
-    category: mockCategories['health']!,
+    category: mockCategories['salary']!,
     amount: 120.00,
     location: 'Insurance Co.',
     createdAt: DateTime.now().subtract(const Duration(days: 6)),
@@ -180,7 +180,7 @@ final mockIncomes = [
   Income(
     id: 'i8',
     description: 'Store credit from returns',
-    category: mockCategories['groceries']!,
+    category: mockCategories['shopping']!,
     amount: 35.00,
     createdAt: DateTime.now().subtract(const Duration(days: 7)),
   ),
