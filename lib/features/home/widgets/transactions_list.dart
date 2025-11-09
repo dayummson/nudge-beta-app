@@ -148,8 +148,8 @@ class TransactionsList extends StatelessWidget {
                           : null,
                       trailing: Container(
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                          horizontal: 5,
+                          vertical: 4,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.grey[800],
