@@ -6,6 +6,7 @@ class Room {
   final List<String> users;
   final DateTime createdAt;
   final DateTime updatedAt;
+  final bool showIncome;
 
   const Room({
     required this.id,
@@ -13,6 +14,7 @@ class Room {
     required this.ownerId,
     required this.isShared,
     required this.users,
+    required this.showIncome,
     required this.createdAt,
     required this.updatedAt,
   });
