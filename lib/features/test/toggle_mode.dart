@@ -125,7 +125,7 @@ class _ToggleModeState extends State<ToggleMode> {
                         style: TextStyle(
                           fontSize: 12,
                           color: _isExpense ? Colors.white : textColor,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),
@@ -137,7 +137,7 @@ class _ToggleModeState extends State<ToggleMode> {
                         style: TextStyle(
                           fontSize: 12,
                           color: !_isExpense ? Colors.white : textColor,
-                          fontWeight: FontWeight.bold,
+                          fontWeight: FontWeight.w900,
                         ),
                       ),
                     ),

@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 import 'dart:ui';
 import 'toggle_mode.dart';
+import 'bottom_sheet_helper.dart';
 
 class Header extends StatelessWidget {
   final double blurSigma;
@@ -22,6 +23,62 @@ class Header extends StatelessWidget {
     this.debugBlurOverride,
     this.debugOverlayColor,
   });
+
+  void _showSettingsSheet(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    showAppBottomSheet(
+      context: context,
+      title: 'Settings',
+      // mode defaults to SheetMode.auto - sizes to content
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          // Settings options
+          ListTile(
+            leading: Icon(Icons.notifications, color: colorScheme.onSurface),
+            title: Text(
+              'Notifications',
+              style: TextStyle(color: colorScheme.onSurface),
+            ),
+            trailing: Switch(value: true, onChanged: (value) {}),
+          ),
+          ListTile(
+            leading: Icon(Icons.dark_mode, color: colorScheme.onSurface),
+            title: Text(
+              'Dark Mode',
+              style: TextStyle(color: colorScheme.onSurface),
+            ),
+            trailing: Switch(value: false, onChanged: (value) {}),
+          ),
+          ListTile(
+            leading: Icon(Icons.language, color: colorScheme.onSurface),
+            title: Text(
+              'Language',
+              style: TextStyle(color: colorScheme.onSurface),
+            ),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurface.withOpacity(0.5),
+            ),
+            onTap: () {},
+          ),
+          ListTile(
+            leading: Icon(Icons.info, color: colorScheme.onSurface),
+            title: Text(
+              'About',
+              style: TextStyle(color: colorScheme.onSurface),
+            ),
+            trailing: Icon(
+              Icons.chevron_right,
+              color: colorScheme.onSurface.withOpacity(0.5),
+            ),
+            onTap: () {},
+          ),
+        ],
+      ),
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -209,7 +266,7 @@ class Header extends StatelessWidget {
                       const Expanded(child: SizedBox()),
                       IconButton(
                         onPressed: () {
-                          // TODO: settings
+                          _showSettingsSheet(context);
                         },
                         iconSize: 18,
                         padding: EdgeInsets.zero,
