@@ -122,6 +122,14 @@ final mockExpenses = [
     location: 'Whole Foods',
     createdAt: DateTime.now().subtract(const Duration(days: 8)),
   ),
+  Expense(
+    id: '16',
+    description: 'Fresh produce',
+    category: mockCategories['shopping']!,
+    amount: 45.60,
+    location: 'Whole Foods',
+    createdAt: DateTime.now().subtract(const Duration(days: 8)),
+  ),
 ];
 
 // Mock income data
