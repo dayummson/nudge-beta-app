@@ -7,7 +7,6 @@ import '../../../constants/categories.dart' as constants;
 
 class FloatingActionButtons extends ConsumerStatefulWidget {
   const FloatingActionButtons({super.key});
-
   @override
   ConsumerState<FloatingActionButtons> createState() =>
       _FloatingActionButtonsState();
@@ -17,8 +16,13 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
     with SingleTickerProviderStateMixin {
   late AnimationController _animationController;
   late Animation<double> _fadeAnimation;
-  final TextEditingController _searchController = TextEditingController();
-  final FocusNode _searchFocusNode = FocusNode();
+
+  final _searchController = TextEditingController();
+  final _searchFocusNode = FocusNode();
+  final _descriptionController = TextEditingController();
+  final _amountController = TextEditingController();
+  bool _isExpense = true;
+  String? _selectedCategoryId;
 
   @override
   void initState() {
@@ -38,32 +42,23 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
     _animationController.dispose();
     _searchController.dispose();
     _searchFocusNode.dispose();
+    _descriptionController.dispose();
+    _amountController.dispose();
     super.dispose();
   }
 
-  void _closeSearch() {
-    _searchFocusNode.unfocus();
-    _searchController.clear();
-    ref.read(searchEnabledProvider.notifier).setEnabled(false);
-  }
+  void _toggleSearch() => ref.read(searchEnabledProvider.notifier).toggle();
 
-  void _showAddTransactionSheet(BuildContext context) {
-    final descriptionController = TextEditingController();
-    final amountController = TextEditingController();
-    String? selectedCategoryId;
-    bool isExpense = true; // local toggle state
-
-    showAppBottomSheet(
+  Future<void> _showAddTransactionSheet() async {
+    await showAppBottomSheet(
       context: context,
-      title: null,
-      heightFactor: 0.6,
-      contentPadding: const EdgeInsets.only(top: 12),
+      heightFactor: 0.72,
       child: StatefulBuilder(
         builder: (context, setModalState) {
           final cs = Theme.of(context).colorScheme;
           final isDark = Theme.of(context).brightness == Brightness.dark;
           final hintColor = cs.onSurface.withOpacity(0.5);
-          final Color borderColor = isDark
+          final borderColor = isDark
               ? Colors.grey.shade700
               : Colors.grey.shade400;
           final incomeColor = const Color(0xFF58CC02);
@@ -71,52 +66,52 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
               ? const Color(0xFFFF6B6B)
               : const Color(0xFFEF5350);
 
-          Widget buildBorderlessField({
-            required TextEditingController controller,
-            required String hint,
-            TextInputType? keyboardType,
-          }) {
-            return TextField(
-              controller: controller,
-              keyboardType: keyboardType,
-              style: TextStyle(
-                color: cs.onSurface,
+          Widget field(
+            TextEditingController c,
+            String hint, {
+            TextInputType? type,
+          }) => TextField(
+            controller: c,
+            keyboardType: type,
+            style: TextStyle(
+              color: cs.onSurface,
+              fontSize: 20,
+              fontWeight: FontWeight.w700, // bolder text
+              height: 1.2,
+              letterSpacing: 0.2,
+            ),
+            decoration: InputDecoration(
+              hintText: hint,
+              hintStyle: TextStyle(
+                color: hintColor,
                 fontSize: 18,
                 fontWeight: FontWeight.w600,
               ),
-              decoration: InputDecoration(
-                hintText: hint,
-                hintStyle: TextStyle(color: hintColor),
-                border: InputBorder.none,
-                enabledBorder: InputBorder.none,
-                focusedBorder: InputBorder.none,
-                contentPadding: EdgeInsets.zero,
-              ),
-            );
-          }
+              border: InputBorder.none,
+              enabledBorder: InputBorder.none,
+              focusedBorder: InputBorder.none,
+              contentPadding: EdgeInsets.zero,
+            ),
+          );
 
-          Widget buildToggle() {
-            const double toggleWidth = 88;
-            const double toggleHeight = 36;
-            final activeColor = isExpense ? expenseColor : incomeColor;
+          Widget toggle() {
+            const w = 88.0;
+            const h = 36.0;
+            final activeColor = _isExpense ? expenseColor : incomeColor;
             return GestureDetector(
-              onTapDown: (details) {
-                final dx = details.localPosition.dx;
-                final toExpense = dx < (toggleWidth / 2);
-                if (toExpense != isExpense) {
-                  setModalState(() => isExpense = toExpense);
-                }
+              onTapDown: (d) {
+                final toExpense = d.localPosition.dx < (w / 2);
+                if (toExpense != _isExpense)
+                  setModalState(() => _isExpense = toExpense);
               },
               child: Container(
-                width: toggleWidth,
-                height: toggleHeight,
+                width: w,
+                height: h,
                 padding: const EdgeInsets.all(3),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(14),
                   border: Border.all(
-                    color: isDark
-                        ? Colors.white.withOpacity(0.2)
-                        : Colors.black.withOpacity(0.15),
+                    color: isDark ? Colors.white24 : Colors.black12,
                     width: 1.5,
                   ),
                 ),
@@ -125,13 +120,13 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                     AnimatedAlign(
                       duration: const Duration(milliseconds: 240),
                       curve: Curves.easeOutCubic,
-                      alignment: isExpense
+                      alignment: _isExpense
                           ? Alignment.centerLeft
                           : Alignment.centerRight,
                       child: FractionallySizedBox(
                         widthFactor: 0.5,
                         child: Container(
-                          height: toggleHeight - 10,
+                          height: h - 10,
                           decoration: BoxDecoration(
                             color: activeColor,
                             borderRadius: BorderRadius.circular(10),
@@ -148,7 +143,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: isExpense
+                                color: _isExpense
                                     ? Colors.white
                                     : (isDark ? Colors.white : Colors.black87),
                               ),
@@ -162,7 +157,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                               style: TextStyle(
                                 fontSize: 16,
                                 fontWeight: FontWeight.bold,
-                                color: !isExpense
+                                color: !_isExpense
                                     ? Colors.white
                                     : (isDark ? Colors.white : Colors.black87),
                               ),
@@ -177,60 +172,48 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
             );
           }
 
-          Widget buildAmountPreview(String text) {
-            final amountColor = isExpense ? expenseColor : incomeColor;
-            return Container(
-              height: 40,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-              decoration: BoxDecoration(
-                color: Theme.of(
-                  context,
-                ).colorScheme.surfaceVariant.withOpacity(0.3),
-                borderRadius: BorderRadius.circular(12),
+          Widget amountPreview(String text) => Container(
+            height: 40,
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            decoration: BoxDecoration(
+              color: cs.surfaceVariant.withOpacity(0.3),
+              borderRadius: BorderRadius.circular(12),
+            ),
+            alignment: Alignment.centerLeft,
+            child: Text(
+              '₱ $text',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: _isExpense ? expenseColor : incomeColor,
+                height: 1,
               ),
-              alignment: Alignment.centerLeft,
-              child: Text(
-                text,
-                style: TextStyle(
-                  fontSize: 28,
-                  fontWeight: FontWeight.w800,
-                  color: amountColor,
-                  height: 1.0,
-                ),
-              ),
-            );
-          }
+            ),
+          );
 
           return Column(
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: buildBorderlessField(
-                  controller: descriptionController,
-                  hint: 'Description',
-                ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: field(_descriptionController, 'Description'),
               ),
               const SizedBox(height: 4),
               Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: buildBorderlessField(
-                  controller: amountController,
-                  hint: 'Amount',
-                  keyboardType: const TextInputType.numberWithOptions(
-                    decimal: true,
-                  ),
+                padding: const EdgeInsets.symmetric(horizontal: 16),
+                child: field(
+                  _amountController,
+                  'Amount',
+                  type: const TextInputType.numberWithOptions(decimal: true),
                 ),
               ),
               const SizedBox(height: 12),
-
               ValueListenableBuilder<TextEditingValue>(
-                valueListenable: amountController,
+                valueListenable: _amountController,
                 builder: (context, value, _) {
                   final show = value.text.trim().isNotEmpty;
-                  final raw = value.text.trim();
-                  final parsed = double.tryParse(raw);
+                  final parsed = double.tryParse(value.text.trim());
                   final display = parsed != null
                       ? parsed.toStringAsFixed(2)
                       : '0.00';
@@ -262,16 +245,12 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                     child: show
                         ? Padding(
                             key: const ValueKey('amountRow'),
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 16.0,
-                            ),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
                             child: Row(
                               children: [
-                                buildToggle(),
+                                toggle(),
                                 const SizedBox(width: 12),
-                                Expanded(
-                                  child: buildAmountPreview('₱ $display'),
-                                ),
+                                Expanded(child: amountPreview(display)),
                               ],
                             ),
                           )
@@ -280,127 +259,218 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                 },
               ),
               const SizedBox(height: 16),
-
-              SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
-                child: Row(
-                  children: [
-                    const SizedBox(width: 16),
-                    OutlinedButton(
-                      onPressed: () {
-                        // TODO: add category action
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        shape: const StadiumBorder(),
-                        side: BorderSide(color: borderColor),
-                        backgroundColor: cs.surfaceVariant,
-                        foregroundColor: cs.onSurfaceVariant,
-                      ),
-                      child: const Icon(Icons.add, size: 18),
-                    ),
-                    const SizedBox(width: 8),
-                    ...() {
-                      final chips = <Widget>[];
-                      for (int i = 0; i < constants.categories.length; i++) {
-                        final cat = constants.categories[i];
-                        final selected = cat.id == selectedCategoryId;
-                        if (i > 0) chips.add(const SizedBox(width: 8));
-                        chips.add(
-                          ChoiceChip(
-                            selected: selected,
-                            onSelected: (val) {
-                              setModalState(
-                                () => selectedCategoryId = val ? cat.id : null,
-                              );
-                            },
-                            label: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  cat.icon,
-                                  style: const TextStyle(fontSize: 14),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(cat.name),
-                              ],
-                            ),
-                            shape: const StadiumBorder(),
-                            side: BorderSide(color: borderColor),
-                            backgroundColor: cs.surfaceVariant.withOpacity(0.6),
-                            selectedColor: cs.primaryContainer,
-                            labelStyle: TextStyle(
-                              color: selected
-                                  ? cs.onPrimaryContainer
-                                  : cs.onSurface,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            materialTapTargetSize:
-                                MaterialTapTargetSize.shrinkWrap,
-                          ),
-                        );
-                      }
-                      return chips;
-                    }(),
-                    const SizedBox(width: 16),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16.0),
-                child: Row(
-                  children: [
-                    OutlinedButton(
-                      onPressed: () {
-                        // TODO: hashtag action
-                      },
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 10,
-                          horizontal: 12,
-                        ),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(10),
-                        ),
-                        backgroundColor: cs.surfaceVariant,
-                        side: BorderSide(color: borderColor),
-                        foregroundColor: cs.onSurfaceVariant,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: const Icon(Icons.tag, size: 18),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: ElevatedButton(
-                        onPressed: () {
-                          Navigator.pop(context);
-                          // TODO: save logic
-                        },
-                        style: ElevatedButton.styleFrom(
-                          padding: const EdgeInsets.symmetric(vertical: 14),
-                          shape: const StadiumBorder(),
-                          backgroundColor: cs.primary,
-                          foregroundColor: cs.onPrimary,
-                        ),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 300),
+                switchInCurve: Curves.easeOutCubic,
+                switchOutCurve: Curves.easeInCubic,
+                transitionBuilder: (child, animation) {
+                  final isCollapsed =
+                      child.key == const ValueKey('chipsCollapsed');
+                  final beginOffset = isCollapsed
+                      ? const Offset(0.3, 0)
+                      : const Offset(-0.2, 0);
+                  final slide = Tween<Offset>(
+                    begin: beginOffset,
+                    end: Offset.zero,
+                  ).animate(animation);
+                  return FadeTransition(
+                    opacity: animation,
+                    child: SlideTransition(position: slide, child: child),
+                  );
+                },
+                child: _selectedCategoryId == null
+                    ? SingleChildScrollView(
+                        key: const ValueKey('chipsFull'),
+                        scrollDirection: Axis.horizontal,
                         child: Row(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          mainAxisSize: MainAxisSize.min,
-                          children: const [
-                            Icon(Icons.check, size: 18),
-                            SizedBox(width: 8),
-                            Text('Save'),
+                          children: [
+                            const SizedBox(width: 16),
+                            OutlinedButton(
+                              onPressed: () {},
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 8,
+                                  horizontal: 12,
+                                ),
+                                shape: const StadiumBorder(),
+                                side: BorderSide(color: borderColor),
+                                backgroundColor: cs.surfaceVariant,
+                                foregroundColor: cs.onSurfaceVariant,
+                              ),
+                              child: const Icon(Icons.add, size: 18),
+                            ),
+                            const SizedBox(width: 8),
+                            ...constants.categories.map((cat) {
+                              final selected = cat.id == _selectedCategoryId;
+                              return Padding(
+                                padding: const EdgeInsets.only(right: 8),
+                                child: ChoiceChip(
+                                  selected: selected,
+                                  onSelected: (val) => setModalState(
+                                    () => _selectedCategoryId = val
+                                        ? cat.id
+                                        : null,
+                                  ),
+                                  label: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        cat.icon,
+                                        style: const TextStyle(fontSize: 14),
+                                      ),
+                                      const SizedBox(width: 6),
+                                      Text(cat.name),
+                                    ],
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  side: BorderSide(color: borderColor),
+                                  backgroundColor: cs.surfaceVariant
+                                      .withOpacity(0.6),
+                                  selectedColor: cs.primaryContainer,
+                                  labelStyle: TextStyle(
+                                    color: selected
+                                        ? cs.onPrimaryContainer
+                                        : cs.onSurface,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  materialTapTargetSize:
+                                      MaterialTapTargetSize.shrinkWrap,
+                                ),
+                              );
+                            }).toList(),
+                            const SizedBox(width: 16),
+                          ],
+                        ),
+                      )
+                    : Padding(
+                        key: const ValueKey('chipsCollapsed'),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            ChoiceChip(
+                              selected: true,
+                              onSelected: (_) => setModalState(
+                                () => _selectedCategoryId = null,
+                              ),
+                              label: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  Text(
+                                    constants.categories
+                                        .firstWhere(
+                                          (c) => c.id == _selectedCategoryId,
+                                        )
+                                        .icon,
+                                    style: const TextStyle(fontSize: 14),
+                                  ),
+                                  const SizedBox(width: 6),
+                                  Text(
+                                    constants.categories
+                                        .firstWhere(
+                                          (c) => c.id == _selectedCategoryId,
+                                        )
+                                        .name,
+                                  ),
+                                ],
+                              ),
+                              shape: const StadiumBorder(),
+                              side: BorderSide(color: borderColor),
+                              backgroundColor: cs.primaryContainer,
+                              selectedColor: cs.primaryContainer,
+                              labelStyle: TextStyle(
+                                color: cs.onPrimaryContainer,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              materialTapTargetSize:
+                                  MaterialTapTargetSize.shrinkWrap,
+                            ),
                           ],
                         ),
                       ),
-                    ),
-                  ],
-                ),
+              ),
+              const SizedBox(height: 16),
+              AnimatedSwitcher(
+                duration: const Duration(milliseconds: 250),
+                switchInCurve: Curves.easeOut,
+                switchOutCurve: Curves.easeIn,
+                transitionBuilder: (child, animation) =>
+                    FadeTransition(opacity: animation, child: child),
+                child: _selectedCategoryId == null
+                    ? Padding(
+                        key: const ValueKey('actionsFull'),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            OutlinedButton(
+                              onPressed: () {},
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                backgroundColor: cs.surfaceVariant,
+                                side: BorderSide(color: borderColor),
+                                foregroundColor: cs.onSurfaceVariant,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                textStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: const Text('#'),
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  backgroundColor: cs.primary,
+                                  foregroundColor: cs.onPrimary,
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                child: const Text('Save'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      )
+                    : Padding(
+                        key: const ValueKey('actionsCollapsed'),
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: Row(
+                          children: [
+                            Expanded(
+                              child: ElevatedButton(
+                                onPressed: () => Navigator.pop(context),
+                                style: ElevatedButton.styleFrom(
+                                  padding: const EdgeInsets.symmetric(
+                                    vertical: 14,
+                                  ),
+                                  shape: const StadiumBorder(),
+                                  backgroundColor: cs.primary,
+                                  foregroundColor: cs.onPrimary,
+                                  textStyle: const TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.w700,
+                                  ),
+                                ),
+                                child: const Text('Save'),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
               ),
             ],
           );
@@ -414,13 +484,13 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
     final colorScheme = Theme.of(context).colorScheme;
     final searchEnabled = ref.watch(searchEnabledProvider);
     final screenWidth = MediaQuery.of(context).size.width;
-    final horizontalPadding = screenWidth * 0.02; // 2% of screen width
+    final horizontalPadding = screenWidth * 0.02;
 
     if (searchEnabled) {
       _animationController.forward();
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        _searchFocusNode.requestFocus();
-      });
+      WidgetsBinding.instance.addPostFrameCallback(
+        (_) => _searchFocusNode.requestFocus(),
+      );
     } else {
       _animationController.reverse();
     }
@@ -430,7 +500,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
         AnimatedPositioned(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          left: searchEnabled ? horizontalPadding : -400, // Slide in from left
+          left: searchEnabled ? horizontalPadding : -400,
           right: horizontalPadding,
           bottom: 0,
           child: SafeArea(
@@ -463,23 +533,19 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                           focusNode: _searchFocusNode,
                           style: TextStyle(
                             color: colorScheme.onSurface,
-                            fontSize: 16,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                            height: 1.25,
                           ),
-                          decoration: InputDecoration(
+                          decoration: const InputDecoration(
                             hintText: 'Search transactions...',
-                            hintStyle: TextStyle(
-                              color: colorScheme.onSurface.withOpacity(0.5),
-                            ),
                             border: InputBorder.none,
                             contentPadding: EdgeInsets.zero,
                           ),
-                          onChanged: (value) {
-                            // TODO: Implement search logic
-                          },
                         ),
                       ),
                       IconButton(
-                        onPressed: _closeSearch,
+                        onPressed: _toggleSearch,
                         icon: Icon(Icons.close, color: colorScheme.onSurface),
                         padding: const EdgeInsets.all(8),
                       ),
@@ -491,11 +557,10 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
             ),
           ),
         ),
-
         AnimatedPositioned(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          left: searchEnabled ? -200 : horizontalPadding, // Slide out to left
+          left: searchEnabled ? -200 : horizontalPadding,
           bottom: 0,
           child: SafeArea(
             child: Padding(
@@ -518,35 +583,25 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                       mainAxisSize: MainAxisSize.min,
                       children: [
                         InkWell(
-                          onTap: () => _showAddTransactionSheet(context),
+                          onTap: _showAddTransactionSheet,
                           borderRadius: const BorderRadius.only(
                             topLeft: Radius.circular(16),
                             bottomLeft: Radius.circular(16),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Icon(
-                              Icons.add,
-                              color: colorScheme.onSurface,
-                              size: 20,
-                            ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Icon(Icons.add, size: 20),
                           ),
                         ),
                         InkWell(
-                          onTap: () {
-                            ref.read(searchEnabledProvider.notifier).toggle();
-                          },
+                          onTap: _toggleSearch,
                           borderRadius: const BorderRadius.only(
                             topRight: Radius.circular(16),
                             bottomRight: Radius.circular(16),
                           ),
-                          child: Padding(
-                            padding: const EdgeInsets.all(10),
-                            child: Icon(
-                              Icons.search,
-                              color: colorScheme.onSurface,
-                              size: 20,
-                            ),
+                          child: const Padding(
+                            padding: EdgeInsets.all(10),
+                            child: Icon(Icons.search, size: 20),
                           ),
                         ),
                       ],
@@ -557,13 +612,10 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
             ),
           ),
         ),
-
         AnimatedPositioned(
           duration: const Duration(milliseconds: 300),
           curve: Curves.easeInOut,
-          right: searchEnabled
-              ? -100
-              : horizontalPadding, // Hide when search active
+          right: searchEnabled ? -100 : horizontalPadding,
           bottom: 0,
           child: SafeArea(
             child: Padding(
@@ -577,12 +629,11 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                         pageBuilder: (context, animation, secondaryAnimation) =>
                             const VoicePage(),
                         transitionsBuilder:
-                            (context, animation, secondaryAnimation, child) {
-                              return FadeTransition(
-                                opacity: animation,
-                                child: child,
-                              );
-                            },
+                            (context, animation, secondaryAnimation, child) =>
+                                FadeTransition(
+                                  opacity: animation,
+                                  child: child,
+                                ),
                         transitionDuration: const Duration(milliseconds: 200),
                       ),
                     );
