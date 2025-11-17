@@ -10,6 +10,7 @@ Future<T?> showAppBottomSheet<T>({
   SheetMode mode = SheetMode.auto,
   double? heightFactor, // Custom height factor (0.0 to 1.0)
   bool isDismissible = true,
+  EdgeInsetsGeometry? contentPadding,
 }) {
   return showModalBottomSheet<T>(
     context: context,
@@ -18,7 +19,13 @@ Future<T?> showAppBottomSheet<T>({
     barrierColor: Colors.black.withOpacity(0.3), // Soft overlay (30% opacity)
     isDismissible: isDismissible,
     builder: (context) {
-      Widget sheet = BaseBottomSheet(title: title, child: child);
+      Widget sheet = BaseBottomSheet(
+        title: title,
+        child: child,
+        contentPadding:
+            contentPadding ??
+            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      );
 
       // Wrap with FractionallySizedBox for fixed height modes or custom height
       if (heightFactor != null) {

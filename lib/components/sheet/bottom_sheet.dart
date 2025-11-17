@@ -3,8 +3,17 @@ import 'package:flutter/material.dart';
 class BaseBottomSheet extends StatelessWidget {
   final String? title;
   final Widget child;
+  final EdgeInsetsGeometry contentPadding;
 
-  const BaseBottomSheet({super.key, this.title, required this.child});
+  const BaseBottomSheet({
+    super.key,
+    this.title,
+    required this.child,
+    this.contentPadding = const EdgeInsets.symmetric(
+      horizontal: 16,
+      vertical: 12,
+    ),
+  });
 
   @override
   Widget build(BuildContext context) {
@@ -25,7 +34,7 @@ class BaseBottomSheet extends StatelessWidget {
       child: SafeArea(
         top: false,
         child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          padding: contentPadding,
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
