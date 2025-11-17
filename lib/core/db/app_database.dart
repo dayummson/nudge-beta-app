@@ -6,6 +6,7 @@ import 'package:path_provider/path_provider.dart';
 import 'package:path/path.dart' as p;
 // Make domain types available to generated part
 import 'package:nudge_1/features/room/domain/entities/category.dart';
+import 'package:nudge_1/features/room/domain/entities/place_location.dart';
 import 'package:nudge_1/features/room/data/local/tables/type_converters.dart';
 
 // Import your tables
@@ -56,7 +57,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase() : super(_openConnection());
 
   // Secondary constructor for tests / CLI tools using an in-memory or custom executor.
-  AppDatabase.forTesting(QueryExecutor e) : super(e);
+  AppDatabase.forTesting(super.e);
 
   @override
   int get schemaVersion => 1;

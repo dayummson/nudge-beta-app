@@ -8,7 +8,8 @@ class Expenses extends Table {
   TextColumn get category =>
       text().map(const CategoryJsonConverter())(); // store as JSON
   RealColumn get amount => real()();
-  TextColumn get location => text().nullable()();
+  TextColumn get location =>
+      text().map(const LocationJsonConverter()).nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
 
@@ -23,7 +24,8 @@ class Incomes extends Table {
   TextColumn get category =>
       text().map(const CategoryJsonConverter())(); // store as JSON
   RealColumn get amount => real()();
-  TextColumn get location => text().nullable()();
+  TextColumn get location =>
+      text().map(const LocationJsonConverter()).nullable()();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
 

@@ -4,8 +4,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:flutter/material.dart';
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
-// Ensure the bundled sqlite3 is available in tests on desktop
-import 'package:sqlite3_flutter_libs/sqlite3_flutter_libs.dart';
+import 'package:nudge_1/features/room/domain/entities/place_location.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -47,7 +46,13 @@ void main() {
         description: const Value('Burger dinner'),
         category: Value(eatOut),
         amount: const Value(18.5),
-        location: const Value('Downtown'),
+        location: const Value(
+          PlaceLocation(
+            address: '1600 Amphitheatre Parkway',
+            lat: 37.422,
+            lng: -122.084,
+          ),
+        ),
       ),
     );
     final exps = await db.expensesDao.getAll();
@@ -66,7 +71,13 @@ void main() {
         description: const Value('Paycheck'),
         category: Value(salary),
         amount: const Value(1500.0),
-        location: const Value('Bank'),
+        location: const Value(
+          PlaceLocation(
+            address: '1 Market St, San Francisco',
+            lat: 37.7936,
+            lng: -122.3958,
+          ),
+        ),
       ),
     );
     final incs = await db.incomesDao.getAll();

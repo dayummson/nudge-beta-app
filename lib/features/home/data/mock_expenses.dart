@@ -1,4 +1,5 @@
 import '../../../features/room/domain/entities/expense.dart';
+import '../../../features/room/domain/entities/place_location.dart';
 import '../../../constants/categories.dart';
 
 // Mock categories map for easy access
@@ -11,7 +12,7 @@ final mockExpenses = [
     description: 'Quick lunch with colleagues',
     category: mockCategories['eatout']!,
     amount: 15.50,
-    location: 'Downtown',
+    location: const PlaceLocation(address: 'Downtown', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(hours: 2)),
   ),
   Expense(
@@ -19,7 +20,7 @@ final mockExpenses = [
     description: 'Trip to office',
     category: mockCategories['transport']!,
     amount: 12.30,
-    location: 'Home to Office',
+    location: const PlaceLocation(address: 'Home to Office', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(hours: 5)),
   ),
   Expense(
@@ -27,7 +28,7 @@ final mockExpenses = [
     description: 'Sony WH-1000XM5',
     category: mockCategories['shopping']!,
     amount: 349.99,
-    location: 'Best Buy',
+    location: const PlaceLocation(address: 'Best Buy', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 1)),
   ),
   Expense(
@@ -49,7 +50,11 @@ final mockExpenses = [
     description: 'Walmart shopping',
     category: mockCategories['shopping']!,
     amount: 87.45,
-    location: 'Walmart Supercenter',
+    location: const PlaceLocation(
+      address: 'Walmart Supercenter',
+      lat: 0,
+      lng: 0,
+    ),
     createdAt: DateTime.now().subtract(const Duration(days: 2, hours: 4)),
   ),
   Expense(
@@ -57,7 +62,7 @@ final mockExpenses = [
     description: 'Starbucks latte',
     category: mockCategories['eatout']!,
     amount: 5.75,
-    location: 'Starbucks Main St',
+    location: const PlaceLocation(address: 'Starbucks Main St', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 3)),
   ),
   Expense(
@@ -65,7 +70,7 @@ final mockExpenses = [
     description: 'Full tank',
     category: mockCategories['transport']!,
     amount: 55.00,
-    location: 'Shell Gas Station',
+    location: const PlaceLocation(address: 'Shell Gas Station', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 3, hours: 6)),
   ),
   Expense(
@@ -73,7 +78,7 @@ final mockExpenses = [
     description: 'Vitamins and supplements',
     category: mockCategories['shopping']!,
     amount: 42.50,
-    location: 'CVS Pharmacy',
+    location: const PlaceLocation(address: 'CVS Pharmacy', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 4)),
   ),
   Expense(
@@ -81,7 +86,7 @@ final mockExpenses = [
     description: 'Oppenheimer IMAX',
     category: mockCategories['entertainment']!,
     amount: 28.00,
-    location: 'AMC Theater',
+    location: const PlaceLocation(address: 'AMC Theater', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 5)),
   ),
   Expense(
@@ -89,7 +94,7 @@ final mockExpenses = [
     description: 'Date night',
     category: mockCategories['eatout']!,
     amount: 95.30,
-    location: 'La Piazza',
+    location: const PlaceLocation(address: 'La Piazza', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 5, hours: 8)),
   ),
   Expense(
@@ -104,7 +109,7 @@ final mockExpenses = [
     description: 'Nike Air Max',
     category: mockCategories['shopping']!,
     amount: 129.99,
-    location: 'Nike Store',
+    location: const PlaceLocation(address: 'Nike Store', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 7)),
   ),
   Expense(
@@ -119,7 +124,7 @@ final mockExpenses = [
     description: 'Fresh produce',
     category: mockCategories['shopping']!,
     amount: 45.60,
-    location: 'Whole Foods',
+    location: const PlaceLocation(address: 'Whole Foods', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 8)),
   ),
   Expense(
@@ -127,7 +132,7 @@ final mockExpenses = [
     description: 'Fresh produce',
     category: mockCategories['shopping']!,
     amount: 45.60,
-    location: 'Whole Foods',
+    location: const PlaceLocation(address: 'Whole Foods', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 8)),
   ),
 ];
@@ -146,7 +151,7 @@ final mockIncomes = [
     description: 'Website project payment',
     category: mockCategories['salary']!,
     amount: 1200.00,
-    location: 'Remote',
+    location: const PlaceLocation(address: 'Remote', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 2)),
   ),
   Income(
@@ -182,7 +187,7 @@ final mockIncomes = [
     description: 'Medical expense refund',
     category: mockCategories['salary']!,
     amount: 120.00,
-    location: 'Insurance Co.',
+    location: const PlaceLocation(address: 'Insurance Co.', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 6)),
   ),
   Income(
@@ -197,7 +202,7 @@ final mockIncomes = [
     description: 'Work travel reimbursement',
     category: mockCategories['transport']!,
     amount: 95.00,
-    location: 'Company',
+    location: const PlaceLocation(address: 'Company', lat: 0, lng: 0),
     createdAt: DateTime.now().subtract(const Duration(days: 8)),
   ),
   Income(

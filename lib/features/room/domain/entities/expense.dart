@@ -1,11 +1,12 @@
 import "category.dart";
+import "place_location.dart";
 
 class Income {
   final String id;
   final String description;
   final Category category;
   final double amount;
-  final String? location;
+  final PlaceLocation? location;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -25,7 +26,7 @@ class Expense {
   final String description;
   final Category category;
   final double amount;
-  final String? location;
+  final PlaceLocation? location;
   final DateTime createdAt;
   final DateTime? updatedAt;
 

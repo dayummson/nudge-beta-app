@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
+import 'package:nudge_1/features/room/domain/entities/place_location.dart';
 
 class DebugDbScreen extends StatefulWidget {
   const DebugDbScreen({super.key});
@@ -63,7 +64,13 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
           description: const drift.Value('Burger dinner'),
           category: drift.Value(eatout),
           amount: const drift.Value(18.5),
-          location: const drift.Value('Downtown'),
+          location: const drift.Value(
+            PlaceLocation(
+              address: '1600 Amphitheatre Parkway',
+              lat: 37.422,
+              lng: -122.084,
+            ),
+          ),
         ),
       );
       _append('Inserted expense expense-debug-1');
@@ -81,7 +88,13 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
           description: const drift.Value('Paycheck'),
           category: drift.Value(salary),
           amount: const drift.Value(1500.0),
-          location: const drift.Value('Bank'),
+          location: const drift.Value(
+            PlaceLocation(
+              address: '1 Market St, San Francisco',
+              lat: 37.7936,
+              lng: -122.3958,
+            ),
+          ),
         ),
       );
       _append('Inserted income income-debug-1');
@@ -97,10 +110,47 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
       final exps = await db.expensesDao.getAll();
       final incs = await db.incomesDao.getAll();
 
-      _append('Rooms(${rooms.length}): ${rooms.map((e) => e.id).toList()}');
-      _append('Categories(${cats.length}): ${cats.map((e) => e.id).toList()}');
-      _append('Expenses(${exps.length}): ${exps.map((e) => e.id).toList()}');
-      _append('Incomes(${incs.length}): ${incs.map((e) => e.id).toList()}');
+      _append('Rooms(${rooms.length}):');
+      for (final r in rooms) {
+        _append(
+          ' - ${r.id} | name: ${r.name} | owner: ${r.ownerId} | users: ${r.users}',
+        );
+      }
+
+      _append('Categories(${cats.length}):');
+      for (final c in cats) {
+        final cat = c.category; // domain.Category
+        final colorHex = cat.color.value.toRadixString(16).padLeft(8, '0');
+        _append(
+          ' - ${c.id} | name: ${cat.name} | icon: ${cat.icon} | color: 0x$colorHex',
+        );
+      }
+
+      _append('Expenses(${exps.length}):');
+      for (final e in exps) {
+        final cat = e.category; // domain.Category
+        final loc = e.location;
+        final locStr = loc == null
+            ? ''
+            : '${loc.address} (lat: ${loc.lat}, lng: ${loc.lng})';
+        _append(
+          ' - ${e.id} | ${e.description} | amount: ${e.amount} | '
+          'category: ${cat.name} (${cat.id}) | location: $locStr',
+        );
+      }
+
+      _append('Incomes(${incs.length}):');
+      for (final i in incs) {
+        final cat = i.category; // domain.Category
+        final loc = i.location;
+        final locStr = loc == null
+            ? ''
+            : '${loc.address} (lat: ${loc.lat}, lng: ${loc.lng})';
+        _append(
+          ' - ${i.id} | ${i.description} | amount: ${i.amount} | '
+          'category: ${cat.name} (${cat.id}) | location: $locStr',
+        );
+      }
     } catch (e) {
       _append('Load error: $e');
     }

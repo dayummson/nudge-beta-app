@@ -1124,17 +1124,15 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _locationMeta = const VerificationMeta(
-    'location',
-  );
   @override
-  late final GeneratedColumn<String> location = GeneratedColumn<String>(
-    'location',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
+  late final GeneratedColumnWithTypeConverter<PlaceLocation?, String> location =
+      GeneratedColumn<String>(
+        'location',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<PlaceLocation?>($ExpensesTable.$converterlocationn);
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1204,12 +1202,6 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     } else if (isInserting) {
       context.missing(_amountMeta);
     }
-    if (data.containsKey('location')) {
-      context.handle(
-        _locationMeta,
-        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
-      );
-    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1249,9 +1241,11 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.double,
         data['${effectivePrefix}amount'],
       )!,
-      location: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}location'],
+      location: $ExpensesTable.$converterlocationn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}location'],
+        ),
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1271,6 +1265,10 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
 
   static TypeConverter<Category, String> $convertercategory =
       const CategoryJsonConverter();
+  static TypeConverter<PlaceLocation, String> $converterlocation =
+      const LocationJsonConverter();
+  static TypeConverter<PlaceLocation?, String?> $converterlocationn =
+      NullAwareTypeConverter.wrap($converterlocation);
 }
 
 class Expense extends DataClass implements Insertable<Expense> {
@@ -1278,7 +1276,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final String description;
   final Category category;
   final double amount;
-  final String? location;
+  final PlaceLocation? location;
   final DateTime createdAt;
   final DateTime? updatedAt;
   const Expense({
@@ -1302,7 +1300,9 @@ class Expense extends DataClass implements Insertable<Expense> {
     }
     map['amount'] = Variable<double>(amount);
     if (!nullToAbsent || location != null) {
-      map['location'] = Variable<String>(location);
+      map['location'] = Variable<String>(
+        $ExpensesTable.$converterlocationn.toSql(location),
+      );
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || updatedAt != null) {
@@ -1337,7 +1337,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<Category>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
-      location: serializer.fromJson<String?>(json['location']),
+      location: serializer.fromJson<PlaceLocation?>(json['location']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -1350,7 +1350,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<Category>(category),
       'amount': serializer.toJson<double>(amount),
-      'location': serializer.toJson<String?>(location),
+      'location': serializer.toJson<PlaceLocation?>(location),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
@@ -1361,7 +1361,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     String? description,
     Category? category,
     double? amount,
-    Value<String?> location = const Value.absent(),
+    Value<PlaceLocation?> location = const Value.absent(),
     DateTime? createdAt,
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => Expense(
@@ -1429,7 +1429,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<String> description;
   final Value<Category> category;
   final Value<double> amount;
-  final Value<String?> location;
+  final Value<PlaceLocation?> location;
   final Value<DateTime> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
@@ -1483,7 +1483,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<String>? description,
     Value<Category>? category,
     Value<double>? amount,
-    Value<String?>? location,
+    Value<PlaceLocation?>? location,
     Value<DateTime>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
@@ -1518,7 +1518,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       map['amount'] = Variable<double>(amount.value);
     }
     if (location.present) {
-      map['location'] = Variable<String>(location.value);
+      map['location'] = Variable<String>(
+        $ExpensesTable.$converterlocationn.toSql(location.value),
+      );
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -1591,17 +1593,15 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
     type: DriftSqlType.double,
     requiredDuringInsert: true,
   );
-  static const VerificationMeta _locationMeta = const VerificationMeta(
-    'location',
-  );
   @override
-  late final GeneratedColumn<String> location = GeneratedColumn<String>(
-    'location',
-    aliasedName,
-    true,
-    type: DriftSqlType.string,
-    requiredDuringInsert: false,
-  );
+  late final GeneratedColumnWithTypeConverter<PlaceLocation?, String> location =
+      GeneratedColumn<String>(
+        'location',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      ).withConverter<PlaceLocation?>($IncomesTable.$converterlocationn);
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1671,12 +1671,6 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
     } else if (isInserting) {
       context.missing(_amountMeta);
     }
-    if (data.containsKey('location')) {
-      context.handle(
-        _locationMeta,
-        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
-      );
-    }
     if (data.containsKey('created_at')) {
       context.handle(
         _createdAtMeta,
@@ -1716,9 +1710,11 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
         DriftSqlType.double,
         data['${effectivePrefix}amount'],
       )!,
-      location: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}location'],
+      location: $IncomesTable.$converterlocationn.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}location'],
+        ),
       ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
@@ -1738,6 +1734,10 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
 
   static TypeConverter<Category, String> $convertercategory =
       const CategoryJsonConverter();
+  static TypeConverter<PlaceLocation, String> $converterlocation =
+      const LocationJsonConverter();
+  static TypeConverter<PlaceLocation?, String?> $converterlocationn =
+      NullAwareTypeConverter.wrap($converterlocation);
 }
 
 class Income extends DataClass implements Insertable<Income> {
@@ -1745,7 +1745,7 @@ class Income extends DataClass implements Insertable<Income> {
   final String description;
   final Category category;
   final double amount;
-  final String? location;
+  final PlaceLocation? location;
   final DateTime createdAt;
   final DateTime? updatedAt;
   const Income({
@@ -1769,7 +1769,9 @@ class Income extends DataClass implements Insertable<Income> {
     }
     map['amount'] = Variable<double>(amount);
     if (!nullToAbsent || location != null) {
-      map['location'] = Variable<String>(location);
+      map['location'] = Variable<String>(
+        $IncomesTable.$converterlocationn.toSql(location),
+      );
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || updatedAt != null) {
@@ -1804,7 +1806,7 @@ class Income extends DataClass implements Insertable<Income> {
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<Category>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
-      location: serializer.fromJson<String?>(json['location']),
+      location: serializer.fromJson<PlaceLocation?>(json['location']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -1817,7 +1819,7 @@ class Income extends DataClass implements Insertable<Income> {
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<Category>(category),
       'amount': serializer.toJson<double>(amount),
-      'location': serializer.toJson<String?>(location),
+      'location': serializer.toJson<PlaceLocation?>(location),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
@@ -1828,7 +1830,7 @@ class Income extends DataClass implements Insertable<Income> {
     String? description,
     Category? category,
     double? amount,
-    Value<String?> location = const Value.absent(),
+    Value<PlaceLocation?> location = const Value.absent(),
     DateTime? createdAt,
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => Income(
@@ -1896,7 +1898,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
   final Value<String> description;
   final Value<Category> category;
   final Value<double> amount;
-  final Value<String?> location;
+  final Value<PlaceLocation?> location;
   final Value<DateTime> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
@@ -1950,7 +1952,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
     Value<String>? description,
     Value<Category>? category,
     Value<double>? amount,
-    Value<String?>? location,
+    Value<PlaceLocation?>? location,
     Value<DateTime>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
@@ -1985,7 +1987,9 @@ class IncomesCompanion extends UpdateCompanion<Income> {
       map['amount'] = Variable<double>(amount.value);
     }
     if (location.present) {
-      map['location'] = Variable<String>(location.value);
+      map['location'] = Variable<String>(
+        $IncomesTable.$converterlocationn.toSql(location.value),
+      );
     }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
@@ -3597,7 +3601,7 @@ typedef $$ExpensesTableCreateCompanionBuilder =
       required String description,
       required Category category,
       required double amount,
-      Value<String?> location,
+      Value<PlaceLocation?> location,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -3608,7 +3612,7 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
       Value<String> description,
       Value<Category> category,
       Value<double> amount,
-      Value<String?> location,
+      Value<PlaceLocation?> location,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -3644,9 +3648,10 @@ class $$ExpensesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get location => $composableBuilder(
+  ColumnWithTypeConverterFilters<PlaceLocation?, PlaceLocation, String>
+  get location => $composableBuilder(
     column: $table.location,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
@@ -3728,7 +3733,7 @@ class $$ExpensesTableAnnotationComposer
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
-  GeneratedColumn<String> get location =>
+  GeneratedColumnWithTypeConverter<PlaceLocation?, String> get location =>
       $composableBuilder(column: $table.location, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
@@ -3770,7 +3775,7 @@ class $$ExpensesTableTableManager
                 Value<String> description = const Value.absent(),
                 Value<Category> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
-                Value<String?> location = const Value.absent(),
+                Value<PlaceLocation?> location = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3790,7 +3795,7 @@ class $$ExpensesTableTableManager
                 required String description,
                 required Category category,
                 required double amount,
-                Value<String?> location = const Value.absent(),
+                Value<PlaceLocation?> location = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3832,7 +3837,7 @@ typedef $$IncomesTableCreateCompanionBuilder =
       required String description,
       required Category category,
       required double amount,
-      Value<String?> location,
+      Value<PlaceLocation?> location,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -3843,7 +3848,7 @@ typedef $$IncomesTableUpdateCompanionBuilder =
       Value<String> description,
       Value<Category> category,
       Value<double> amount,
-      Value<String?> location,
+      Value<PlaceLocation?> location,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -3879,9 +3884,10 @@ class $$IncomesTableFilterComposer
     builder: (column) => ColumnFilters(column),
   );
 
-  ColumnFilters<String> get location => $composableBuilder(
+  ColumnWithTypeConverterFilters<PlaceLocation?, PlaceLocation, String>
+  get location => $composableBuilder(
     column: $table.location,
-    builder: (column) => ColumnFilters(column),
+    builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
   ColumnFilters<DateTime> get createdAt => $composableBuilder(
@@ -3963,7 +3969,7 @@ class $$IncomesTableAnnotationComposer
   GeneratedColumn<double> get amount =>
       $composableBuilder(column: $table.amount, builder: (column) => column);
 
-  GeneratedColumn<String> get location =>
+  GeneratedColumnWithTypeConverter<PlaceLocation?, String> get location =>
       $composableBuilder(column: $table.location, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
@@ -4005,7 +4011,7 @@ class $$IncomesTableTableManager
                 Value<String> description = const Value.absent(),
                 Value<Category> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
-                Value<String?> location = const Value.absent(),
+                Value<PlaceLocation?> location = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4025,7 +4031,7 @@ class $$IncomesTableTableManager
                 required String description,
                 required Category category,
                 required double amount,
-                Value<String?> location = const Value.absent(),
+                Value<PlaceLocation?> location = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
