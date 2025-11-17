@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/search_enabled_provider.dart';
 import '../../../constants/categories.dart' as constants;
@@ -17,30 +18,11 @@ class CategoriesList extends ConsumerStatefulWidget {
   ConsumerState<CategoriesList> createState() => _CategoriesListState();
 }
 
-class _CategoriesListState extends ConsumerState<CategoriesList>
-    with SingleTickerProviderStateMixin {
-  static const double minBarHeight = 120.0;
-  static const double maxBarHeight = 250.0;
-  static const double compactHeight = 50.0;
-  double currentHeight = minBarHeight;
-  late AnimationController _bounceController;
+class _CategoriesListState extends ConsumerState<CategoriesList> {
+  static const double maxCategoryHeight = 200.0;
+  static const double minCategoryHeight = 50.0;
 
-  @override
-  void initState() {
-    super.initState();
-    _bounceController = AnimationController(
-      vsync: this,
-      duration: const Duration(milliseconds: 300),
-    );
-  }
-
-  @override
-  void dispose() {
-    _bounceController.dispose();
-    super.dispose();
-  }
-
-  // Calculate total per category
+  // Calculate total per category for current transaction list
   Map<String, double> _calculateCategoryTotals() {
     final Map<String, double> totals = {};
 
@@ -48,6 +30,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList>
       totals[category.id] = 0.0;
     }
 
+    // Sum up amounts from the filtered transactions (expense or income)
     for (final transaction in widget.transactions) {
       final categoryId = transaction.category.id;
       totals[categoryId] = (totals[categoryId] ?? 0.0) + transaction.amount;
@@ -56,133 +39,108 @@ class _CategoriesListState extends ConsumerState<CategoriesList>
     return totals;
   }
 
-  void _onVerticalDragUpdate(DragUpdateDetails details) {
-    setState(() {
-      // Dragging up (negative delta) increases height
-      // Dragging down (positive delta) decreases height
-      currentHeight = (currentHeight - details.delta.dy).clamp(
-        minBarHeight,
-        maxBarHeight,
-      );
-    });
-  }
-
-  void _onVerticalDragEnd(DragEndDetails details) {
-    // No bounce-back animation - let user control the height
-    // Height stays where the user left it
+  double _getMaxCategoryAmount(Map<String, double> categoryTotals) {
+    // Find the highest magnitude among all categories (use absolute values)
+    final magnitudes = categoryTotals.values
+        .map((amount) => amount.abs())
+        .where((magnitude) => magnitude > 0);
+    return magnitudes.isEmpty
+        ? 0.0
+        : magnitudes.reduce((a, b) => a > b ? a : b);
   }
 
   @override
   Widget build(BuildContext context) {
     final searchEnabled = ref.watch(searchEnabledProvider);
     final categoryTotals = _calculateCategoryTotals();
-    final isScrolled = widget.scrollOffset > 50;
+    final maxAmount = _getMaxCategoryAmount(categoryTotals);
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      height: searchEnabled ? 0 : (isScrolled ? compactHeight : currentHeight),
+      height: searchEnabled ? 0 : maxCategoryHeight,
       child: AnimatedOpacity(
         duration: const Duration(milliseconds: 200),
         opacity: searchEnabled ? 0 : 1,
         child: searchEnabled
             ? const SizedBox.shrink()
-            : GestureDetector(
-                behavior: HitTestBehavior.opaque,
-                onVerticalDragStart: isScrolled
-                    ? null
-                    : (details) {
-                        // Prevent parent scroll from receiving drag events
-                      },
-                onVerticalDragUpdate: isScrolled ? null : _onVerticalDragUpdate,
-                onVerticalDragEnd: isScrolled ? null : _onVerticalDragEnd,
-                child: ListView.builder(
-                  scrollDirection: Axis.horizontal,
-                  physics: const NeverScrollableScrollPhysics(),
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 16,
-                    vertical: 8,
-                  ),
-                  itemCount: constants.categories.length,
-                  itemBuilder: (context, index) {
-                    final category = constants.categories[index];
-                    final total = categoryTotals[category.id] ?? 0.0;
+            : ListView.builder(
+                scrollDirection: Axis.horizontal,
+                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+                itemCount: constants.categories.length,
+                itemBuilder: (context, index) {
+                  final category = constants.categories[index];
+                  final total = categoryTotals[category.id] ?? 0.0;
+                  final magnitude = total.abs();
 
-                    if (isScrolled) {
-                      // Compact horizontal layout: Icon on left, Amount on right
-                      return Container(
-                        margin: const EdgeInsets.only(right: 8),
+                  // Calculate height based on percentage of MAX magnitude (not grand total)
+                  // This makes the tallest category (by absolute value) reach maxHeight
+                  final percentage = maxAmount > 0
+                      ? (magnitude / maxAmount)
+                      : 0.0;
+                  final barHeight = magnitude > 0
+                      ? (maxCategoryHeight * percentage).clamp(
+                          minCategoryHeight,
+                          maxCategoryHeight,
+                        )
+                      : minCategoryHeight;
+                  if (kDebugMode) {
+                    debugPrint(
+                      'Category ${category.id} (${category.name}) -> total: '
+                      '${total.toStringAsFixed(2)}, mag: ${magnitude.toStringAsFixed(2)}, '
+                      'max: ${maxAmount.toStringAsFixed(2)}, '
+                      'pct: ${(percentage * 100).toStringAsFixed(1)}%, '
+                      'height: ${barHeight.toStringAsFixed(1)}',
+                    );
+                  }
+
+                  return Container(
+                    margin: const EdgeInsets.only(right: 8),
+                    child: Align(
+                      alignment: Alignment.bottomCenter,
+                      child: Container(
+                        height: barHeight,
                         padding: const EdgeInsets.symmetric(
-                          horizontal: 12,
-                          vertical: 6,
+                          horizontal: 16,
+                          vertical: 12,
                         ),
                         decoration: BoxDecoration(
                           color: Colors.grey[850],
-                          borderRadius: BorderRadius.circular(20),
+                          borderRadius: BorderRadius.circular(16),
                         ),
-                        child: Row(
+                        child: Column(
+                          mainAxisAlignment: MainAxisAlignment.end,
                           mainAxisSize: MainAxisSize.min,
                           children: [
-                            Text(
-                              category.icon,
-                              style: const TextStyle(fontSize: 20, height: 1.0),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '\$${total.toStringAsFixed(0)}',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[400],
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    } else {
-                      // Vertical layout: Icon on top, Amount below
-                      // Natural sizing - no dynamic height calculation
-                      return Container(
-                        margin: const EdgeInsets.only(right: 12),
-                        child: Align(
-                          alignment: Alignment.bottomCenter,
-                          child: Container(
-                            width: 60,
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: Colors.grey[850],
-                              borderRadius: BorderRadius.circular(16),
-                            ),
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                Text(
+                            Flexible(
+                              child: FittedBox(
+                                fit: BoxFit.contain,
+                                child: Text(
                                   category.icon,
                                   style: const TextStyle(
-                                    fontSize: 32,
+                                    fontSize: 24,
                                     height: 1.0,
                                   ),
                                 ),
-                                const SizedBox(height: 4),
-                                Text(
-                                  '\$${total.toStringAsFixed(0)}',
-                                  style: TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.grey[400],
-                                  ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                ),
-                              ],
+                              ),
                             ),
-                          ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '\$${total.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.grey[400],
+                              ),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                            ),
+                          ],
                         ),
-                      );
-                    }
-                  },
-                ),
+                      ),
+                    ),
+                  );
+                },
               ),
       ),
     );
