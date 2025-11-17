@@ -3,6 +3,7 @@ import 'dart:ui';
 import 'toggle_mode.dart';
 import '../../../components/sheet/bottom_sheet_helper.dart';
 import '../../../constants/categories.dart';
+import '../../../features/debug/debug_db_screen.dart';
 
 class Header extends StatelessWidget {
   final double blurSigma;
@@ -248,6 +249,16 @@ class Header extends StatelessWidget {
             onTap: () {
               Navigator.pop(context);
               _showEditCategoriesSheet(context);
+            },
+          ),
+          ListTile(
+            leading: const Icon(Icons.storage),
+            title: const Text('Debug: Database'),
+            onTap: () {
+              Navigator.pop(context);
+              Navigator.of(
+                context,
+              ).push(MaterialPageRoute(builder: (_) => const DebugDbScreen()));
             },
           ),
           ListTile(
