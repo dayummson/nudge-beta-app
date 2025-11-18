@@ -280,10 +280,17 @@ class Header extends StatelessWidget {
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              FutureBuilder<String?>(
-                                future: RoomSelection.getSelectedRoomId(),
-                                builder: (context, selSnap) {
-                                  final selId = selSnap.data;
+                              ValueListenableBuilder<String?>(
+                                valueListenable: RoomSelection.selectedRoom,
+                                builder: (context, selId, _) {
+                                  // If notifier hasn't been initialized yet,
+                                  // trigger a load of the persisted value. This
+                                  // will update the notifier once the Future
+                                  // completes and cause a rebuild.
+                                  if (selId == null) {
+                                    RoomSelection.getSelectedRoomId();
+                                  }
+
                                   return StreamBuilder<List<Room>>(
                                     stream: AppDatabase().roomsDao
                                         .watchAllRooms(),
@@ -978,7 +985,9 @@ class Header extends StatelessWidget {
                             return InkWell(
                               onTap: () async {
                                 await RoomSelection.setSelectedRoomId(r.id);
-                                setState2(() => selectedId = r.id);
+                                // Close the rooms sheet immediately after selecting
+                                // so the header updates and the sheet is dismissed.
+                                Navigator.pop(context);
                               },
                               child: Container(
                                 padding: const EdgeInsets.symmetric(
