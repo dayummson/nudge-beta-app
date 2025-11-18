@@ -52,7 +52,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
   Future<void> _showAddTransactionSheet() async {
     await showAppBottomSheet(
       context: context,
-      heightFactor: 0.72,
+      mode: SheetMode.auto,
       child: StatefulBuilder(
         builder: (context, setModalState) {
           final cs = Theme.of(context).colorScheme;
