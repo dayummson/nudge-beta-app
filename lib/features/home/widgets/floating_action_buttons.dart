@@ -75,7 +75,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
             keyboardType: type,
             style: TextStyle(
               color: cs.onSurface,
-              fontSize: 20,
+              fontSize: 24,
               fontWeight: FontWeight.w700, // bolder text
               height: 1.2,
               letterSpacing: 0.2,
@@ -84,7 +84,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
               hintText: hint,
               hintStyle: TextStyle(
                 color: hintColor,
-                fontSize: 18,
+                fontSize: 24,
                 fontWeight: FontWeight.w600,
               ),
               border: InputBorder.none,
@@ -175,7 +175,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
 
           Widget amountPreview(String text) => Container(
             height: 40,
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+            padding: const EdgeInsets.only(left: 2, top: 8, bottom: 8),
             decoration: BoxDecoration(
               color: cs.surfaceVariant.withOpacity(0.3),
               borderRadius: BorderRadius.circular(12),
@@ -321,16 +321,25 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                                       ),
                                       const SizedBox(width: 6),
                                       Text(cat.name),
+                                      if (selected) ...[
+                                        const SizedBox(width: 6),
+                                        Icon(
+                                          Icons.chevron_right,
+                                          size: 18,
+                                          color: cs.onSurface,
+                                        ),
+                                      ],
                                     ],
                                   ),
                                   shape: const StadiumBorder(),
-                                  side: BorderSide(color: borderColor),
-                                  backgroundColor: cs.surfaceVariant
-                                      .withOpacity(0.6),
-                                  selectedColor: cs.primaryContainer,
+                                  side: BorderSide(
+                                    color: selected ? cs.primary : borderColor,
+                                  ),
+                                  backgroundColor: Colors.transparent,
+                                  selectedColor: cs.surface.withOpacity(0.06),
                                   labelStyle: TextStyle(
                                     color: selected
-                                        ? cs.onPrimaryContainer
+                                        ? cs.onSurface
                                         : cs.onSurface,
                                     fontWeight: FontWeight.w600,
                                   ),
@@ -372,14 +381,20 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                                         )
                                         .name,
                                   ),
+                                  const SizedBox(width: 6),
+                                  Icon(
+                                    Icons.chevron_right,
+                                    size: 18,
+                                    color: cs.onSurface,
+                                  ),
                                 ],
                               ),
                               shape: const StadiumBorder(),
-                              side: BorderSide(color: borderColor),
-                              backgroundColor: cs.primaryContainer,
-                              selectedColor: cs.primaryContainer,
+                              side: BorderSide(color: cs.primary),
+                              backgroundColor: Colors.transparent,
+                              selectedColor: cs.surface.withOpacity(0.06),
                               labelStyle: TextStyle(
-                                color: cs.onPrimaryContainer,
+                                color: cs.onSurface,
                                 fontWeight: FontWeight.w600,
                               ),
                               materialTapTargetSize:
@@ -432,7 +447,9 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
                                   ),
-                                  shape: const StadiumBorder(),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                   backgroundColor: cs.primary,
                                   foregroundColor: cs.onPrimary,
                                   textStyle: const TextStyle(
@@ -440,7 +457,19 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                child: const Text('Save'),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.check,
+                                      size: 18,
+                                      color: cs.onPrimary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text('Save'),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
@@ -451,6 +480,29 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                         padding: const EdgeInsets.symmetric(horizontal: 16),
                         child: Row(
                           children: [
+                            OutlinedButton(
+                              onPressed: () {},
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 10,
+                                  horizontal: 16,
+                                ),
+                                shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(10),
+                                ),
+                                backgroundColor: cs.surfaceVariant,
+                                side: BorderSide(color: borderColor),
+                                foregroundColor: cs.onSurfaceVariant,
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                textStyle: const TextStyle(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                              child: const Text('#'),
+                            ),
+                            const SizedBox(width: 12),
                             Expanded(
                               child: ElevatedButton(
                                 onPressed: () => Navigator.pop(context),
@@ -458,7 +510,9 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                                   padding: const EdgeInsets.symmetric(
                                     vertical: 14,
                                   ),
-                                  shape: const StadiumBorder(),
+                                  shape: RoundedRectangleBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                  ),
                                   backgroundColor: cs.primary,
                                   foregroundColor: cs.onPrimary,
                                   textStyle: const TextStyle(
@@ -466,7 +520,19 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                                     fontWeight: FontWeight.w700,
                                   ),
                                 ),
-                                child: const Text('Save'),
+                                child: Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.check,
+                                      size: 18,
+                                      color: cs.onPrimary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text('Save'),
+                                  ],
+                                ),
                               ),
                             ),
                           ],
