@@ -101,8 +101,9 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
             return GestureDetector(
               onTapDown: (d) {
                 final toExpense = d.localPosition.dx < (w / 2);
-                if (toExpense != _isExpense)
+                if (toExpense != _isExpense) {
                   setModalState(() => _isExpense = toExpense);
+                }
               },
               child: Container(
                 width: w,
