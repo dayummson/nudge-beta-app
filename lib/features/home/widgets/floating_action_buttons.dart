@@ -21,6 +21,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
   final _searchFocusNode = FocusNode();
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
+  final _inlineAmountFocusNode = FocusNode();
   bool _isExpense = true;
   String? _selectedCategoryId;
 
@@ -44,6 +45,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
     _searchFocusNode.dispose();
     _descriptionController.dispose();
     _amountController.dispose();
+    _inlineAmountFocusNode.dispose();
     super.dispose();
   }
 
@@ -77,7 +79,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
               color: cs.onSurface,
               fontSize: 24,
               fontWeight: FontWeight.w700, // bolder text
-              height: 1.2,
+              height: 1.0,
               letterSpacing: 0.2,
             ),
             decoration: InputDecoration(
@@ -173,24 +175,8 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
             );
           }
 
-          Widget amountPreview(String text) => Container(
-            height: 40,
-            padding: const EdgeInsets.only(left: 2, top: 8, bottom: 8),
-            decoration: BoxDecoration(
-              color: cs.surfaceVariant.withOpacity(0.3),
-              borderRadius: BorderRadius.circular(12),
-            ),
-            alignment: Alignment.centerLeft,
-            child: Text(
-              '₱ $text',
-              style: TextStyle(
-                fontSize: 28,
-                fontWeight: FontWeight.w800,
-                color: _isExpense ? expenseColor : incomeColor,
-                height: 1,
-              ),
-            ),
-          );
+          // Inline amount preview is now implemented as an editable TextField
+          // that appears next to the toggle when the user has entered an amount.
 
           return Column(
             mainAxisSize: MainAxisSize.min,
@@ -200,24 +186,35 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                 padding: const EdgeInsets.symmetric(horizontal: 16),
                 child: field(_descriptionController, 'Description'),
               ),
-              const SizedBox(height: 4),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: field(
-                  _amountController,
-                  'Amount',
-                  type: const TextInputType.numberWithOptions(decimal: true),
-                ),
+              const SizedBox(height: 2),
+              // Show top amount input only when there's no amount typed yet.
+              ValueListenableBuilder<TextEditingValue>(
+                valueListenable: _amountController,
+                builder: (context, val, _) {
+                  final empty = val.text.trim().isEmpty;
+                  return AnimatedSwitcher(
+                    duration: const Duration(milliseconds: 200),
+                    child: empty
+                        ? Padding(
+                            key: const ValueKey('topAmountField'),
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: field(
+                              _amountController,
+                              'Amount',
+                              type: const TextInputType.numberWithOptions(
+                                decimal: true,
+                              ),
+                            ),
+                          )
+                        : const SizedBox(key: ValueKey('topAmountHidden')),
+                  );
+                },
               ),
-              const SizedBox(height: 12),
+              const SizedBox(height: 6),
               ValueListenableBuilder<TextEditingValue>(
                 valueListenable: _amountController,
                 builder: (context, value, _) {
                   final show = value.text.trim().isNotEmpty;
-                  final parsed = double.tryParse(value.text.trim());
-                  final display = parsed != null
-                      ? parsed.toStringAsFixed(2)
-                      : '0.00';
                   return AnimatedSwitcher(
                     duration: const Duration(milliseconds: 300),
                     switchInCurve: Curves.easeOutCubic,
@@ -251,7 +248,62 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
                               children: [
                                 toggle(),
                                 const SizedBox(width: 12),
-                                Expanded(child: amountPreview(display)),
+                                // Inline editable amount field that takes focus when shown
+                                Expanded(
+                                  child: Builder(
+                                    builder: (ctx) {
+                                      // Request focus when the inline field appears
+                                      WidgetsBinding.instance
+                                          .addPostFrameCallback((_) {
+                                            if (!_inlineAmountFocusNode
+                                                .hasFocus) {
+                                              _amountController.selection =
+                                                  TextSelection.fromPosition(
+                                                    TextPosition(
+                                                      offset: _amountController
+                                                          .text
+                                                          .length,
+                                                    ),
+                                                  );
+                                              _inlineAmountFocusNode
+                                                  .requestFocus();
+                                            }
+                                          });
+
+                                      return TextField(
+                                        controller: _amountController,
+                                        focusNode: _inlineAmountFocusNode,
+                                        keyboardType:
+                                            const TextInputType.numberWithOptions(
+                                              decimal: true,
+                                            ),
+                                        style: TextStyle(
+                                          fontSize: 28,
+                                          fontWeight: FontWeight.w800,
+                                          color: _isExpense
+                                              ? expenseColor
+                                              : incomeColor,
+                                          height: 1,
+                                        ),
+                                        decoration: InputDecoration(
+                                          prefixText: '₱ ',
+                                          prefixStyle: TextStyle(
+                                            fontSize: 28,
+                                            fontWeight: FontWeight.w800,
+                                            color: _isExpense
+                                                ? expenseColor
+                                                : incomeColor,
+                                          ),
+                                          border: InputBorder.none,
+                                          contentPadding:
+                                              const EdgeInsets.symmetric(
+                                                vertical: 6,
+                                              ),
+                                        ),
+                                      );
+                                    },
+                                  ),
+                                ),
                               ],
                             ),
                           )
