@@ -220,9 +220,9 @@ class TransactionsList extends StatelessWidget {
                                 ),
                               );
 
-                              if (confirmed == true && ctx.mounted) {
+                              if (confirmed == true) {
                                 try {
-                                  // Delete the transaction
+                                  // Delete the transaction from database
                                   final deleteResult = isExpense
                                       ? await db.expensesDao.deleteById(
                                           transaction.id,
@@ -235,13 +235,18 @@ class TransactionsList extends StatelessWidget {
                                     'Delete result: $deleteResult rows affected for ${isExpense ? "expense" : "income"} with id: ${transaction.id}',
                                   );
 
-                                  // Trigger room reload to refresh the UI
-                                  if (ctx.mounted) {
-                                    onRoomChanged?.call();
+                                  // Show success message
+                                  if (context.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      const SnackBar(
+                                        content: Text('Transaction deleted'),
+                                        duration: Duration(seconds: 1),
+                                      ),
+                                    );
                                   }
                                 } catch (e) {
                                   print('Error deleting transaction: $e');
-                                  if (ctx.mounted) {
+                                  if (context.mounted) {
                                     ScaffoldMessenger.of(context).showSnackBar(
                                       SnackBar(
                                         content: Text(
