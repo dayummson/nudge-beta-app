@@ -16,6 +16,7 @@ class Header extends StatelessWidget {
   final double incomeTotal;
   final bool isExpense;
   final void Function(bool) toggleMode;
+  final VoidCallback? onRoomChanged;
   // Optional debug overrides (null in normal mode)
   final double? debugBlurOverride;
   final Color? debugOverlayColor;
@@ -29,6 +30,7 @@ class Header extends StatelessWidget {
     required this.incomeTotal,
     required this.isExpense,
     required this.toggleMode,
+    this.onRoomChanged,
     this.debugBlurOverride,
     this.debugOverlayColor,
   });
@@ -363,6 +365,6 @@ class Header extends StatelessWidget {
   }
 
   void _showRoomsSheet(BuildContext context) {
-    showRoomsSheet(context);
+    showRoomsSheet(context, onRoomChanged: onRoomChanged);
   }
 }

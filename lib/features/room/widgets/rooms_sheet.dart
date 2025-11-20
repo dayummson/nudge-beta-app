@@ -5,7 +5,7 @@ import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 
-void showRoomsSheet(BuildContext context) {
+void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
   final cs = Theme.of(context).colorScheme;
   final db = AppDatabase();
 
@@ -109,6 +109,7 @@ void showRoomsSheet(BuildContext context) {
                                   );
                                   await RoomSelection.setSelectedRoomId(id);
                                   setState2(() => selectedId = id);
+                                  onRoomChanged?.call();
                                 },
                               ),
                             );
@@ -154,6 +155,7 @@ void showRoomsSheet(BuildContext context) {
                           final toSet = persisted ?? rooms.first.id;
                           await RoomSelection.setSelectedRoomId(toSet);
                           setState2(() => selectedId = toSet);
+                          onRoomChanged?.call();
                         });
                       }
 
@@ -236,6 +238,7 @@ void showRoomsSheet(BuildContext context) {
                                             () =>
                                                 selectedId = remaining.first.id,
                                           );
+                                          onRoomChanged?.call();
                                         } else {
                                           await RoomSelection.clear();
                                           setState2(() => selectedId = null);
@@ -260,6 +263,7 @@ void showRoomsSheet(BuildContext context) {
                             child: InkWell(
                               onTap: () async {
                                 await RoomSelection.setSelectedRoomId(r.id);
+                                onRoomChanged?.call();
                                 if (context.mounted) {
                                   Navigator.pop(context);
                                 }

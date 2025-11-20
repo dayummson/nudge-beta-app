@@ -60,7 +60,21 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
+
+  @override
+  MigrationStrategy get migration => MigrationStrategy(
+    onCreate: (Migrator m) async {
+      await m.createAll();
+    },
+    onUpgrade: (Migrator m, int from, int to) async {
+      if (from == 1) {
+        // Add roomId column to existing tables
+        await m.addColumn(expenses, expenses.roomId);
+        await m.addColumn(incomes, incomes.roomId);
+      }
+    },
+  );
 }
 
 // Open connection

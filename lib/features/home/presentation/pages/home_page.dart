@@ -1,7 +1,9 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/core/db/app_database.dart';
+import 'package:nudge_1/core/settings/room_selection.dart';
 import "../../widgets/header.dart";
 import "../../widgets/floating_action_buttons.dart";
 import "../../widgets/categories_list.dart";
@@ -33,14 +35,51 @@ class _HomePageState extends ConsumerState<HomePage> {
   List<Expense> _expenses = [];
   List<Income> _incomes = [];
 
+  // Current selected room ID
+  String? _selectedRoomId;
+
   @override
   void initState() {
     super.initState();
+    _loadSelectedRoom();
     _scrollController.addListener(() {
       setState(() {
         _scrollOffset = _scrollController.offset;
       });
     });
+  }
+
+  Future<void> _loadSelectedRoom() async {
+    var roomId = await RoomSelection.getSelectedRoomId();
+
+    // If no room is selected, ensure default room exists and select it
+    if (roomId == null || roomId.isEmpty) {
+      final rooms = await _db.roomsDao.getAllRooms();
+
+      if (rooms.isEmpty) {
+        // Create default room
+        await _db.roomsDao.insertRoom(
+          RoomsCompanion(
+            id: const drift.Value('room-private'),
+            name: const drift.Value('Private list'),
+            ownerId: const drift.Value('local-user'),
+            isShared: const drift.Value(false),
+            users: const drift.Value(['local-user']),
+          ),
+        );
+        roomId = 'room-private';
+      } else {
+        roomId = rooms.first.id;
+      }
+
+      await RoomSelection.setSelectedRoomId(roomId);
+    }
+
+    if (mounted) {
+      setState(() {
+        _selectedRoomId = roomId;
+      });
+    }
   }
 
   @override
@@ -101,138 +140,154 @@ class _HomePageState extends ConsumerState<HomePage> {
       backgroundColor: colorScheme.surface,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: StreamBuilder<List<Expense>>(
-          stream: _db.expensesDao.watchAll(),
-          builder: (context, expenseSnapshot) {
-            // Update cached expenses
-            if (expenseSnapshot.hasData) {
-              _expenses = expenseSnapshot.data!;
-            }
+        child: _selectedRoomId == null
+            ? const Center(child: CircularProgressIndicator())
+            : StreamBuilder<List<Expense>>(
+                stream: _db.expensesDao.watchByRoomId(_selectedRoomId!),
+                builder: (context, expenseSnapshot) {
+                  // Update cached expenses
+                  if (expenseSnapshot.hasData) {
+                    _expenses = expenseSnapshot.data!;
+                  }
 
-            return StreamBuilder<List<Income>>(
-              stream: _db.incomesDao.watchAll(),
-              builder: (context, incomeSnapshot) {
-                // Update cached incomes
-                if (incomeSnapshot.hasData) {
-                  _incomes = incomeSnapshot.data!;
-                }
+                  return StreamBuilder<List<Income>>(
+                    stream: _db.incomesDao.watchByRoomId(_selectedRoomId!),
+                    builder: (context, incomeSnapshot) {
+                      // Update cached incomes
+                      if (incomeSnapshot.hasData) {
+                        _incomes = incomeSnapshot.data!;
+                      }
 
-                // Show loading only on initial load (both caches empty)
-                if (_expenses.isEmpty &&
-                    _incomes.isEmpty &&
-                    (expenseSnapshot.connectionState ==
-                            ConnectionState.waiting ||
-                        incomeSnapshot.connectionState ==
-                            ConnectionState.waiting)) {
-                  return const Center(child: CircularProgressIndicator());
-                }
+                      // Show loading only on initial load (both caches empty)
+                      if (_expenses.isEmpty &&
+                          _incomes.isEmpty &&
+                          (expenseSnapshot.connectionState ==
+                                  ConnectionState.waiting ||
+                              incomeSnapshot.connectionState ==
+                                  ConnectionState.waiting)) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                if (expenseSnapshot.hasError || incomeSnapshot.hasError) {
-                  return Center(
-                    child: Text(
-                      'Error: ${expenseSnapshot.error ?? incomeSnapshot.error}',
-                    ),
-                  );
-                }
-
-                // Calculate totals for both expense and income
-                final expenseTotal = _expenses.fold<double>(
-                  0.0,
-                  (sum, expense) => sum + expense.amount,
-                );
-                final incomeTotal = _incomes.fold<double>(
-                  0.0,
-                  (sum, income) => sum + income.amount,
-                );
-
-                // Use cached data for smooth toggling
-                final List<dynamic> transactions = isExpense
-                    ? _expenses.cast<dynamic>()
-                    : _incomes.cast<dynamic>();
-                final totalAmount = isExpense ? expenseTotal : incomeTotal;
-
-                return Stack(
-                  children: [
-                    Stack(
-                      children: [
-                        // Scrollable content - starts at top of screen so it can scroll under the header
-                        // Wrapped with Opacity for content fade effect
-                        Opacity(
-                          opacity: contentOpacity,
-                          child: SingleChildScrollView(
-                            controller: _scrollController,
-                            child: Column(
-                              crossAxisAlignment: CrossAxisAlignment.start,
-                              children: [
-                                // Add top spacing equal to header height so first item isn't hidden
-                                SizedBox(height: headerHeight),
-                                // Horizontal categories with fade animation
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  switchInCurve: Curves.easeIn,
-                                  switchOutCurve: Curves.easeOut,
-                                  transitionBuilder: (child, animation) {
-                                    return FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    );
-                                  },
-                                  child: CategoriesList(
-                                    key: ValueKey('categories_$isExpense'),
-                                    transactions: transactions,
-                                    scrollOffset: _scrollOffset,
-                                  ),
-                                ),
-
-                                // Transactions list with mini total and fade animation
-                                AnimatedSwitcher(
-                                  duration: const Duration(milliseconds: 200),
-                                  switchInCurve: Curves.easeIn,
-                                  switchOutCurve: Curves.easeOut,
-                                  transitionBuilder: (child, animation) {
-                                    return FadeTransition(
-                                      opacity: animation,
-                                      child: child,
-                                    );
-                                  },
-                                  child: TransactionsList(
-                                    key: ValueKey('transactions_$isExpense'),
-                                    transactions: transactions,
-                                    miniTextColor: miniTextColor,
-                                    totalAmount: totalAmount,
-                                  ),
-                                ),
-                              ],
-                            ),
+                      if (expenseSnapshot.hasError || incomeSnapshot.hasError) {
+                        return Center(
+                          child: Text(
+                            'Error: ${expenseSnapshot.error ?? incomeSnapshot.error}',
                           ),
-                        ),
+                        );
+                      }
 
-                        // Sticky header with blur
-                        Header(
-                          key: _headerKey,
-                          blurSigma: blurSigma,
-                          overlayOpacity: overlayOpacity,
-                          isExpense: isExpense,
-                          totalAmount: totalAmount,
-                          expenseTotal: expenseTotal,
-                          incomeTotal: incomeTotal,
-                          toggleMode: toggleMode,
-                          // debug overrides
-                          debugBlurOverride: _debugMode == 1 ? 20.0 : null,
-                          debugOverlayColor: _debugMode == 2
-                              ? Colors.purple.withOpacity(0.16)
-                              : null,
-                        ),
-                      ],
-                    ),
-                    // Floating action buttons with search transition
-                    const FloatingActionButtons(),
-                  ],
-                );
-              },
-            );
-          },
-        ),
+                      // Calculate totals for both expense and income
+                      final expenseTotal = _expenses.fold<double>(
+                        0.0,
+                        (sum, expense) => sum + expense.amount,
+                      );
+                      final incomeTotal = _incomes.fold<double>(
+                        0.0,
+                        (sum, income) => sum + income.amount,
+                      );
+
+                      // Use cached data for smooth toggling
+                      final List<dynamic> transactions = isExpense
+                          ? _expenses.cast<dynamic>()
+                          : _incomes.cast<dynamic>();
+                      final totalAmount = isExpense
+                          ? expenseTotal
+                          : incomeTotal;
+
+                      return Stack(
+                        children: [
+                          Stack(
+                            children: [
+                              // Scrollable content - starts at top of screen so it can scroll under the header
+                              // Wrapped with Opacity for content fade effect
+                              Opacity(
+                                opacity: contentOpacity,
+                                child: SingleChildScrollView(
+                                  controller: _scrollController,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Add top spacing equal to header height so first item isn't hidden
+                                      SizedBox(height: headerHeight),
+                                      // Horizontal categories with fade animation
+                                      AnimatedSwitcher(
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
+                                        switchInCurve: Curves.easeIn,
+                                        switchOutCurve: Curves.easeOut,
+                                        transitionBuilder: (child, animation) {
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: child,
+                                          );
+                                        },
+                                        child: CategoriesList(
+                                          key: ValueKey(
+                                            'categories_$isExpense',
+                                          ),
+                                          transactions: transactions,
+                                          scrollOffset: _scrollOffset,
+                                        ),
+                                      ),
+
+                                      // Transactions list with mini total and fade animation
+                                      AnimatedSwitcher(
+                                        duration: const Duration(
+                                          milliseconds: 200,
+                                        ),
+                                        switchInCurve: Curves.easeIn,
+                                        switchOutCurve: Curves.easeOut,
+                                        transitionBuilder: (child, animation) {
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: child,
+                                          );
+                                        },
+                                        child: TransactionsList(
+                                          key: ValueKey(
+                                            'transactions_$isExpense',
+                                          ),
+                                          transactions: transactions,
+                                          miniTextColor: miniTextColor,
+                                          totalAmount: totalAmount,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+
+                              // Sticky header with blur
+                              Header(
+                                key: _headerKey,
+                                blurSigma: blurSigma,
+                                overlayOpacity: overlayOpacity,
+                                isExpense: isExpense,
+                                totalAmount: totalAmount,
+                                expenseTotal: expenseTotal,
+                                incomeTotal: incomeTotal,
+                                toggleMode: toggleMode,
+                                onRoomChanged: _loadSelectedRoom,
+                                // debug overrides
+                                debugBlurOverride: _debugMode == 1
+                                    ? 20.0
+                                    : null,
+                                debugOverlayColor: _debugMode == 2
+                                    ? Colors.purple.withOpacity(0.16)
+                                    : null,
+                              ),
+                            ],
+                          ),
+                          // Floating action buttons with search transition
+                          const FloatingActionButtons(),
+                        ],
+                      );
+                    },
+                  );
+                },
+              ),
       ),
     );
   }

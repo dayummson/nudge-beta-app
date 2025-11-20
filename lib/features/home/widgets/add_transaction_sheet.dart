@@ -79,10 +79,23 @@ class _AddTransactionSheetContentState
       final id = 'txn-${DateTime.now().millisecondsSinceEpoch}';
       final db = AppDatabase();
 
+      // Get current selected room ID
+      final roomId = await RoomSelection.getSelectedRoomId();
+      if (roomId == null || roomId.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('Please select a room first')),
+          );
+        }
+        setState(() => _isSaving = false);
+        return;
+      }
+
       if (_isExpense) {
         await db.expensesDao.insert(
           ExpensesCompanion(
             id: drift.Value(id),
+            roomId: drift.Value(roomId),
             description: drift.Value(description),
             category: drift.Value(category),
             amount: drift.Value(amount),
@@ -94,6 +107,7 @@ class _AddTransactionSheetContentState
         await db.incomesDao.insert(
           IncomesCompanion(
             id: drift.Value(id),
+            roomId: drift.Value(roomId),
             description: drift.Value(description),
             category: drift.Value(category),
             amount: drift.Value(amount),

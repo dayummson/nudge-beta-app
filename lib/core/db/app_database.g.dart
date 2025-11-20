@@ -1095,6 +1095,15 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     type: DriftSqlType.string,
     requiredDuringInsert: true,
   );
+  static const VerificationMeta _roomIdMeta = const VerificationMeta('roomId');
+  @override
+  late final GeneratedColumn<String> roomId = GeneratedColumn<String>(
+    'room_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
   static const VerificationMeta _descriptionMeta = const VerificationMeta(
     'description',
   );
@@ -1159,6 +1168,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    roomId,
     description,
     category,
     amount,
@@ -1182,6 +1192,14 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('room_id')) {
+      context.handle(
+        _roomIdMeta,
+        roomId.isAcceptableOrUnknown(data['room_id']!, _roomIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roomIdMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -1226,6 +1244,10 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
+      )!,
+      roomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}room_id'],
       )!,
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -1273,6 +1295,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
 
 class Expense extends DataClass implements Insertable<Expense> {
   final String id;
+  final String roomId;
   final String description;
   final Category category;
   final double amount;
@@ -1281,6 +1304,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final DateTime? updatedAt;
   const Expense({
     required this.id,
+    required this.roomId,
     required this.description,
     required this.category,
     required this.amount,
@@ -1292,6 +1316,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    map['room_id'] = Variable<String>(roomId);
     map['description'] = Variable<String>(description);
     {
       map['category'] = Variable<String>(
@@ -1314,6 +1339,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   ExpensesCompanion toCompanion(bool nullToAbsent) {
     return ExpensesCompanion(
       id: Value(id),
+      roomId: Value(roomId),
       description: Value(description),
       category: Value(category),
       amount: Value(amount),
@@ -1334,6 +1360,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Expense(
       id: serializer.fromJson<String>(json['id']),
+      roomId: serializer.fromJson<String>(json['roomId']),
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<Category>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
@@ -1347,6 +1374,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'roomId': serializer.toJson<String>(roomId),
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<Category>(category),
       'amount': serializer.toJson<double>(amount),
@@ -1358,6 +1386,7 @@ class Expense extends DataClass implements Insertable<Expense> {
 
   Expense copyWith({
     String? id,
+    String? roomId,
     String? description,
     Category? category,
     double? amount,
@@ -1366,6 +1395,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => Expense(
     id: id ?? this.id,
+    roomId: roomId ?? this.roomId,
     description: description ?? this.description,
     category: category ?? this.category,
     amount: amount ?? this.amount,
@@ -1376,6 +1406,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   Expense copyWithCompanion(ExpensesCompanion data) {
     return Expense(
       id: data.id.present ? data.id.value : this.id,
+      roomId: data.roomId.present ? data.roomId.value : this.roomId,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -1391,6 +1422,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   String toString() {
     return (StringBuffer('Expense(')
           ..write('id: $id, ')
+          ..write('roomId: $roomId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
@@ -1404,6 +1436,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   @override
   int get hashCode => Object.hash(
     id,
+    roomId,
     description,
     category,
     amount,
@@ -1416,6 +1449,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       identical(this, other) ||
       (other is Expense &&
           other.id == this.id &&
+          other.roomId == this.roomId &&
           other.description == this.description &&
           other.category == this.category &&
           other.amount == this.amount &&
@@ -1426,6 +1460,7 @@ class Expense extends DataClass implements Insertable<Expense> {
 
 class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<String> id;
+  final Value<String> roomId;
   final Value<String> description;
   final Value<Category> category;
   final Value<double> amount;
@@ -1435,6 +1470,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<int> rowid;
   const ExpensesCompanion({
     this.id = const Value.absent(),
+    this.roomId = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
     this.amount = const Value.absent(),
@@ -1445,6 +1481,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   });
   ExpensesCompanion.insert({
     required String id,
+    required String roomId,
     required String description,
     required Category category,
     required double amount,
@@ -1453,11 +1490,13 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
+       roomId = Value(roomId),
        description = Value(description),
        category = Value(category),
        amount = Value(amount);
   static Insertable<Expense> custom({
     Expression<String>? id,
+    Expression<String>? roomId,
     Expression<String>? description,
     Expression<String>? category,
     Expression<double>? amount,
@@ -1468,6 +1507,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (roomId != null) 'room_id': roomId,
       if (description != null) 'description': description,
       if (category != null) 'category': category,
       if (amount != null) 'amount': amount,
@@ -1480,6 +1520,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
 
   ExpensesCompanion copyWith({
     Value<String>? id,
+    Value<String>? roomId,
     Value<String>? description,
     Value<Category>? category,
     Value<double>? amount,
@@ -1490,6 +1531,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   }) {
     return ExpensesCompanion(
       id: id ?? this.id,
+      roomId: roomId ?? this.roomId,
       description: description ?? this.description,
       category: category ?? this.category,
       amount: amount ?? this.amount,
@@ -1505,6 +1547,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (roomId.present) {
+      map['room_id'] = Variable<String>(roomId.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -1538,6 +1583,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   String toString() {
     return (StringBuffer('ExpensesCompanion(')
           ..write('id: $id, ')
+          ..write('roomId: $roomId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
@@ -1559,6 +1605,15 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
     'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _roomIdMeta = const VerificationMeta('roomId');
+  @override
+  late final GeneratedColumn<String> roomId = GeneratedColumn<String>(
+    'room_id',
     aliasedName,
     false,
     type: DriftSqlType.string,
@@ -1628,6 +1683,7 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
   @override
   List<GeneratedColumn> get $columns => [
     id,
+    roomId,
     description,
     category,
     amount,
@@ -1651,6 +1707,14 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
       context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
     } else if (isInserting) {
       context.missing(_idMeta);
+    }
+    if (data.containsKey('room_id')) {
+      context.handle(
+        _roomIdMeta,
+        roomId.isAcceptableOrUnknown(data['room_id']!, _roomIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_roomIdMeta);
     }
     if (data.containsKey('description')) {
       context.handle(
@@ -1695,6 +1759,10 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
+      )!,
+      roomId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}room_id'],
       )!,
       description: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
@@ -1742,6 +1810,7 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
 
 class Income extends DataClass implements Insertable<Income> {
   final String id;
+  final String roomId;
   final String description;
   final Category category;
   final double amount;
@@ -1750,6 +1819,7 @@ class Income extends DataClass implements Insertable<Income> {
   final DateTime? updatedAt;
   const Income({
     required this.id,
+    required this.roomId,
     required this.description,
     required this.category,
     required this.amount,
@@ -1761,6 +1831,7 @@ class Income extends DataClass implements Insertable<Income> {
   Map<String, Expression> toColumns(bool nullToAbsent) {
     final map = <String, Expression>{};
     map['id'] = Variable<String>(id);
+    map['room_id'] = Variable<String>(roomId);
     map['description'] = Variable<String>(description);
     {
       map['category'] = Variable<String>(
@@ -1783,6 +1854,7 @@ class Income extends DataClass implements Insertable<Income> {
   IncomesCompanion toCompanion(bool nullToAbsent) {
     return IncomesCompanion(
       id: Value(id),
+      roomId: Value(roomId),
       description: Value(description),
       category: Value(category),
       amount: Value(amount),
@@ -1803,6 +1875,7 @@ class Income extends DataClass implements Insertable<Income> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return Income(
       id: serializer.fromJson<String>(json['id']),
+      roomId: serializer.fromJson<String>(json['roomId']),
       description: serializer.fromJson<String>(json['description']),
       category: serializer.fromJson<Category>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
@@ -1816,6 +1889,7 @@ class Income extends DataClass implements Insertable<Income> {
     serializer ??= driftRuntimeOptions.defaultSerializer;
     return <String, dynamic>{
       'id': serializer.toJson<String>(id),
+      'roomId': serializer.toJson<String>(roomId),
       'description': serializer.toJson<String>(description),
       'category': serializer.toJson<Category>(category),
       'amount': serializer.toJson<double>(amount),
@@ -1827,6 +1901,7 @@ class Income extends DataClass implements Insertable<Income> {
 
   Income copyWith({
     String? id,
+    String? roomId,
     String? description,
     Category? category,
     double? amount,
@@ -1835,6 +1910,7 @@ class Income extends DataClass implements Insertable<Income> {
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => Income(
     id: id ?? this.id,
+    roomId: roomId ?? this.roomId,
     description: description ?? this.description,
     category: category ?? this.category,
     amount: amount ?? this.amount,
@@ -1845,6 +1921,7 @@ class Income extends DataClass implements Insertable<Income> {
   Income copyWithCompanion(IncomesCompanion data) {
     return Income(
       id: data.id.present ? data.id.value : this.id,
+      roomId: data.roomId.present ? data.roomId.value : this.roomId,
       description: data.description.present
           ? data.description.value
           : this.description,
@@ -1860,6 +1937,7 @@ class Income extends DataClass implements Insertable<Income> {
   String toString() {
     return (StringBuffer('Income(')
           ..write('id: $id, ')
+          ..write('roomId: $roomId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
@@ -1873,6 +1951,7 @@ class Income extends DataClass implements Insertable<Income> {
   @override
   int get hashCode => Object.hash(
     id,
+    roomId,
     description,
     category,
     amount,
@@ -1885,6 +1964,7 @@ class Income extends DataClass implements Insertable<Income> {
       identical(this, other) ||
       (other is Income &&
           other.id == this.id &&
+          other.roomId == this.roomId &&
           other.description == this.description &&
           other.category == this.category &&
           other.amount == this.amount &&
@@ -1895,6 +1975,7 @@ class Income extends DataClass implements Insertable<Income> {
 
 class IncomesCompanion extends UpdateCompanion<Income> {
   final Value<String> id;
+  final Value<String> roomId;
   final Value<String> description;
   final Value<Category> category;
   final Value<double> amount;
@@ -1904,6 +1985,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
   final Value<int> rowid;
   const IncomesCompanion({
     this.id = const Value.absent(),
+    this.roomId = const Value.absent(),
     this.description = const Value.absent(),
     this.category = const Value.absent(),
     this.amount = const Value.absent(),
@@ -1914,6 +1996,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
   });
   IncomesCompanion.insert({
     required String id,
+    required String roomId,
     required String description,
     required Category category,
     required double amount,
@@ -1922,11 +2005,13 @@ class IncomesCompanion extends UpdateCompanion<Income> {
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
+       roomId = Value(roomId),
        description = Value(description),
        category = Value(category),
        amount = Value(amount);
   static Insertable<Income> custom({
     Expression<String>? id,
+    Expression<String>? roomId,
     Expression<String>? description,
     Expression<String>? category,
     Expression<double>? amount,
@@ -1937,6 +2022,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
   }) {
     return RawValuesInsertable({
       if (id != null) 'id': id,
+      if (roomId != null) 'room_id': roomId,
       if (description != null) 'description': description,
       if (category != null) 'category': category,
       if (amount != null) 'amount': amount,
@@ -1949,6 +2035,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
 
   IncomesCompanion copyWith({
     Value<String>? id,
+    Value<String>? roomId,
     Value<String>? description,
     Value<Category>? category,
     Value<double>? amount,
@@ -1959,6 +2046,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
   }) {
     return IncomesCompanion(
       id: id ?? this.id,
+      roomId: roomId ?? this.roomId,
       description: description ?? this.description,
       category: category ?? this.category,
       amount: amount ?? this.amount,
@@ -1974,6 +2062,9 @@ class IncomesCompanion extends UpdateCompanion<Income> {
     final map = <String, Expression>{};
     if (id.present) {
       map['id'] = Variable<String>(id.value);
+    }
+    if (roomId.present) {
+      map['room_id'] = Variable<String>(roomId.value);
     }
     if (description.present) {
       map['description'] = Variable<String>(description.value);
@@ -2007,6 +2098,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
   String toString() {
     return (StringBuffer('IncomesCompanion(')
           ..write('id: $id, ')
+          ..write('roomId: $roomId, ')
           ..write('description: $description, ')
           ..write('category: $category, ')
           ..write('amount: $amount, ')
@@ -3598,6 +3690,7 @@ typedef $$CategoriesTableProcessedTableManager =
 typedef $$ExpensesTableCreateCompanionBuilder =
     ExpensesCompanion Function({
       required String id,
+      required String roomId,
       required String description,
       required Category category,
       required double amount,
@@ -3609,6 +3702,7 @@ typedef $$ExpensesTableCreateCompanionBuilder =
 typedef $$ExpensesTableUpdateCompanionBuilder =
     ExpensesCompanion Function({
       Value<String> id,
+      Value<String> roomId,
       Value<String> description,
       Value<Category> category,
       Value<double> amount,
@@ -3629,6 +3723,11 @@ class $$ExpensesTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get roomId => $composableBuilder(
+    column: $table.roomId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3679,6 +3778,11 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get roomId => $composableBuilder(
+    column: $table.roomId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => ColumnOrderings(column),
@@ -3721,6 +3825,9 @@ class $$ExpensesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get roomId =>
+      $composableBuilder(column: $table.roomId, builder: (column) => column);
 
   GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
@@ -3772,6 +3879,7 @@ class $$ExpensesTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String> roomId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<Category> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
@@ -3781,6 +3889,7 @@ class $$ExpensesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => ExpensesCompanion(
                 id: id,
+                roomId: roomId,
                 description: description,
                 category: category,
                 amount: amount,
@@ -3792,6 +3901,7 @@ class $$ExpensesTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                required String roomId,
                 required String description,
                 required Category category,
                 required double amount,
@@ -3801,6 +3911,7 @@ class $$ExpensesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => ExpensesCompanion.insert(
                 id: id,
+                roomId: roomId,
                 description: description,
                 category: category,
                 amount: amount,
@@ -3834,6 +3945,7 @@ typedef $$ExpensesTableProcessedTableManager =
 typedef $$IncomesTableCreateCompanionBuilder =
     IncomesCompanion Function({
       required String id,
+      required String roomId,
       required String description,
       required Category category,
       required double amount,
@@ -3845,6 +3957,7 @@ typedef $$IncomesTableCreateCompanionBuilder =
 typedef $$IncomesTableUpdateCompanionBuilder =
     IncomesCompanion Function({
       Value<String> id,
+      Value<String> roomId,
       Value<String> description,
       Value<Category> category,
       Value<double> amount,
@@ -3865,6 +3978,11 @@ class $$IncomesTableFilterComposer
   });
   ColumnFilters<String> get id => $composableBuilder(
     column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get roomId => $composableBuilder(
+    column: $table.roomId,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -3915,6 +4033,11 @@ class $$IncomesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get roomId => $composableBuilder(
+    column: $table.roomId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<String> get description => $composableBuilder(
     column: $table.description,
     builder: (column) => ColumnOrderings(column),
@@ -3957,6 +4080,9 @@ class $$IncomesTableAnnotationComposer
   });
   GeneratedColumn<String> get id =>
       $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get roomId =>
+      $composableBuilder(column: $table.roomId, builder: (column) => column);
 
   GeneratedColumn<String> get description => $composableBuilder(
     column: $table.description,
@@ -4008,6 +4134,7 @@ class $$IncomesTableTableManager
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
+                Value<String> roomId = const Value.absent(),
                 Value<String> description = const Value.absent(),
                 Value<Category> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
@@ -4017,6 +4144,7 @@ class $$IncomesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => IncomesCompanion(
                 id: id,
+                roomId: roomId,
                 description: description,
                 category: category,
                 amount: amount,
@@ -4028,6 +4156,7 @@ class $$IncomesTableTableManager
           createCompanionCallback:
               ({
                 required String id,
+                required String roomId,
                 required String description,
                 required Category category,
                 required double amount,
@@ -4037,6 +4166,7 @@ class $$IncomesTableTableManager
                 Value<int> rowid = const Value.absent(),
               }) => IncomesCompanion.insert(
                 id: id,
+                roomId: roomId,
                 description: description,
                 category: category,
                 amount: amount,
