@@ -1,18 +1,23 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:sticky_headers/sticky_headers.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:ui';
+import 'package:nudge_1/core/db/app_database.dart';
+import 'package:nudge_1/features/home/widgets/add_transaction_sheet.dart';
 
 class TransactionsList extends StatelessWidget {
   final List<dynamic> transactions; // Can be Expense or Income
   final Color miniTextColor;
   final double totalAmount;
+  final VoidCallback? onRoomChanged;
 
   const TransactionsList({
     super.key,
     required this.transactions,
     required this.miniTextColor,
     required this.totalAmount,
+    this.onRoomChanged,
   });
 
   // Group transactions by date
@@ -98,6 +103,7 @@ class TransactionsList extends StatelessWidget {
       return _buildEmptyState(context);
     }
 
+    final db = AppDatabase();
     final groupedTransactions = _groupTransactionsByDate();
     final sortedDates = groupedTransactions.keys.toList()
       ..sort((a, b) => b.compareTo(a)); // Most recent first
@@ -161,93 +167,189 @@ class TransactionsList extends StatelessWidget {
               ),
               content: Column(
                 children: dateTransactions.map((transaction) {
+                  final isExpense =
+                      transaction.runtimeType.toString() == 'Expense';
+
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
-                    child: ListTile(
-                      leading: Container(
-                        width: 48,
-                        height: 48,
-                        decoration: BoxDecoration(
-                          color: transaction.category.color.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: Center(
-                          child: Text(
-                            transaction.category.icon,
-                            style: const TextStyle(fontSize: 24),
+                    child: Slidable(
+                      key: ValueKey(transaction.id),
+                      endActionPane: ActionPane(
+                        motion: const ScrollMotion(),
+                        extentRatio: 0.25,
+                        children: [
+                          SlidableAction(
+                            onPressed: (ctx) async {
+                              // Edit transaction
+                              showAddTransactionSheet(
+                                context,
+                                onRoomChanged: onRoomChanged,
+                                transaction: transaction,
+                              );
+                            },
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.blue,
+                            icon: Icons.edit,
+                            padding: EdgeInsets.zero,
+                          ),
+                          SlidableAction(
+                            onPressed: (ctx) async {
+                              // Show delete confirmation
+                              final confirmed = await showDialog<bool>(
+                                context: context,
+                                builder: (dialogContext) => AlertDialog(
+                                  title: const Text('Delete Transaction'),
+                                  content: const Text(
+                                    'Are you sure you want to delete this transaction?',
+                                  ),
+                                  actions: [
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(dialogContext, false),
+                                      child: const Text('Cancel'),
+                                    ),
+                                    TextButton(
+                                      onPressed: () =>
+                                          Navigator.pop(dialogContext, true),
+                                      style: TextButton.styleFrom(
+                                        foregroundColor: Colors.red,
+                                      ),
+                                      child: const Text('Delete'),
+                                    ),
+                                  ],
+                                ),
+                              );
+
+                              if (confirmed == true && ctx.mounted) {
+                                try {
+                                  // Delete the transaction
+                                  final deleteResult = isExpense
+                                      ? await db.expensesDao.deleteById(
+                                          transaction.id,
+                                        )
+                                      : await db.incomesDao.deleteById(
+                                          transaction.id,
+                                        );
+
+                                  print(
+                                    'Delete result: $deleteResult rows affected for ${isExpense ? "expense" : "income"} with id: ${transaction.id}',
+                                  );
+
+                                  // Trigger room reload to refresh the UI
+                                  if (ctx.mounted) {
+                                    onRoomChanged?.call();
+                                  }
+                                } catch (e) {
+                                  print('Error deleting transaction: $e');
+                                  if (ctx.mounted) {
+                                    ScaffoldMessenger.of(context).showSnackBar(
+                                      SnackBar(
+                                        content: Text(
+                                          'Error deleting transaction: $e',
+                                        ),
+                                        backgroundColor: Colors.red,
+                                      ),
+                                    );
+                                  }
+                                }
+                              }
+                            },
+                            backgroundColor: Colors.transparent,
+                            foregroundColor: Colors.red,
+                            icon: Icons.delete,
+                            padding: EdgeInsets.zero,
+                          ),
+                        ],
+                      ),
+                      child: ListTile(
+                        leading: Container(
+                          width: 48,
+                          height: 48,
+                          decoration: BoxDecoration(
+                            color: transaction.category.color.withOpacity(0.2),
+                            shape: BoxShape.circle,
+                          ),
+                          child: Center(
+                            child: Text(
+                              transaction.category.icon,
+                              style: const TextStyle(fontSize: 24),
+                            ),
                           ),
                         ),
-                      ),
-                      title: Text(
-                        transaction.category.name,
-                        style: const TextStyle(
-                          color: Colors.grey,
-                          fontSize: 12,
+                        title: Text(
+                          transaction.category.name,
+                          style: const TextStyle(
+                            color: Colors.grey,
+                            fontSize: 12,
+                          ),
                         ),
-                      ),
-                      subtitle: transaction.description.isNotEmpty
-                          ? Text(
-                              transaction.description,
-                              style: TextStyle(
-                                color: miniTextColor,
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                              ),
-                            )
-                          : null,
-                      trailing: Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 5,
-                          vertical: 4,
-                        ),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[800],
-                          borderRadius: BorderRadius.circular(14),
-                        ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            Container(
-                              width: 16,
-                              height: 16,
-                              decoration: BoxDecoration(
-                                color:
-                                    Theme.of(context).brightness ==
-                                        Brightness.dark
-                                    ? Theme.of(context).colorScheme.onSurface
-                                    : Theme.of(context).colorScheme.surface,
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  transaction.runtimeType.toString() == 'Income'
-                                      ? "+"
-                                      : "-",
-                                  style: TextStyle(
-                                    color:
-                                        Theme.of(context).brightness ==
-                                            Brightness.dark
-                                        ? Theme.of(context).colorScheme.surface
-                                        : Theme.of(
-                                            context,
-                                          ).colorScheme.onSurface,
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    height: 1,
+                        subtitle: transaction.description.isNotEmpty
+                            ? Text(
+                                transaction.description,
+                                style: TextStyle(
+                                  color: miniTextColor,
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              )
+                            : null,
+                        trailing: Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 5,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: Colors.grey[800],
+                            borderRadius: BorderRadius.circular(14),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 16,
+                                height: 16,
+                                decoration: BoxDecoration(
+                                  color:
+                                      Theme.of(context).brightness ==
+                                          Brightness.dark
+                                      ? Theme.of(context).colorScheme.onSurface
+                                      : Theme.of(context).colorScheme.surface,
+                                  shape: BoxShape.circle,
+                                ),
+                                child: Center(
+                                  child: Text(
+                                    transaction.runtimeType.toString() ==
+                                            'Income'
+                                        ? "+"
+                                        : "-",
+                                    style: TextStyle(
+                                      color:
+                                          Theme.of(context).brightness ==
+                                              Brightness.dark
+                                          ? Theme.of(
+                                              context,
+                                            ).colorScheme.surface
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.onSurface,
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      height: 1,
+                                    ),
                                   ),
                                 ),
                               ),
-                            ),
-                            const SizedBox(width: 6),
-                            Text(
-                              transaction.amount.toStringAsFixed(2),
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontWeight: FontWeight.w600,
-                                fontSize: 12,
+                              const SizedBox(width: 6),
+                              Text(
+                                transaction.amount.toStringAsFixed(2),
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontWeight: FontWeight.w600,
+                                  fontSize: 12,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ),

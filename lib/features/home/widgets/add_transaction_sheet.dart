@@ -14,21 +14,28 @@ import 'package:nudge_1/features/room/widgets/rooms_sheet.dart';
 /// - Select a category
 /// - Add tags
 /// - Save the transaction
+///
+/// If [transaction] is provided, the sheet will be in edit mode.
 void showAddTransactionSheet(
   BuildContext context, {
   VoidCallback? onRoomChanged,
+  dynamic transaction,
 }) {
   showAppBottomSheet(
     context: context,
     mode: SheetMode.auto,
-    child: _AddTransactionSheetContent(onRoomChanged: onRoomChanged),
+    child: _AddTransactionSheetContent(
+      onRoomChanged: onRoomChanged,
+      transaction: transaction,
+    ),
   );
 }
 
 class _AddTransactionSheetContent extends StatefulWidget {
   final VoidCallback? onRoomChanged;
+  final dynamic transaction; // Expense or Income for editing
 
-  const _AddTransactionSheetContent({this.onRoomChanged});
+  const _AddTransactionSheetContent({this.onRoomChanged, this.transaction});
 
   @override
   State<_AddTransactionSheetContent> createState() =>
@@ -43,6 +50,19 @@ class _AddTransactionSheetContentState
   bool _isExpense = true;
   String? _selectedCategoryId;
   bool _isSaving = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // If editing, populate fields with transaction data
+    if (widget.transaction != null) {
+      final txn = widget.transaction;
+      _descriptionController.text = txn.description ?? '';
+      _amountController.text = txn.amount.toString();
+      _selectedCategoryId = txn.category.id;
+      _isExpense = txn.runtimeType.toString() == 'Expense';
+    }
+  }
 
   @override
   void dispose() {
@@ -81,8 +101,12 @@ class _AddTransactionSheetContentState
         (c) => c.id == _selectedCategoryId,
       );
       final description = _descriptionController.text.trim();
-      final id = 'txn-${DateTime.now().millisecondsSinceEpoch}';
       final db = AppDatabase();
+
+      final isEditing = widget.transaction != null;
+      final id = isEditing
+          ? widget.transaction.id
+          : 'txn-${DateTime.now().millisecondsSinceEpoch}';
 
       // Get current selected room ID
       final roomId = await RoomSelection.getSelectedRoomId();
@@ -97,29 +121,41 @@ class _AddTransactionSheetContentState
       }
 
       if (_isExpense) {
-        await db.expensesDao.insert(
-          ExpensesCompanion(
-            id: drift.Value(id),
-            roomId: drift.Value(roomId),
-            description: drift.Value(description),
-            category: drift.Value(category),
-            amount: drift.Value(amount),
-            location: const drift.Value(null),
-            createdAt: drift.Value(DateTime.now()),
+        final companion = ExpensesCompanion(
+          id: drift.Value(id),
+          roomId: drift.Value(roomId),
+          description: drift.Value(description),
+          category: drift.Value(category),
+          amount: drift.Value(amount),
+          location: const drift.Value(null),
+          createdAt: drift.Value(
+            isEditing ? widget.transaction.createdAt : DateTime.now(),
           ),
         );
+
+        if (isEditing) {
+          await db.expensesDao.updateEntry(companion);
+        } else {
+          await db.expensesDao.insert(companion);
+        }
       } else {
-        await db.incomesDao.insert(
-          IncomesCompanion(
-            id: drift.Value(id),
-            roomId: drift.Value(roomId),
-            description: drift.Value(description),
-            category: drift.Value(category),
-            amount: drift.Value(amount),
-            location: const drift.Value(null),
-            createdAt: drift.Value(DateTime.now()),
+        final companion = IncomesCompanion(
+          id: drift.Value(id),
+          roomId: drift.Value(roomId),
+          description: drift.Value(description),
+          category: drift.Value(category),
+          amount: drift.Value(amount),
+          location: const drift.Value(null),
+          createdAt: drift.Value(
+            isEditing ? widget.transaction.createdAt : DateTime.now(),
           ),
         );
+
+        if (isEditing) {
+          await db.incomesDao.updateEntry(companion);
+        } else {
+          await db.incomesDao.insert(companion);
+        }
       }
 
       if (mounted) {
@@ -127,7 +163,7 @@ class _AddTransactionSheetContentState
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '${_isExpense ? 'Expense' : 'Income'} saved successfully',
+              '${_isExpense ? 'Expense' : 'Income'} ${isEditing ? 'updated' : 'saved'} successfully',
             ),
           ),
         );

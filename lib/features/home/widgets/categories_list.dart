@@ -139,15 +139,15 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                           maxCategoryHeight,
                         )
                       : minCategoryHeight;
-                  if (kDebugMode) {
-                    debugPrint(
-                      'Category ${category.id} (${category.name}) -> total: '
-                      '${total.toStringAsFixed(2)}, mag: ${magnitude.toStringAsFixed(2)}, '
-                      'max: ${maxAmount.toStringAsFixed(2)}, '
-                      'pct: ${(percentage * 100).toStringAsFixed(1)}%, '
-                      'height: ${barHeight.toStringAsFixed(1)}',
-                    );
-                  }
+                  // if (kDebugMode) {
+                  //   debugPrint(
+                  //     'Category ${category.id} (${category.name}) -> total: '
+                  //     '${total.toStringAsFixed(2)}, mag: ${magnitude.toStringAsFixed(2)}, '
+                  //     'max: ${maxAmount.toStringAsFixed(2)}, '
+                  //     'pct: ${(percentage * 100).toStringAsFixed(1)}%, '
+                  //     'height: ${barHeight.toStringAsFixed(1)}',
+                  //   );
+                  // }
 
                   return Container(
                     margin: const EdgeInsets.only(right: 8),

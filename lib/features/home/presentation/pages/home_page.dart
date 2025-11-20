@@ -275,6 +275,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           transactions: transactions,
                                           miniTextColor: miniTextColor,
                                           totalAmount: totalAmount,
+                                          onRoomChanged: _loadSelectedRoom,
                                         ),
                                       ),
                                     ],
