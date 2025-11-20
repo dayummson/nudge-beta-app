@@ -49,11 +49,62 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
         : magnitudes.reduce((a, b) => a > b ? a : b);
   }
 
+  Widget _buildEmptyPlaceholder(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+    // Create hierarchical placeholder bars with decreasing heights
+    final placeholderHeights = [
+      maxCategoryHeight * 0.9,
+      maxCategoryHeight * 0.7,
+      maxCategoryHeight * 0.5,
+      maxCategoryHeight * 0.6,
+      maxCategoryHeight * 0.4,
+    ];
+
+    return Stack(
+      children: [
+        // Placeholder bars
+        ListView.builder(
+          scrollDirection: Axis.horizontal,
+          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+          itemCount: placeholderHeights.length,
+          itemBuilder: (context, index) {
+            return Container(
+              margin: const EdgeInsets.only(right: 8),
+              child: Align(
+                alignment: Alignment.bottomCenter,
+                child: Container(
+                  height: placeholderHeights[index],
+                  width: 80,
+                  decoration: BoxDecoration(
+                    color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
+                    borderRadius: BorderRadius.circular(16),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        // Centered text message
+        Center(
+          child: Text(
+            'Your transactions will show up here',
+            style: TextStyle(
+              fontSize: 14,
+              color: colorScheme.onSurface.withOpacity(0.5),
+              fontWeight: FontWeight.w500,
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final searchEnabled = ref.watch(searchEnabledProvider);
     final categoryTotals = _calculateCategoryTotals();
     final maxAmount = _getMaxCategoryAmount(categoryTotals);
+    final isEmpty = widget.transactions.isEmpty;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -64,6 +115,8 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
         opacity: searchEnabled ? 0 : 1,
         child: searchEnabled
             ? const SizedBox.shrink()
+            : isEmpty
+            ? _buildEmptyPlaceholder(context)
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),

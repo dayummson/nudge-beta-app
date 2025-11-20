@@ -166,17 +166,41 @@ class _HomePageState extends ConsumerState<HomePage> {
                               children: [
                                 // Add top spacing equal to header height so first item isn't hidden
                                 SizedBox(height: headerHeight),
-                                // Horizontal categories
-                                CategoriesList(
-                                  transactions: transactions,
-                                  scrollOffset: _scrollOffset,
+                                // Horizontal categories with fade animation
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  switchInCurve: Curves.easeIn,
+                                  switchOutCurve: Curves.easeOut,
+                                  transitionBuilder: (child, animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: CategoriesList(
+                                    key: ValueKey('categories_$isExpense'),
+                                    transactions: transactions,
+                                    scrollOffset: _scrollOffset,
+                                  ),
                                 ),
 
-                                // Transactions list with mini total
-                                TransactionsList(
-                                  transactions: transactions,
-                                  miniTextColor: miniTextColor,
-                                  totalAmount: totalAmount,
+                                // Transactions list with mini total and fade animation
+                                AnimatedSwitcher(
+                                  duration: const Duration(milliseconds: 200),
+                                  switchInCurve: Curves.easeIn,
+                                  switchOutCurve: Curves.easeOut,
+                                  transitionBuilder: (child, animation) {
+                                    return FadeTransition(
+                                      opacity: animation,
+                                      child: child,
+                                    );
+                                  },
+                                  child: TransactionsList(
+                                    key: ValueKey('transactions_$isExpense'),
+                                    transactions: transactions,
+                                    miniTextColor: miniTextColor,
+                                    totalAmount: totalAmount,
+                                  ),
                                 ),
                               ],
                             ),

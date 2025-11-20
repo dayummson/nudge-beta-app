@@ -47,8 +47,57 @@ class TransactionsList extends StatelessWidget {
     }
   }
 
+  Widget _buildEmptyState(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+      child: Center(
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(24),
+              decoration: BoxDecoration(
+                color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
+                shape: BoxShape.circle,
+              ),
+              child: Icon(
+                Icons.receipt_long_outlined,
+                size: 48,
+                color: colorScheme.onSurface.withOpacity(0.3),
+              ),
+            ),
+            const SizedBox(height: 16),
+            Text(
+              'No transactions yet',
+              style: TextStyle(
+                fontSize: 18,
+                fontWeight: FontWeight.w600,
+                color: colorScheme.onSurface.withOpacity(0.7),
+              ),
+            ),
+            const SizedBox(height: 8),
+            Text(
+              'Start tracking your expenses\nand income here',
+              textAlign: TextAlign.center,
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurface.withOpacity(0.5),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
+    if (transactions.isEmpty) {
+      return _buildEmptyState(context);
+    }
+
     final groupedTransactions = _groupTransactionsByDate();
     final sortedDates = groupedTransactions.keys.toList()
       ..sort((a, b) => b.compareTo(a)); // Most recent first
