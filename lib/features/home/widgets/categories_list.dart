@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/search_enabled_provider.dart';
 import '../../../constants/categories.dart' as constants;
@@ -108,6 +107,14 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
     final maxAmount = _getMaxCategoryAmount(categoryTotals);
     final showEmptyState = widget.hasBothEmptyTransactions;
 
+    // Sort categories by their total values (descending - highest first)
+    final sortedCategories = List.from(constants.categories)
+      ..sort((a, b) {
+        final aTotal = (categoryTotals[a.id] ?? 0.0).abs();
+        final bTotal = (categoryTotals[b.id] ?? 0.0).abs();
+        return bTotal.compareTo(aTotal); // Descending order
+      });
+
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
@@ -122,9 +129,9 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
                 padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-                itemCount: constants.categories.length,
+                itemCount: sortedCategories.length,
                 itemBuilder: (context, index) {
-                  final category = constants.categories[index];
+                  final category = sortedCategories[index];
                   final total = categoryTotals[category.id] ?? 0.0;
                   final magnitude = total.abs();
 
