@@ -190,9 +190,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                       final List<dynamic> transactions = isExpense
                           ? _expenses.cast<dynamic>()
                           : _incomes.cast<dynamic>();
-                      final totalAmount = isExpense
-                          ? expenseTotal
-                          : incomeTotal;
+
+                      // Net total = Expenses - Incomes (overall balance)
+                      final totalAmount = expenseTotal - incomeTotal;
 
                       return Stack(
                         children: [

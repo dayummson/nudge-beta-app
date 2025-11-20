@@ -108,7 +108,9 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                     ),
                                   );
                                   await RoomSelection.setSelectedRoomId(id);
-                                  setState2(() => selectedId = id);
+                                  if (context2.mounted) {
+                                    setState2(() => selectedId = id);
+                                  }
                                   onRoomChanged?.call();
                                 },
                               ),
@@ -154,7 +156,9 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                               await RoomSelection.getSelectedRoomId();
                           final toSet = persisted ?? rooms.first.id;
                           await RoomSelection.setSelectedRoomId(toSet);
-                          setState2(() => selectedId = toSet);
+                          if (context2.mounted) {
+                            setState2(() => selectedId = toSet);
+                          }
                           onRoomChanged?.call();
                         });
                       }
@@ -234,14 +238,18 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                           await RoomSelection.setSelectedRoomId(
                                             remaining.first.id,
                                           );
-                                          setState2(
-                                            () =>
-                                                selectedId = remaining.first.id,
-                                          );
+                                          if (context2.mounted) {
+                                            setState2(
+                                              () => selectedId =
+                                                  remaining.first.id,
+                                            );
+                                          }
                                           onRoomChanged?.call();
                                         } else {
                                           await RoomSelection.clear();
-                                          setState2(() => selectedId = null);
+                                          if (context2.mounted) {
+                                            setState2(() => selectedId = null);
+                                          }
                                         }
                                       }
                                     }
