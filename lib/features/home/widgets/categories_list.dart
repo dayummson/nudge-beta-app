@@ -78,7 +78,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                   height: placeholderHeights[index],
                   width: 80,
                   decoration: BoxDecoration(
-                    color: colorScheme.surfaceContainerHighest.withOpacity(0.1),
+                    color: Colors.grey[850],
                     borderRadius: BorderRadius.circular(16),
                   ),
                 ),

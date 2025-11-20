@@ -78,6 +78,9 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (mounted) {
       setState(() {
         _selectedRoomId = roomId;
+        // Clear cache when room changes to prevent showing old data
+        _expenses = [];
+        _incomes = [];
       });
     }
   }
@@ -143,17 +146,19 @@ class _HomePageState extends ConsumerState<HomePage> {
         child: _selectedRoomId == null
             ? const Center(child: CircularProgressIndicator())
             : StreamBuilder<List<Expense>>(
+                key: ValueKey('expense_$_selectedRoomId'),
                 stream: _db.expensesDao.watchByRoomId(_selectedRoomId!),
                 builder: (context, expenseSnapshot) {
-                  // Update cached expenses
+                  // Update cached expenses only if data is available
                   if (expenseSnapshot.hasData) {
                     _expenses = expenseSnapshot.data!;
                   }
 
                   return StreamBuilder<List<Income>>(
+                    key: ValueKey('income_$_selectedRoomId'),
                     stream: _db.incomesDao.watchByRoomId(_selectedRoomId!),
                     builder: (context, incomeSnapshot) {
-                      // Update cached incomes
+                      // Update cached incomes only if data is available
                       if (incomeSnapshot.hasData) {
                         _incomes = incomeSnapshot.data!;
                       }
@@ -225,7 +230,10 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         },
                                         child: CategoriesList(
                                           key: ValueKey(
-                                            'categories_$isExpense',
+                                            _expenses.isEmpty &&
+                                                    _incomes.isEmpty
+                                                ? 'categories_empty'
+                                                : 'categories_$isExpense',
                                           ),
                                           transactions: transactions,
                                           scrollOffset: _scrollOffset,
@@ -250,7 +258,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                         },
                                         child: TransactionsList(
                                           key: ValueKey(
-                                            'transactions_$isExpense',
+                                            transactions.isEmpty
+                                                ? 'transactions_empty'
+                                                : 'transactions_$isExpense',
                                           ),
                                           transactions: transactions,
                                           miniTextColor: miniTextColor,

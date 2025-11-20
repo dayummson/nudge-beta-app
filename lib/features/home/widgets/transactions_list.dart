@@ -51,7 +51,7 @@ class TransactionsList extends StatelessWidget {
     final colorScheme = Theme.of(context).colorScheme;
 
     return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 60),
+      padding: const EdgeInsets.only(left: 20, right: 20, top: 100, bottom: 60),
       child: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
