@@ -5,10 +5,20 @@ import 'features/home/presentation/pages/home_page.dart'
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
+import 'core/theme/theme_provider.dart';
+
+// Global theme notifier
+final themeNotifier = ValueNotifier<ThemeMode>(ThemeMode.system);
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
+
+  // Load saved theme preference
+  final themeProvider = ThemeProvider();
+  await themeProvider.loadThemePreference();
+  themeNotifier.value = themeProvider.themeMode2Flutter;
+
   // debugPaintSizeEnabled = true;
   runApp(const ProviderScope(child: MyApp()));
 }
@@ -37,30 +47,35 @@ class MyApp extends ConsumerWidget {
       onError: Colors.black,
     );
 
-    return MaterialApp(
-      title: 'Expense/Income Demo',
-      // Use ThemeData.from so colorScheme drives the app colors. Keep the
-      // Google font for typography. Pass useMaterial3 directly to avoid
-      // deprecated copyWith usage.
-      theme: ThemeData.from(
-        colorScheme: lightScheme,
-        textTheme: GoogleFonts.nunitoTextTheme(),
-        useMaterial3: true,
-      ),
-      darkTheme: ThemeData.from(
-        colorScheme: darkScheme,
-        textTheme: GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme)
-            .apply(
-              bodyColor: const Color(0xFFE1E1E1),
-              displayColor: const Color(0xFFE1E1E1),
-            ),
-        useMaterial3: true,
-      ),
-      themeMode: ThemeMode.system,
+    return ValueListenableBuilder<ThemeMode>(
+      valueListenable: themeNotifier,
+      builder: (context, themeMode, child) {
+        return MaterialApp(
+          title: 'Expense/Income Demo',
+          // Use ThemeData.from so colorScheme drives the app colors. Keep the
+          // Google font for typography. Pass useMaterial3 directly to avoid
+          // deprecated copyWith usage.
+          theme: ThemeData.from(
+            colorScheme: lightScheme,
+            textTheme: GoogleFonts.nunitoTextTheme(),
+            useMaterial3: true,
+          ),
+          darkTheme: ThemeData.from(
+            colorScheme: darkScheme,
+            textTheme: GoogleFonts.nunitoTextTheme(ThemeData.dark().textTheme)
+                .apply(
+                  bodyColor: const Color(0xFFE1E1E1),
+                  displayColor: const Color(0xFFE1E1E1),
+                ),
+            useMaterial3: true,
+          ),
+          themeMode: themeMode,
 
-      home:
-          const home.HomePage(), // Use aliased import to ensure correct HomePage
-      debugShowCheckedModeBanner: false,
+          home:
+              const home.HomePage(), // Use aliased import to ensure correct HomePage
+          debugShowCheckedModeBanner: false,
+        );
+      },
     );
   }
 }

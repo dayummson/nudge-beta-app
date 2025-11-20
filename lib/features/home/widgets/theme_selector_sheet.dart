@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
-
-enum AppThemeMode { light, dark, system }
+import 'package:nudge_1/core/theme/theme_provider.dart';
 
 /// Shows the theme selector bottom sheet with theme options.
 ///

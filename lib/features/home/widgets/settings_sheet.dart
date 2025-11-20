@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/features/debug/debug_db_screen.dart';
 import 'package:nudge_1/features/home/widgets/theme_selector_sheet.dart';
+import 'package:nudge_1/core/theme/theme_provider.dart';
+import 'package:nudge_1/main.dart' as main_app;
 
 /// Shows the settings bottom sheet with various app settings options.
 ///
@@ -43,17 +45,26 @@ void showSettingsSheet(
         ListTile(
           leading: const Icon(Icons.dark_mode),
           title: const Text('Theme'),
-          onTap: () {
+          onTap: () async {
             Navigator.pop(context);
+
+            // Get current theme
+            final themeProvider = ThemeProvider();
+            await themeProvider.loadThemePreference();
+
             // Show theme selector sheet
-            showThemeSelectorSheet(
-              context,
-              currentTheme: AppThemeMode.system, // TODO: Get from settings
-              onThemeSelected: (theme) {
-                // TODO: Save theme preference and apply
-                print('Selected theme: $theme');
-              },
-            );
+            if (context.mounted) {
+              showThemeSelectorSheet(
+                context,
+                currentTheme: themeProvider.themeMode,
+                onThemeSelected: (theme) async {
+                  // Save theme preference and apply
+                  await themeProvider.setThemeMode(theme);
+                  main_app.themeNotifier.value =
+                      themeProvider.themeMode2Flutter;
+                },
+              );
+            }
           },
         ),
         ListTile(
