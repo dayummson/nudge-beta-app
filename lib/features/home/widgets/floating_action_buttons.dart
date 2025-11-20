@@ -5,7 +5,10 @@ import '../presentation/pages/voice_page.dart';
 import 'add_transaction_sheet.dart';
 
 class FloatingActionButtons extends ConsumerStatefulWidget {
-  const FloatingActionButtons({super.key});
+  final VoidCallback? onRoomChanged;
+
+  const FloatingActionButtons({super.key, this.onRoomChanged});
+
   @override
   ConsumerState<FloatingActionButtons> createState() =>
       _FloatingActionButtonsState();
@@ -43,7 +46,7 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
   void _toggleSearch() => ref.read(searchEnabledProvider.notifier).toggle();
 
   void _showAddTransactionSheet() {
-    showAddTransactionSheet(context);
+    showAddTransactionSheet(context, onRoomChanged: widget.onRoomChanged);
   }
 
   @override

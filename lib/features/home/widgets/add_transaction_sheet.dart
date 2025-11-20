@@ -14,16 +14,21 @@ import 'package:nudge_1/features/room/widgets/rooms_sheet.dart';
 /// - Select a category
 /// - Add tags
 /// - Save the transaction
-void showAddTransactionSheet(BuildContext context) {
+void showAddTransactionSheet(
+  BuildContext context, {
+  VoidCallback? onRoomChanged,
+}) {
   showAppBottomSheet(
     context: context,
     mode: SheetMode.auto,
-    child: const _AddTransactionSheetContent(),
+    child: _AddTransactionSheetContent(onRoomChanged: onRoomChanged),
   );
 }
 
 class _AddTransactionSheetContent extends StatefulWidget {
-  const _AddTransactionSheetContent();
+  final VoidCallback? onRoomChanged;
+
+  const _AddTransactionSheetContent({this.onRoomChanged});
 
   @override
   State<_AddTransactionSheetContent> createState() =>
@@ -290,7 +295,10 @@ class _AddTransactionSheetContentState
                     }
 
                     return OutlinedButton(
-                      onPressed: () => showRoomsSheet(context),
+                      onPressed: () => showRoomsSheet(
+                        context,
+                        onRoomChanged: widget.onRoomChanged,
+                      ),
                       style: OutlinedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(
                           vertical: 6,

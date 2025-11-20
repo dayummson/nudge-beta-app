@@ -192,9 +192,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                       );
 
                       // Use cached data for smooth toggling
-                      final List<dynamic> transactions = isExpense
-                          ? _expenses.cast<dynamic>()
-                          : _incomes.cast<dynamic>();
+                      // When both are empty, use the same empty list to prevent flicker
+                      final List<dynamic> transactions =
+                          (_expenses.isEmpty && _incomes.isEmpty)
+                          ? const <dynamic>[]
+                          : (isExpense
+                                ? _expenses.cast<dynamic>()
+                                : _incomes.cast<dynamic>());
 
                       // Net total = Expenses - Incomes (overall balance)
                       final totalAmount = expenseTotal - incomeTotal;
@@ -217,8 +221,12 @@ class _HomePageState extends ConsumerState<HomePage> {
                                       SizedBox(height: headerHeight),
                                       // Horizontal categories with fade animation
                                       AnimatedSwitcher(
-                                        duration: const Duration(
-                                          milliseconds: 200,
+                                        duration: Duration(
+                                          milliseconds:
+                                              (_expenses.isEmpty &&
+                                                  _incomes.isEmpty)
+                                              ? 0
+                                              : 200,
                                         ),
                                         switchInCurve: Curves.easeIn,
                                         switchOutCurve: Curves.easeOut,
@@ -245,8 +253,10 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                                       // Transactions list with mini total and fade animation
                                       AnimatedSwitcher(
-                                        duration: const Duration(
-                                          milliseconds: 200,
+                                        duration: Duration(
+                                          milliseconds: transactions.isEmpty
+                                              ? 0
+                                              : 200,
                                         ),
                                         switchInCurve: Curves.easeIn,
                                         switchOutCurve: Curves.easeOut,
@@ -294,7 +304,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                             ],
                           ),
                           // Floating action buttons with search transition
-                          const FloatingActionButtons(),
+                          FloatingActionButtons(
+                            onRoomChanged: _loadSelectedRoom,
+                          ),
                         ],
                       );
                     },
