@@ -7,11 +7,13 @@ import '../../../constants/categories.dart' as constants;
 class CategoriesList extends ConsumerStatefulWidget {
   final List<dynamic> transactions;
   final double scrollOffset;
+  final bool hasBothEmptyTransactions;
 
   const CategoriesList({
     super.key,
     required this.transactions,
     required this.scrollOffset,
+    this.hasBothEmptyTransactions = false,
   });
 
   @override
@@ -20,7 +22,7 @@ class CategoriesList extends ConsumerStatefulWidget {
 
 class _CategoriesListState extends ConsumerState<CategoriesList> {
   static const double maxCategoryHeight = 200.0;
-  static const double minCategoryHeight = 50.0;
+  static const double minCategoryHeight = 60.0;
 
   // Calculate total per category for current transaction list
   Map<String, double> _calculateCategoryTotals() {
@@ -104,7 +106,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
     final searchEnabled = ref.watch(searchEnabledProvider);
     final categoryTotals = _calculateCategoryTotals();
     final maxAmount = _getMaxCategoryAmount(categoryTotals);
-    final isEmpty = widget.transactions.isEmpty;
+    final showEmptyState = widget.hasBothEmptyTransactions;
 
     return AnimatedContainer(
       duration: const Duration(milliseconds: 300),
@@ -115,7 +117,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
         opacity: searchEnabled ? 0 : 1,
         child: searchEnabled
             ? const SizedBox.shrink()
-            : isEmpty
+            : showEmptyState
             ? _buildEmptyPlaceholder(context)
             : ListView.builder(
                 scrollDirection: Axis.horizontal,
@@ -153,40 +155,35 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                       alignment: Alignment.bottomCenter,
                       child: Container(
                         height: barHeight,
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 16,
-                          vertical: 12,
-                        ),
+                        width: 70,
+                        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
                         decoration: BoxDecoration(
                           color: Colors.grey[850],
                           borderRadius: BorderRadius.circular(16),
                         ),
                         child: Column(
                           mainAxisAlignment: MainAxisAlignment.end,
-                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Flexible(
-                              child: FittedBox(
-                                fit: BoxFit.contain,
-                                child: Text(
-                                  category.icon,
-                                  style: const TextStyle(
-                                    fontSize: 24,
-                                    height: 1.0,
-                                  ),
-                                ),
-                              ),
+                            Text(
+                              category.icon,
+                              style: const TextStyle(fontSize: 20, height: 1.0),
                             ),
                             const SizedBox(height: 4),
-                            Text(
-                              '\$${total.toStringAsFixed(0)}',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.grey[400],
+                            Flexible(
+                              child: Text(
+                                magnitude == 0
+                                    ? '₱0'
+                                    : '₱${total.toStringAsFixed(0)}',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  fontWeight: FontWeight.w700,
+                                  color: Colors.grey[400],
+                                  height: 1.2,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.center,
                               ),
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
                             ),
                           ],
                         ),

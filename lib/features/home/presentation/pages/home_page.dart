@@ -229,6 +229,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                           ),
                                           transactions: transactions,
                                           scrollOffset: _scrollOffset,
+                                          hasBothEmptyTransactions:
+                                              _expenses.isEmpty &&
+                                              _incomes.isEmpty,
                                         ),
                                       ),
 
@@ -265,7 +268,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 blurSigma: blurSigma,
                                 overlayOpacity: overlayOpacity,
                                 isExpense: isExpense,
-                                totalAmount: totalAmount,
+                                totalAmount: totalAmount.abs(),
                                 expenseTotal: expenseTotal,
                                 incomeTotal: incomeTotal,
                                 toggleMode: toggleMode,
