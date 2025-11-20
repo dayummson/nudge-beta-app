@@ -8,6 +8,8 @@ import 'package:flutter/material.dart';
 class ToggleMode extends StatefulWidget {
   final bool isExpense;
   final ValueChanged<bool> onChanged;
+  final double expenseTotal;
+  final double incomeTotal;
   final double width;
   final double height;
 
@@ -15,6 +17,8 @@ class ToggleMode extends StatefulWidget {
     super.key,
     required this.isExpense,
     required this.onChanged,
+    required this.expenseTotal,
+    required this.incomeTotal,
     this.width = 200,
     this.height = 32,
   });
@@ -121,7 +125,7 @@ class _ToggleModeState extends State<ToggleMode> {
                   Expanded(
                     child: Center(
                       child: Text(
-                        '- P602.50',
+                        '- ₱${widget.expenseTotal.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: _isExpense ? Colors.white : textColor,
@@ -133,7 +137,7 @@ class _ToggleModeState extends State<ToggleMode> {
                   Expanded(
                     child: Center(
                       child: Text(
-                        '+ P12.00',
+                        '+ ₱${widget.incomeTotal.toStringAsFixed(2)}',
                         style: TextStyle(
                           fontSize: 12,
                           color: !_isExpense ? Colors.white : textColor,

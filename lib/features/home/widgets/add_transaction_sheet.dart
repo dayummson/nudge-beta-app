@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
@@ -36,6 +37,7 @@ class _AddTransactionSheetContentState
   final _inlineAmountFocusNode = FocusNode();
   bool _isExpense = true;
   String? _selectedCategoryId;
+  bool _isSaving = false;
 
   @override
   void dispose() {
@@ -43,6 +45,85 @@ class _AddTransactionSheetContentState
     _amountController.dispose();
     _inlineAmountFocusNode.dispose();
     super.dispose();
+  }
+
+  Future<void> _saveTransaction() async {
+    if (_isSaving) return;
+
+    final amount = double.tryParse(_amountController.text.trim());
+    if (amount == null || amount <= 0) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please enter a valid amount')),
+        );
+      }
+      return;
+    }
+
+    if (_selectedCategoryId == null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Please select a category')),
+        );
+      }
+      return;
+    }
+
+    setState(() => _isSaving = true);
+
+    try {
+      final category = constants.categories.firstWhere(
+        (c) => c.id == _selectedCategoryId,
+      );
+      final description = _descriptionController.text.trim();
+      final id = 'txn-${DateTime.now().millisecondsSinceEpoch}';
+      final db = AppDatabase();
+
+      if (_isExpense) {
+        await db.expensesDao.insert(
+          ExpensesCompanion(
+            id: drift.Value(id),
+            description: drift.Value(description),
+            category: drift.Value(category),
+            amount: drift.Value(amount),
+            location: const drift.Value(null),
+            createdAt: drift.Value(DateTime.now()),
+          ),
+        );
+      } else {
+        await db.incomesDao.insert(
+          IncomesCompanion(
+            id: drift.Value(id),
+            description: drift.Value(description),
+            category: drift.Value(category),
+            amount: drift.Value(amount),
+            location: const drift.Value(null),
+            createdAt: drift.Value(DateTime.now()),
+          ),
+        );
+      }
+
+      if (mounted) {
+        Navigator.pop(context);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '${_isExpense ? 'Expense' : 'Income'} saved successfully',
+            ),
+          ),
+        );
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text('Error saving transaction: $e')));
+      }
+    } finally {
+      if (mounted) {
+        setState(() => _isSaving = false);
+      }
+    }
   }
 
   @override
@@ -588,7 +669,7 @@ class _AddTransactionSheetContentState
                       const SizedBox(width: 12),
                       Expanded(
                         child: ElevatedButton(
-                          onPressed: () => Navigator.pop(context),
+                          onPressed: _isSaving ? null : _saveTransaction,
                           style: ElevatedButton.styleFrom(
                             padding: const EdgeInsets.symmetric(vertical: 14),
                             shape: RoundedRectangleBorder(
@@ -601,15 +682,28 @@ class _AddTransactionSheetContentState
                               fontWeight: FontWeight.w700,
                             ),
                           ),
-                          child: Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(Icons.check, size: 18, color: cs.onPrimary),
-                              const SizedBox(width: 8),
-                              const Text('Save'),
-                            ],
-                          ),
+                          child: _isSaving
+                              ? SizedBox(
+                                  width: 18,
+                                  height: 18,
+                                  child: CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                    color: cs.onPrimary,
+                                  ),
+                                )
+                              : Row(
+                                  mainAxisAlignment: MainAxisAlignment.center,
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      Icons.check,
+                                      size: 18,
+                                      color: cs.onPrimary,
+                                    ),
+                                    const SizedBox(width: 8),
+                                    const Text('Save'),
+                                  ],
+                                ),
                         ),
                       ),
                     ],

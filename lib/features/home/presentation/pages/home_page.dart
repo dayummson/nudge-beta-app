@@ -1,11 +1,11 @@
 import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nudge_1/core/db/app_database.dart';
 import "../../widgets/header.dart";
 import "../../widgets/floating_action_buttons.dart";
 import "../../widgets/categories_list.dart";
 import "../../widgets/transactions_list.dart";
-import "../../data/mock_expenses.dart";
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -16,6 +16,7 @@ class HomePage extends ConsumerStatefulWidget {
 
 class _HomePageState extends ConsumerState<HomePage> {
   bool isExpense = true;
+  final _db = AppDatabase();
 
   // Key and measured height for the header so content padding can match the
   // actual header size (makes the header hug its content and avoids hard
@@ -25,17 +26,12 @@ class _HomePageState extends ConsumerState<HomePage> {
   // Debug mode: 0 = normal, 1 = force-high-blur, 2 = visible-scrim (debug color)
   int _debugMode = 0;
 
-  // Get current transactions based on toggle
-  List<dynamic> get currentTransactions =>
-      isExpense ? mockExpenses : mockIncomes;
-
-  double get totalAmount => currentTransactions.fold<double>(
-    0.0,
-    (sum, transaction) => sum + transaction.amount,
-  );
-
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
+
+  // Cache both lists to avoid flicker when toggling
+  List<Expense> _expenses = [];
+  List<Income> _incomes = [];
 
   @override
   void initState() {
@@ -50,6 +46,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _db.close();
     super.dispose();
   }
 
@@ -104,57 +101,113 @@ class _HomePageState extends ConsumerState<HomePage> {
       backgroundColor: colorScheme.surface,
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: Stack(
-          children: [
-            Stack(
-              children: [
-                // Scrollable content - starts at top of screen so it can scroll under the header
-                // Wrapped with Opacity for content fade effect
-                Opacity(
-                  opacity: contentOpacity,
-                  child: SingleChildScrollView(
-                    controller: _scrollController,
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+        child: StreamBuilder<List<Expense>>(
+          stream: _db.expensesDao.watchAll(),
+          builder: (context, expenseSnapshot) {
+            // Update cached expenses
+            if (expenseSnapshot.hasData) {
+              _expenses = expenseSnapshot.data!;
+            }
+
+            return StreamBuilder<List<Income>>(
+              stream: _db.incomesDao.watchAll(),
+              builder: (context, incomeSnapshot) {
+                // Update cached incomes
+                if (incomeSnapshot.hasData) {
+                  _incomes = incomeSnapshot.data!;
+                }
+
+                // Show loading only on initial load (both caches empty)
+                if (_expenses.isEmpty &&
+                    _incomes.isEmpty &&
+                    (expenseSnapshot.connectionState ==
+                            ConnectionState.waiting ||
+                        incomeSnapshot.connectionState ==
+                            ConnectionState.waiting)) {
+                  return const Center(child: CircularProgressIndicator());
+                }
+
+                if (expenseSnapshot.hasError || incomeSnapshot.hasError) {
+                  return Center(
+                    child: Text(
+                      'Error: ${expenseSnapshot.error ?? incomeSnapshot.error}',
+                    ),
+                  );
+                }
+
+                // Calculate totals for both expense and income
+                final expenseTotal = _expenses.fold<double>(
+                  0.0,
+                  (sum, expense) => sum + expense.amount,
+                );
+                final incomeTotal = _incomes.fold<double>(
+                  0.0,
+                  (sum, income) => sum + income.amount,
+                );
+
+                // Use cached data for smooth toggling
+                final List<dynamic> transactions = isExpense
+                    ? _expenses.cast<dynamic>()
+                    : _incomes.cast<dynamic>();
+                final totalAmount = isExpense ? expenseTotal : incomeTotal;
+
+                return Stack(
+                  children: [
+                    Stack(
                       children: [
-                        // Add top spacing equal to header height so first item isn't hidden
-                        SizedBox(height: headerHeight),
-                        // Horizontal categories
-                        CategoriesList(
-                          transactions: currentTransactions,
-                          scrollOffset: _scrollOffset,
+                        // Scrollable content - starts at top of screen so it can scroll under the header
+                        // Wrapped with Opacity for content fade effect
+                        Opacity(
+                          opacity: contentOpacity,
+                          child: SingleChildScrollView(
+                            controller: _scrollController,
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                // Add top spacing equal to header height so first item isn't hidden
+                                SizedBox(height: headerHeight),
+                                // Horizontal categories
+                                CategoriesList(
+                                  transactions: transactions,
+                                  scrollOffset: _scrollOffset,
+                                ),
+
+                                // Transactions list with mini total
+                                TransactionsList(
+                                  transactions: transactions,
+                                  miniTextColor: miniTextColor,
+                                  totalAmount: totalAmount,
+                                ),
+                              ],
+                            ),
+                          ),
                         ),
 
-                        // Transactions list with mini total
-                        TransactionsList(
-                          transactions: currentTransactions,
-                          miniTextColor: miniTextColor,
+                        // Sticky header with blur
+                        Header(
+                          key: _headerKey,
+                          blurSigma: blurSigma,
+                          overlayOpacity: overlayOpacity,
+                          isExpense: isExpense,
                           totalAmount: totalAmount,
+                          expenseTotal: expenseTotal,
+                          incomeTotal: incomeTotal,
+                          toggleMode: toggleMode,
+                          // debug overrides
+                          debugBlurOverride: _debugMode == 1 ? 20.0 : null,
+                          debugOverlayColor: _debugMode == 2
+                              ? Colors.purple.withOpacity(0.16)
+                              : null,
                         ),
                       ],
                     ),
-                  ),
-                ),
-
-                // Sticky header with blur
-                Header(
-                  key: _headerKey,
-                  blurSigma: blurSigma,
-                  overlayOpacity: overlayOpacity,
-                  isExpense: isExpense,
-                  totalAmount: totalAmount,
-                  toggleMode: toggleMode,
-                  // debug overrides
-                  debugBlurOverride: _debugMode == 1 ? 20.0 : null,
-                  debugOverlayColor: _debugMode == 2
-                      ? Colors.purple.withOpacity(0.16)
-                      : null,
-                ),
-              ],
-            ),
-            // Floating action buttons with search transition
-            const FloatingActionButtons(),
-          ],
+                    // Floating action buttons with search transition
+                    const FloatingActionButtons(),
+                  ],
+                );
+              },
+            );
+          },
         ),
       ),
     );

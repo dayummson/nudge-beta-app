@@ -12,6 +12,8 @@ class Header extends StatelessWidget {
   final double blurSigma;
   final double overlayOpacity;
   final double totalAmount;
+  final double expenseTotal;
+  final double incomeTotal;
   final bool isExpense;
   final void Function(bool) toggleMode;
   // Optional debug overrides (null in normal mode)
@@ -23,6 +25,8 @@ class Header extends StatelessWidget {
     required this.blurSigma,
     required this.overlayOpacity,
     required this.totalAmount,
+    required this.expenseTotal,
+    required this.incomeTotal,
     required this.isExpense,
     required this.toggleMode,
     this.debugBlurOverride,
@@ -196,6 +200,8 @@ class Header extends StatelessWidget {
                           child: ToggleMode(
                             isExpense: isExpense,
                             onChanged: (val) => toggleMode(val),
+                            expenseTotal: expenseTotal,
+                            incomeTotal: incomeTotal,
                             width: toggleW,
                             height: 40,
                           ),
