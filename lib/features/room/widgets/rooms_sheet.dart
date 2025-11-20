@@ -170,7 +170,7 @@ void showRoomsSheet(BuildContext context) {
                             key: ValueKey(r.id),
                             endActionPane: ActionPane(
                               motion: const ScrollMotion(),
-                              extentRatio: 0.5,
+                              extentRatio: 0.3,
                               children: [
                                 CustomSlidableAction(
                                   onPressed: (ctx) async {
@@ -203,7 +203,7 @@ void showRoomsSheet(BuildContext context) {
                                   onPressed: (ctx) async {
                                     // Delete
                                     final confirm = await showDialog<bool>(
-                                      context: context,
+                                      context: context2,
                                       builder: (dc) => AlertDialog(
                                         title: const Text('Delete room'),
                                         content: const Text(
@@ -223,7 +223,7 @@ void showRoomsSheet(BuildContext context) {
                                         ],
                                       ),
                                     );
-                                    if (confirm == true && ctx.mounted) {
+                                    if (confirm == true) {
                                       await db.roomsDao.deleteRoomById(r.id);
                                       if (isSelected) {
                                         final remaining = await db.roomsDao
