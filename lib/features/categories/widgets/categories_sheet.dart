@@ -29,39 +29,45 @@ void showCategoriesSheet(BuildContext context) {
               itemBuilder: (context, index) {
                 // Add button at the end
                 if (index == categories.length) {
-                  return Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      SizedBox(
-                        width: 80,
-                        height: 80,
-                        child: DashedBorder(
-                          color: Theme.of(
-                            context,
-                          ).colorScheme.outline.withOpacity(0.3),
-                          strokeWidth: 2,
-                          dashLength: 8,
-                          gapLength: 4,
-                          child: Center(
-                            child: Icon(
-                              Icons.add,
-                              size: 24,
-                              color: Theme.of(
-                                context,
-                              ).colorScheme.outline.withOpacity(0.3),
+                  return GestureDetector(
+                    onTap: () {
+                      // Open add category bottom sheet
+                      showAddCategorySheet(context);
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: DashedBorder(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.3),
+                            strokeWidth: 2,
+                            dashLength: 8,
+                            gapLength: 4,
+                            child: Center(
+                              child: Icon(
+                                Icons.add,
+                                size: 24,
+                                color: Theme.of(
+                                  context,
+                                ).colorScheme.outline.withOpacity(0.3),
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        'Add',
-                        style: TextStyle(
-                          fontSize: 12,
-                          color: Theme.of(context).colorScheme.onSurface,
+                        const SizedBox(height: 8),
+                        Text(
+                          'Add',
+                          style: TextStyle(
+                            fontSize: 12,
+                            color: Theme.of(context).colorScheme.onSurface,
+                          ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   );
                 }
 
@@ -101,33 +107,117 @@ void showCategoriesSheet(BuildContext context) {
               },
             ),
           ),
-
-          // Save button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
-            child: SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: () {
-                  // TODO: Implement save logic
-                  Navigator.pop(context);
-                },
-                style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 4),
-                  backgroundColor: Colors.grey[800],
-                  foregroundColor: Colors.grey[400],
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
-                  ),
-                ),
-                child: const Text('Save'),
-              ),
-            ),
-          ),
         ],
       ),
     ),
   );
+}
+
+/// Shows the add category bottom sheet with input field.
+void showAddCategorySheet(BuildContext context) {
+  showAppBottomSheet(
+    context: context,
+    title: 'Add Category',
+    mode: SheetMode.auto,
+    child: _AddCategorySheetContent(),
+  );
+}
+
+class _AddCategorySheetContent extends StatefulWidget {
+  const _AddCategorySheetContent();
+
+  @override
+  State<_AddCategorySheetContent> createState() =>
+      _AddCategorySheetContentState();
+}
+
+class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
+  final TextEditingController _controller = TextEditingController();
+  bool _hasText = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _controller.addListener(() {
+      setState(() {
+        _hasText = _controller.text.trim().isNotEmpty;
+      });
+    });
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+    final incomeColor = const Color(0xFF58CC02);
+
+    return SizedBox(
+      height: MediaQuery.of(context).size.height * 0.5,
+      child: Center(
+        child: Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              TextField(
+                controller: _controller,
+                decoration: InputDecoration(
+                  hintText: 'Category name',
+                  hintStyle: TextStyle(
+                    color: cs.onSurface.withOpacity(0.45),
+                    fontSize: 28,
+                  ),
+                  border: InputBorder.none,
+                ),
+                style: const TextStyle(
+                  fontWeight: FontWeight.bold,
+                  fontSize: 28,
+                ),
+                textAlign: TextAlign.left,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton.icon(
+                  onPressed: _hasText
+                      ? () async {
+                          final trimmed = _controller.text.trim();
+                          // TODO: Implement add category logic
+                          print('Add category: $trimmed');
+                          Navigator.pop(context);
+                        }
+                      : null,
+                  icon: const Icon(Icons.check, size: 18),
+                  label: const Padding(
+                    padding: EdgeInsets.symmetric(vertical: 12.0),
+                    child: Text('Save'),
+                  ),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: _hasText ? incomeColor : Colors.grey[850],
+                    foregroundColor: _hasText ? Colors.white : cs.onSurface,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 0,
+                      horizontal: 14,
+                    ),
+                    minimumSize: const Size(64, 48),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
 }
 
 /// Helper widget for rendering dashed borders around UI elements.
