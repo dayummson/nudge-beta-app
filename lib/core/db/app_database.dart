@@ -54,7 +54,14 @@ part '../../features/room/data/local/dao/attachments_dao.dart';
   ],
 )
 class AppDatabase extends _$AppDatabase {
-  AppDatabase() : super(_openConnection());
+  // Singleton pattern
+  static final AppDatabase _instance = AppDatabase._internal();
+
+  factory AppDatabase() {
+    return _instance;
+  }
+
+  AppDatabase._internal() : super(_openConnection());
 
   // Secondary constructor for tests / CLI tools using an in-memory or custom executor.
   AppDatabase.forTesting(super.e);
