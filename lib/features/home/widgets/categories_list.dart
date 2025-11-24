@@ -61,44 +61,45 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
       maxCategoryHeight * 0.4,
     ];
 
-    return Stack(
-      children: [
-        // Placeholder bars - non-scrollable
-        SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          physics: const NeverScrollableScrollPhysics(),
-          padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-          child: Row(
-            children: placeholderHeights.map((height) {
-              return Container(
-                margin: const EdgeInsets.only(right: 8),
-                child: Align(
-                  alignment: Alignment.bottomCenter,
-                  child: Container(
+    return SizedBox.expand(
+      child: Stack(
+        children: [
+          // Placeholder bars - non-scrollable, aligned to bottom
+          Align(
+            alignment: Alignment.bottomLeft,
+            child: SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const NeverScrollableScrollPhysics(),
+              padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
+              child: Row(
+                crossAxisAlignment: CrossAxisAlignment.end,
+                children: placeholderHeights.map((height) {
+                  return Container(
+                    margin: const EdgeInsets.only(right: 8),
                     height: height,
                     width: 80,
                     decoration: BoxDecoration(
                       color: Colors.grey[850],
                       borderRadius: BorderRadius.circular(16),
                     ),
-                  ),
-                ),
-              );
-            }).toList(),
-          ),
-        ),
-        // Centered text message
-        Center(
-          child: Text(
-            'Your transactions will show up here',
-            style: TextStyle(
-              fontSize: 14,
-              color: colorScheme.onSurface.withOpacity(0.5),
-              fontWeight: FontWeight.w500,
+                  );
+                }).toList(),
+              ),
             ),
           ),
-        ),
-      ],
+          // Centered text message
+          Center(
+            child: Text(
+              'Your transactions will show up here',
+              style: TextStyle(
+                fontSize: 14,
+                color: colorScheme.onSurface.withOpacity(0.5),
+                fontWeight: FontWeight.w500,
+              ),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
