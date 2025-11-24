@@ -220,63 +220,81 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                   final isSelected =
                       selectedMonthIndex == index && selectedMode == 1;
                   // TODO: Replace with actual totals from database
-                  // For now using dummy data: expense - income = net loss
-                  final expenseTotal = 0.0;
+                  // For now using test data to show the UI works
+                  final expenseTotal = index == 10
+                      ? 12.0
+                      : 0.0; // November has data for testing
                   final incomeTotal = 0.0;
                   final netTotal = (expenseTotal - incomeTotal).abs();
                   final hasValue = netTotal > 0;
 
-                  return TextButton(
-                    onPressed: () {
-                      setState(() {
-                        selectedMonthIndex = index;
-                        selectedMode = 1;
-                      });
-                    },
-                    style: TextButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 4,
-                      ),
-                      minimumSize: Size.zero,
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      backgroundColor: hasValue
-                          ? (isSelected
-                                ? expenseColor
-                                : expenseColor.withOpacity(0.3))
-                          : (isSelected ? expenseColor : Colors.transparent),
-                      foregroundColor: isSelected
-                          ? Colors.white
-                          : Colors.grey[200],
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
-                      ),
+                  return Container(
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(12),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: expenseColor.withOpacity(0.5),
+                                blurRadius: 8,
+                                spreadRadius: 2,
+                              ),
+                            ]
+                          : null,
                     ),
-                    child: Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Text(
-                          widget.months[index],
-                          style: TextStyle(
-                            fontSize: 13,
-                            fontWeight: FontWeight.w600,
-                            color: isSelected ? Colors.white : Colors.grey[200],
-                          ),
+                    child: TextButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedMonthIndex = index;
+                          selectedMode = 1;
+                        });
+                      },
+                      style: TextButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 4,
                         ),
-                        if (hasValue) ...[
-                          const SizedBox(height: 4),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        backgroundColor: hasValue
+                            ? (isSelected
+                                  ? expenseColor
+                                  : expenseColor.withOpacity(0.3))
+                            : (isSelected ? expenseColor : Colors.transparent),
+                        foregroundColor: isSelected
+                            ? Colors.white
+                            : Colors.grey[200],
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                      ),
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
                           Text(
-                            '₱${netTotal.toStringAsFixed(0)}',
+                            widget.months[index],
                             style: TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.w500,
+                              fontSize: 13,
+                              fontWeight: FontWeight.w600,
                               color: isSelected
-                                  ? Colors.white.withOpacity(0.9)
-                                  : Colors.grey[400],
+                                  ? Colors.white
+                                  : Colors.grey[200],
                             ),
                           ),
+                          if (hasValue) ...[
+                            const SizedBox(height: 4),
+                            Text(
+                              '₱${netTotal.toStringAsFixed(0)}',
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w500,
+                                color: isSelected
+                                    ? Colors.white.withOpacity(0.9)
+                                    : Colors.grey[400],
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   );
                 },
