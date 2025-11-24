@@ -220,36 +220,37 @@ class _HomePageState extends ConsumerState<HomePage> {
                                       // Add top spacing equal to header height so first item isn't hidden
                                       SizedBox(height: headerHeight),
                                       // Horizontal categories with fade animation
-                                      AnimatedSwitcher(
-                                        duration: Duration(
-                                          milliseconds:
-                                              (_expenses.isEmpty &&
-                                                  _incomes.isEmpty)
-                                              ? 0
-                                              : 200,
-                                        ),
-                                        switchInCurve: Curves.easeIn,
-                                        switchOutCurve: Curves.easeOut,
-                                        transitionBuilder: (child, animation) {
-                                          return FadeTransition(
-                                            opacity: animation,
-                                            child: child,
-                                          );
-                                        },
-                                        child: CategoriesList(
-                                          key: ValueKey(
-                                            _expenses.isEmpty &&
-                                                    _incomes.isEmpty
-                                                ? 'categories_empty'
-                                                : 'categories_$isExpense',
-                                          ),
-                                          transactions: transactions,
-                                          scrollOffset: _scrollOffset,
-                                          hasBothEmptyTransactions:
-                                              _expenses.isEmpty &&
-                                              _incomes.isEmpty,
-                                        ),
-                                      ),
+                                      (_expenses.isEmpty && _incomes.isEmpty)
+                                          ? CategoriesList(
+                                              key: const ValueKey(
+                                                'categories_empty',
+                                              ),
+                                              transactions: transactions,
+                                              scrollOffset: _scrollOffset,
+                                              hasBothEmptyTransactions: true,
+                                            )
+                                          : AnimatedSwitcher(
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
+                                              switchInCurve: Curves.easeIn,
+                                              switchOutCurve: Curves.easeOut,
+                                              transitionBuilder:
+                                                  (child, animation) {
+                                                    return FadeTransition(
+                                                      opacity: animation,
+                                                      child: child,
+                                                    );
+                                                  },
+                                              child: CategoriesList(
+                                                key: ValueKey(
+                                                  'categories_$isExpense',
+                                                ),
+                                                transactions: transactions,
+                                                scrollOffset: _scrollOffset,
+                                                hasBothEmptyTransactions: false,
+                                              ),
+                                            ),
 
                                       // Transactions list with mini total and fade animation
                                       AnimatedSwitcher(

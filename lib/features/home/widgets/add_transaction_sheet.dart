@@ -565,7 +565,9 @@ class _AddTransactionSheetContentState
                             ),
                             shape: const StadiumBorder(),
                             side: BorderSide(
-                              color: selected ? cs.primary : borderColor,
+                              color: selected
+                                  ? (_isExpense ? expenseColor : incomeColor)
+                                  : borderColor,
                             ),
                             backgroundColor: Colors.transparent,
                             selectedColor: cs.surface.withOpacity(0.06),
@@ -573,6 +575,7 @@ class _AddTransactionSheetContentState
                               color: selected ? cs.onSurface : cs.onSurface,
                               fontWeight: FontWeight.w600,
                             ),
+                            showCheckmark: false,
                             materialTapTargetSize:
                                 MaterialTapTargetSize.shrinkWrap,
                           ),
@@ -618,8 +621,11 @@ class _AddTransactionSheetContentState
                             ),
                           ],
                         ),
+                        showCheckmark: false,
                         shape: const StadiumBorder(),
-                        side: BorderSide(color: cs.primary),
+                        side: BorderSide(
+                          color: _isExpense ? expenseColor : incomeColor,
+                        ),
                         backgroundColor: Colors.transparent,
                         selectedColor: cs.surface.withOpacity(0.06),
                         labelStyle: TextStyle(
