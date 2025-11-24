@@ -7,9 +7,16 @@ import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 /// - All time
 /// - Specific year
 /// - Individual months
-void showMonthSheet(BuildContext context) {
+void showMonthSheet(
+  BuildContext context, {
+  required String currentDisplayText,
+  required bool isExpense,
+  required Function(String) onApply,
+}) {
   final cs = Theme.of(context).colorScheme;
+  final isDark = Theme.of(context).brightness == Brightness.dark;
   final year = DateTime.now().year.toString();
+  final currentMonth = DateTime.now().month - 1; // 0-indexed
   final months = const [
     'JAN',
     'FEB',
@@ -24,165 +31,300 @@ void showMonthSheet(BuildContext context) {
     'NOV',
     'DEC',
   ];
+  final monthsFull = const [
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
+  ];
 
   showAppBottomSheet(
     context: context,
     title: null,
     mode: SheetMode.auto,
-    child: StatefulBuilder(
-      builder: (context2, setState2) {
-        int selectedMode = 0;
-        final Color bg = Colors.grey[850] ?? Colors.grey.shade900;
+    child: _MonthSheetContent(
+      cs: cs,
+      isDark: isDark,
+      year: year,
+      currentMonth: currentMonth,
+      months: months,
+      monthsFull: monthsFull,
+      currentDisplayText: currentDisplayText,
+      onApply: onApply,
+    ),
+  );
+}
 
-        return SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
+class _MonthSheetContent extends StatefulWidget {
+  final ColorScheme cs;
+  final bool isDark;
+  final String year;
+  final int currentMonth;
+  final List<String> months;
+  final List<String> monthsFull;
+  final String currentDisplayText;
+  final Function(String) onApply;
+
+  const _MonthSheetContent({
+    required this.cs,
+    required this.isDark,
+    required this.year,
+    required this.currentMonth,
+    required this.months,
+    required this.monthsFull,
+    required this.currentDisplayText,
+    required this.onApply,
+  });
+
+  @override
+  State<_MonthSheetContent> createState() => _MonthSheetContentState();
+}
+
+class _MonthSheetContentState extends State<_MonthSheetContent> {
+  late int selectedMode;
+  int? selectedMonthIndex;
+
+  @override
+  void initState() {
+    super.initState();
+    // Determine initial mode and selected month
+    selectedMode = widget.currentDisplayText == 'All time' ? 0 : 1;
+
+    // If current text is a month name, find its index
+    if (widget.currentDisplayText != 'All time') {
+      selectedMonthIndex = widget.monthsFull.indexOf(widget.currentDisplayText);
+      if (selectedMonthIndex == -1) {
+        selectedMonthIndex = null;
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final Color bg = Colors.grey[850] ?? Colors.grey.shade900;
+    final expenseColor = widget.isDark
+        ? const Color(0xFFFF6B6B)
+        : const Color(0xFFEF5350);
+
+    return SingleChildScrollView(
+      child: Column(
+        mainAxisSize: MainAxisSize.min,
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.end,
             children: [
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
-                children: [
-                  IconButton(
-                    onPressed: () => Navigator.pop(context),
-                    icon: Icon(Icons.close, color: cs.onSurface),
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                  ),
-                ],
-              ),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Text(
-                  'Month',
-                  style: TextStyle(
-                    fontSize: 28,
-                    fontWeight: FontWeight.w800,
-                    color: cs.onSurface,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Row(
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    OutlinedButton(
-                      onPressed: () => setState2(() => selectedMode = 0),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 12,
-                        ),
-                        shape: const StadiumBorder(),
-                        backgroundColor: selectedMode == 0
-                            ? bg
-                            : Colors.transparent,
-                        side: BorderSide(
-                          color: selectedMode == 0
-                              ? Colors.black.withOpacity(0.6)
-                              : bg,
-                        ),
-                      ),
-                      child: const Text('All time'),
-                    ),
-                    const SizedBox(width: 8),
-                    OutlinedButton(
-                      onPressed: () => setState2(() => selectedMode = 1),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 12,
-                        ),
-                        shape: const StadiumBorder(),
-                        backgroundColor: selectedMode == 1
-                            ? bg
-                            : Colors.transparent,
-                        side: BorderSide(
-                          color: selectedMode == 1
-                              ? Colors.black.withOpacity(0.6)
-                              : bg,
-                        ),
-                      ),
-                      child: Text(year),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 16),
-                child: Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: bg,
-                    borderRadius: BorderRadius.circular(16),
-                  ),
-                  child: GridView.builder(
-                    shrinkWrap: true,
-                    physics: const NeverScrollableScrollPhysics(),
-                    gridDelegate:
-                        const SliverGridDelegateWithFixedCrossAxisCount(
-                          crossAxisCount: 3,
-                          crossAxisSpacing: 12,
-                          mainAxisSpacing: 12,
-                          childAspectRatio: 2.5,
-                        ),
-                    itemCount: months.length,
-                    itemBuilder: (context, index) => TextButton(
-                      onPressed: () {
-                        // TODO: Implement month selection logic
-                      },
-                      style: TextButton.styleFrom(
-                        padding: EdgeInsets.zero,
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        foregroundColor: Colors.grey[200],
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                      ),
-                      child: Center(child: Text(months[index])),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 16,
-                  vertical: 16,
-                ),
-                child: Align(
-                  alignment: Alignment.center,
-                  child: ElevatedButton.icon(
-                    onPressed: () => Navigator.pop(context),
-                    icon: const Icon(Icons.check, size: 16),
-                    label: const Text('Apply'),
-                    style: ElevatedButton.styleFrom(
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 8,
-                        horizontal: 12,
-                      ),
-                      backgroundColor: cs.primary,
-                      foregroundColor: cs.onPrimary,
-                      textStyle: const TextStyle(
-                        fontWeight: FontWeight.w500,
-                        fontSize: 16,
-                      ),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      minimumSize: const Size(64, 36),
-                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                    ),
-                  ),
-                ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, color: widget.cs.onSurface),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
               ),
             ],
           ),
-        );
-      },
-    ),
-  );
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Text(
+              'Month',
+              style: TextStyle(
+                fontSize: 28,
+                fontWeight: FontWeight.w800,
+                color: widget.cs.onSurface,
+              ),
+            ),
+          ),
+          const SizedBox(height: 12),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                OutlinedButton(
+                  onPressed: () => setState(() {
+                    selectedMode = 0;
+                    selectedMonthIndex = null;
+                  }),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 12,
+                    ),
+                    shape: const StadiumBorder(),
+                    backgroundColor: selectedMode == 0
+                        ? bg
+                        : Colors.transparent,
+                    side: BorderSide(
+                      color: selectedMode == 0
+                          ? Colors.black.withOpacity(0.6)
+                          : bg,
+                    ),
+                  ),
+                  child: const Text('All time'),
+                ),
+                const SizedBox(width: 8),
+                OutlinedButton(
+                  onPressed: () => setState(() {
+                    selectedMode = 1;
+                    if (selectedMonthIndex == null) {
+                      selectedMonthIndex = widget.currentMonth;
+                    }
+                  }),
+                  style: OutlinedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(
+                      vertical: 6,
+                      horizontal: 12,
+                    ),
+                    shape: const StadiumBorder(),
+                    backgroundColor: selectedMode == 1
+                        ? bg
+                        : Colors.transparent,
+                    side: BorderSide(
+                      color: selectedMode == 1
+                          ? Colors.black.withOpacity(0.6)
+                          : bg,
+                    ),
+                  ),
+                  child: Text(widget.year),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16),
+            child: Container(
+              padding: const EdgeInsets.all(12),
+              decoration: BoxDecoration(
+                color: bg,
+                borderRadius: BorderRadius.circular(16),
+              ),
+              child: GridView.builder(
+                shrinkWrap: true,
+                physics: const NeverScrollableScrollPhysics(),
+                gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                  crossAxisCount: 3,
+                  crossAxisSpacing: 12,
+                  mainAxisSpacing: 12,
+                  childAspectRatio: 1.8,
+                ),
+                itemCount: widget.months.length,
+                itemBuilder: (context, index) {
+                  final isSelected =
+                      selectedMonthIndex == index && selectedMode == 1;
+                  // TODO: Replace with actual totals from database
+                  // For now using dummy data: expense - income = net loss
+                  final expenseTotal = 0.0;
+                  final incomeTotal = 0.0;
+                  final netTotal = (expenseTotal - incomeTotal).abs();
+                  final hasValue = netTotal > 0;
+
+                  return TextButton(
+                    onPressed: () {
+                      setState(() {
+                        selectedMonthIndex = index;
+                        selectedMode = 1;
+                      });
+                    },
+                    style: TextButton.styleFrom(
+                      padding: const EdgeInsets.symmetric(
+                        vertical: 8,
+                        horizontal: 4,
+                      ),
+                      minimumSize: Size.zero,
+                      tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      backgroundColor: hasValue
+                          ? (isSelected
+                                ? expenseColor
+                                : expenseColor.withOpacity(0.3))
+                          : (isSelected ? expenseColor : Colors.transparent),
+                      foregroundColor: isSelected
+                          ? Colors.white
+                          : Colors.grey[200],
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                    ),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          widget.months[index],
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: isSelected ? Colors.white : Colors.grey[200],
+                          ),
+                        ),
+                        if (hasValue) ...[
+                          const SizedBox(height: 4),
+                          Text(
+                            '₱${netTotal.toStringAsFixed(0)}',
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w500,
+                              color: isSelected
+                                  ? Colors.white.withOpacity(0.9)
+                                  : Colors.grey[400],
+                            ),
+                          ),
+                        ],
+                      ],
+                    ),
+                  );
+                },
+              ),
+            ),
+          ),
+          const SizedBox(height: 16),
+          Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+            child: Align(
+              alignment: Alignment.center,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  String displayText;
+                  if (selectedMode == 0) {
+                    displayText = 'All time';
+                  } else if (selectedMonthIndex != null) {
+                    displayText = widget.monthsFull[selectedMonthIndex!];
+                  } else {
+                    displayText = widget.monthsFull[widget.currentMonth];
+                  }
+                  widget.onApply(displayText);
+                  Navigator.pop(context);
+                },
+                icon: const Icon(Icons.check, size: 16),
+                label: const Text('Apply'),
+                style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 8,
+                    horizontal: 12,
+                  ),
+                  backgroundColor: widget.cs.primary,
+                  foregroundColor: widget.cs.onPrimary,
+                  textStyle: const TextStyle(
+                    fontWeight: FontWeight.w500,
+                    fontSize: 16,
+                  ),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  minimumSize: const Size(64, 36),
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
 }

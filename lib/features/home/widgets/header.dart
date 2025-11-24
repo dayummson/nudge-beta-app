@@ -8,7 +8,7 @@ import 'settings_sheet.dart';
 import 'month_sheet.dart';
 import '../../categories/widgets/categories_sheet.dart';
 
-class Header extends StatelessWidget {
+class Header extends StatefulWidget {
   final double blurSigma;
   final double overlayOpacity;
   final double totalAmount;
@@ -34,6 +34,13 @@ class Header extends StatelessWidget {
     this.debugBlurOverride,
     this.debugOverlayColor,
   });
+
+  @override
+  State<Header> createState() => _HeaderState();
+}
+
+class _HeaderState extends State<Header> {
+  String _monthDisplayText = 'All time';
 
   @override
   Widget build(BuildContext context) {
@@ -68,13 +75,13 @@ class Header extends StatelessWidget {
             child: ClipRect(
               child: BackdropFilter(
                 filter: ImageFilter.blur(
-                  sigmaX: debugBlurOverride ?? blurSigma,
-                  sigmaY: debugBlurOverride ?? blurSigma,
+                  sigmaX: widget.debugBlurOverride ?? widget.blurSigma,
+                  sigmaY: widget.debugBlurOverride ?? widget.blurSigma,
                 ),
                 child: Container(
                   color:
-                      debugOverlayColor ??
-                      colorScheme.surface.withOpacity(overlayOpacity),
+                      widget.debugOverlayColor ??
+                      colorScheme.surface.withOpacity(widget.overlayOpacity),
                   child: SafeArea(
                     bottom: false,
                     child: Padding(
@@ -177,7 +184,7 @@ class Header extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            totalAmount.toStringAsFixed(2),
+                            widget.totalAmount.toStringAsFixed(2),
                             style: TextStyle(
                               color: colorScheme.onSurface,
                               fontSize: 40,
@@ -200,10 +207,10 @@ class Header extends StatelessWidget {
                         return Align(
                           alignment: Alignment.centerLeft,
                           child: ToggleMode(
-                            isExpense: isExpense,
-                            onChanged: (val) => toggleMode(val),
-                            expenseTotal: expenseTotal,
-                            incomeTotal: incomeTotal,
+                            isExpense: widget.isExpense,
+                            onChanged: (val) => widget.toggleMode(val),
+                            expenseTotal: widget.expenseTotal,
+                            incomeTotal: widget.incomeTotal,
                             width: toggleW,
                             height: 40,
                           ),
@@ -240,7 +247,7 @@ class Header extends StatelessWidget {
                             mainAxisSize: MainAxisSize.min,
                             children: [
                               Text(
-                                'All time',
+                                _monthDisplayText,
                                 style: TextStyle(
                                   color: colorScheme.onSurface,
                                   fontWeight: FontWeight.w600,
@@ -361,10 +368,19 @@ class Header extends StatelessWidget {
   }
 
   void _showMonthSheet(BuildContext context) {
-    showMonthSheet(context);
+    showMonthSheet(
+      context,
+      currentDisplayText: _monthDisplayText,
+      isExpense: widget.isExpense,
+      onApply: (String newText) {
+        setState(() {
+          _monthDisplayText = newText;
+        });
+      },
+    );
   }
 
   void _showRoomsSheet(BuildContext context) {
-    showRoomsSheet(context, onRoomChanged: onRoomChanged);
+    showRoomsSheet(context, onRoomChanged: widget.onRoomChanged);
   }
 }
