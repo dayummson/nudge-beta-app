@@ -5,6 +5,7 @@ import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
 import 'package:nudge_1/features/room/widgets/rooms_sheet.dart';
+import '../../categories/widgets/categories_sheet.dart';
 
 /// Shows the add transaction bottom sheet.
 ///
@@ -521,7 +522,7 @@ class _AddTransactionSheetContentState
                     children: [
                       const SizedBox(width: 16),
                       OutlinedButton(
-                        onPressed: () {},
+                        onPressed: () => showCategoriesSheet(context),
                         style: OutlinedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(
                             vertical: 8,
