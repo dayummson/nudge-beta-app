@@ -61,7 +61,7 @@ class BaseBottomSheet extends StatelessWidget {
                 ),
               Flexible(
                 child: SingleChildScrollView(
-                  physics: const BouncingScrollPhysics(),
+                  physics: const ClampingScrollPhysics(),
                   child: child,
                 ),
               ),

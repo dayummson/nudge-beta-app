@@ -19,12 +19,18 @@ Future<T?> showAppBottomSheet<T>({
     barrierColor: Colors.black.withOpacity(0.3), // Soft overlay (30% opacity)
     isDismissible: isDismissible,
     builder: (context) {
-      Widget sheet = BaseBottomSheet(
-        title: title,
-        child: child,
-        contentPadding:
-            contentPadding ??
-            const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+      // Get keyboard height to push content above it
+      final keyboardHeight = MediaQuery.of(context).viewInsets.bottom;
+
+      Widget sheet = Padding(
+        padding: EdgeInsets.only(bottom: keyboardHeight),
+        child: BaseBottomSheet(
+          title: title,
+          child: child,
+          contentPadding:
+              contentPadding ??
+              const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+        ),
       );
 
       // Wrap with FractionallySizedBox for fixed height modes or custom height
