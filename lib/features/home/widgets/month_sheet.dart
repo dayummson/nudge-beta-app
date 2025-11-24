@@ -11,7 +11,7 @@ void showMonthSheet(
   BuildContext context, {
   required String currentDisplayText,
   required bool isExpense,
-  required Function(String) onApply,
+  required Function(String, int?, int?) onApply,
 }) {
   final cs = Theme.of(context).colorScheme;
   final isDark = Theme.of(context).brightness == Brightness.dark;
@@ -71,7 +71,7 @@ class _MonthSheetContent extends StatefulWidget {
   final List<String> months;
   final List<String> monthsFull;
   final String currentDisplayText;
-  final Function(String) onApply;
+  final Function(String, int?, int?) onApply;
 
   const _MonthSheetContent({
     required this.cs,
@@ -309,14 +309,24 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
               child: ElevatedButton.icon(
                 onPressed: () {
                   String displayText;
+                  int? month;
+                  int? year;
+
                   if (selectedMode == 0) {
                     displayText = 'All time';
+                    month = null;
+                    year = null;
                   } else if (selectedMonthIndex != null) {
                     displayText = widget.monthsFull[selectedMonthIndex!];
+                    month = selectedMonthIndex! + 1; // Convert to 1-12
+                    year = int.parse(widget.year);
                   } else {
                     displayText = widget.monthsFull[widget.currentMonth];
+                    month = widget.currentMonth + 1; // Convert to 1-12
+                    year = int.parse(widget.year);
                   }
-                  widget.onApply(displayText);
+
+                  widget.onApply(displayText, month, year);
                   Navigator.pop(context);
                 },
                 icon: const Icon(Icons.check, size: 16),

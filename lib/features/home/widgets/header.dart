@@ -17,6 +17,7 @@ class Header extends StatefulWidget {
   final bool isExpense;
   final void Function(bool) toggleMode;
   final VoidCallback? onRoomChanged;
+  final Function(int?, int?)? onMonthFilterChanged;
   // Optional debug overrides (null in normal mode)
   final double? debugBlurOverride;
   final Color? debugOverlayColor;
@@ -31,6 +32,7 @@ class Header extends StatefulWidget {
     required this.isExpense,
     required this.toggleMode,
     this.onRoomChanged,
+    this.onMonthFilterChanged,
     this.debugBlurOverride,
     this.debugOverlayColor,
   });
@@ -41,6 +43,8 @@ class Header extends StatefulWidget {
 
 class _HeaderState extends State<Header> {
   String _monthDisplayText = 'All time';
+  int? _selectedMonth; // null for "All time", 1-12 for specific month
+  int? _selectedYear; // null for "All time", year value for specific year
 
   @override
   Widget build(BuildContext context) {
@@ -372,10 +376,14 @@ class _HeaderState extends State<Header> {
       context,
       currentDisplayText: _monthDisplayText,
       isExpense: widget.isExpense,
-      onApply: (String newText) {
+      onApply: (String newText, int? month, int? year) {
         setState(() {
           _monthDisplayText = newText;
+          _selectedMonth = month;
+          _selectedYear = year;
         });
+        // Notify parent about filter change
+        widget.onMonthFilterChanged?.call(month, year);
       },
     );
   }

@@ -38,6 +38,10 @@ class _HomePageState extends ConsumerState<HomePage> {
   // Current selected room ID
   String? _selectedRoomId;
 
+  // Month/year filter (null means "All time")
+  int? _selectedMonth; // 1-12
+  int? _selectedYear;
+
   @override
   void initState() {
     super.initState();
@@ -96,6 +100,59 @@ class _HomePageState extends ConsumerState<HomePage> {
     setState(() {
       this.isExpense = isExpense;
     });
+  }
+
+  void _onMonthFilterChanged(int? month, int? year) {
+    setState(() {
+      _selectedMonth = month;
+      _selectedYear = year;
+    });
+  }
+
+  List<dynamic> _filterAndSortTransactions(List<dynamic> transactions) {
+    List<dynamic> filtered = transactions;
+
+    // Filter by month/year if selected
+    if (_selectedMonth != null && _selectedYear != null) {
+      filtered = transactions.where((transaction) {
+        DateTime? date;
+        if (transaction is Expense) {
+          date = transaction.createdAt;
+        } else if (transaction is Income) {
+          date = transaction.createdAt;
+        }
+
+        if (date != null) {
+          return date.year == _selectedYear && date.month == _selectedMonth;
+        }
+        return false;
+      }).toList();
+    }
+
+    // Sort from latest to oldest
+    filtered.sort((a, b) {
+      DateTime? dateA;
+      DateTime? dateB;
+
+      if (a is Expense) {
+        dateA = a.createdAt;
+      } else if (a is Income) {
+        dateA = a.createdAt;
+      }
+
+      if (b is Expense) {
+        dateB = b.createdAt;
+      } else if (b is Income) {
+        dateB = b.createdAt;
+      }
+
+      if (dateA != null && dateB != null) {
+        return dateB.compareTo(dateA); // Descending order (latest first)
+      }
+      return 0;
+    });
+
+    return filtered;
   }
 
   @override
@@ -181,24 +238,32 @@ class _HomePageState extends ConsumerState<HomePage> {
                         );
                       }
 
-                      // Calculate totals for both expense and income
-                      final expenseTotal = _expenses.fold<double>(
+                      // Filter and sort transactions
+                      final filteredExpenses = _filterAndSortTransactions(
+                        _expenses,
+                      );
+                      final filteredIncomes = _filterAndSortTransactions(
+                        _incomes,
+                      );
+
+                      // Calculate totals for filtered data
+                      final expenseTotal = filteredExpenses.fold<double>(
                         0.0,
                         (sum, expense) => sum + expense.amount,
                       );
-                      final incomeTotal = _incomes.fold<double>(
+                      final incomeTotal = filteredIncomes.fold<double>(
                         0.0,
                         (sum, income) => sum + income.amount,
                       );
 
-                      // Use cached data for smooth toggling
+                      // Use filtered and sorted data for display
                       // When both are empty, use the same empty list to prevent flicker
                       final List<dynamic> transactions =
-                          (_expenses.isEmpty && _incomes.isEmpty)
+                          (filteredExpenses.isEmpty && filteredIncomes.isEmpty)
                           ? const <dynamic>[]
                           : (isExpense
-                                ? _expenses.cast<dynamic>()
-                                : _incomes.cast<dynamic>());
+                                ? filteredExpenses.cast<dynamic>()
+                                : filteredIncomes.cast<dynamic>());
 
                       // Net total = Expenses - Incomes (overall balance)
                       final totalAmount = expenseTotal - incomeTotal;
@@ -220,7 +285,8 @@ class _HomePageState extends ConsumerState<HomePage> {
                                       // Add top spacing equal to header height so first item isn't hidden
                                       SizedBox(height: headerHeight),
                                       // Horizontal categories with fade animation
-                                      (_expenses.isEmpty && _incomes.isEmpty)
+                                      (filteredExpenses.isEmpty &&
+                                              filteredIncomes.isEmpty)
                                           ? CategoriesList(
                                               key: const ValueKey(
                                                 'categories_empty',
@@ -295,6 +361,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                 incomeTotal: incomeTotal,
                                 toggleMode: toggleMode,
                                 onRoomChanged: _loadSelectedRoom,
+                                onMonthFilterChanged: _onMonthFilterChanged,
                                 // debug overrides
                                 debugBlurOverride: _debugMode == 1
                                     ? 20.0
