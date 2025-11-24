@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/search_enabled_provider.dart';
+import '../presentation/providers/search_input_provider.dart';
 import '../presentation/pages/voice_page.dart';
 import 'add_transaction_sheet.dart';
 
@@ -33,6 +34,11 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
       parent: _animationController,
       curve: Curves.easeInOut,
     );
+
+    // Add listener to search controller
+    _searchController.addListener(() {
+      searchInputNotifier.value = _searchController.text;
+    });
   }
 
   @override
