@@ -63,27 +63,29 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
 
     return Stack(
       children: [
-        // Placeholder bars
-        ListView.builder(
+        // Placeholder bars - non-scrollable
+        SingleChildScrollView(
           scrollDirection: Axis.horizontal,
+          physics: const NeverScrollableScrollPhysics(),
           padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-          itemCount: placeholderHeights.length,
-          itemBuilder: (context, index) {
-            return Container(
-              margin: const EdgeInsets.only(right: 8),
-              child: Align(
-                alignment: Alignment.bottomCenter,
-                child: Container(
-                  height: placeholderHeights[index],
-                  width: 80,
-                  decoration: BoxDecoration(
-                    color: Colors.grey[850],
-                    borderRadius: BorderRadius.circular(16),
+          child: Row(
+            children: placeholderHeights.map((height) {
+              return Container(
+                margin: const EdgeInsets.only(right: 8),
+                child: Align(
+                  alignment: Alignment.bottomCenter,
+                  child: Container(
+                    height: height,
+                    width: 80,
+                    decoration: BoxDecoration(
+                      color: Colors.grey[850],
+                      borderRadius: BorderRadius.circular(16),
+                    ),
                   ),
                 ),
-              ),
-            );
-          },
+              );
+            }).toList(),
+          ),
         ),
         // Centered text message
         Center(
