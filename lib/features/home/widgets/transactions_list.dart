@@ -176,23 +176,9 @@ class TransactionsList extends StatelessWidget {
                       key: ValueKey(transaction.id),
                       endActionPane: ActionPane(
                         motion: const ScrollMotion(),
-                        extentRatio: 0.25,
+                        extentRatio: 0.2,
                         children: [
-                          SlidableAction(
-                            onPressed: (ctx) async {
-                              // Edit transaction
-                              showAddTransactionSheet(
-                                context,
-                                onRoomChanged: onRoomChanged,
-                                transaction: transaction,
-                              );
-                            },
-                            backgroundColor: Colors.transparent,
-                            foregroundColor: Colors.blue,
-                            icon: Icons.edit,
-                            padding: EdgeInsets.zero,
-                          ),
-                          SlidableAction(
+                          CustomSlidableAction(
                             onPressed: (ctx) async {
                               // Show delete confirmation
                               final confirmed = await showDialog<bool>(
@@ -260,13 +246,32 @@ class TransactionsList extends StatelessWidget {
                               }
                             },
                             backgroundColor: Colors.transparent,
-                            foregroundColor: Colors.red,
-                            icon: Icons.delete,
                             padding: EdgeInsets.zero,
+                            child: Container(
+                              width: 40,
+                              height: 40,
+                              decoration: const BoxDecoration(
+                                color: Color(0xFFEF5350),
+                                shape: BoxShape.circle,
+                              ),
+                              child: const Icon(
+                                Icons.delete,
+                                color: Colors.white,
+                                size: 20,
+                              ),
+                            ),
                           ),
                         ],
                       ),
                       child: ListTile(
+                        onTap: () {
+                          // Open edit sheet when tapping the transaction
+                          showAddTransactionSheet(
+                            context,
+                            onRoomChanged: onRoomChanged,
+                            transaction: transaction,
+                          );
+                        },
                         leading: Container(
                           width: 48,
                           height: 48,
