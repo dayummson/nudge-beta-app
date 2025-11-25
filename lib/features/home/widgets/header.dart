@@ -290,7 +290,8 @@ class _HeaderState extends ConsumerState<Header> {
                                     ),
                                   ),
                                 )
-                              : Container(
+                              : GestureDetector(
+                                  onTap: _clearCategoryFilter,
                                   child: Container(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 6,
@@ -323,22 +324,19 @@ class _HeaderState extends ConsumerState<Header> {
                                           ),
                                         ),
                                         const SizedBox(width: 6),
-                                        GestureDetector(
-                                          onTap: _clearCategoryFilter,
-                                          child: Container(
-                                            width: 20,
-                                            height: 20,
-                                            decoration: BoxDecoration(
-                                              color: colorScheme.onSurface
-                                                  .withOpacity(0.1),
-                                              shape: BoxShape.circle,
-                                            ),
-                                            child: Icon(
-                                              Icons.close,
-                                              size: 14,
-                                              color: colorScheme.onSurface
-                                                  .withOpacity(0.7),
-                                            ),
+                                        Container(
+                                          width: 20,
+                                          height: 20,
+                                          decoration: BoxDecoration(
+                                            color: colorScheme.onSurface
+                                                .withOpacity(0.1),
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Icon(
+                                            Icons.close,
+                                            size: 14,
+                                            color: colorScheme.onSurface
+                                                .withOpacity(0.7),
                                           ),
                                         ),
                                       ],
