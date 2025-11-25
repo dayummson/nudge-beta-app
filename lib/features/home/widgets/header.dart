@@ -297,6 +297,9 @@ class _HeaderState extends ConsumerState<Header> {
                                       horizontal: 12,
                                     ),
                                     decoration: BoxDecoration(
+                                      color: selectedCategory.color.withOpacity(
+                                        0.1,
+                                      ),
                                       border: Border.all(
                                         color: selectedCategory.color
                                             .withOpacity(0.3),
