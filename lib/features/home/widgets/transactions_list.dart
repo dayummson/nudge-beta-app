@@ -291,8 +291,10 @@ class TransactionsList extends StatelessWidget {
                         ),
                         title: Text(
                           transaction.category.name,
-                          style: const TextStyle(
-                            color: Colors.grey,
+                          style: TextStyle(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.onSurfaceVariant,
                             fontSize: 12,
                           ),
                         ),

@@ -113,7 +113,6 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
 
   @override
   Widget build(BuildContext context) {
-    final Color bg = Colors.grey[850] ?? Colors.grey.shade900;
     final expenseColor = widget.isDark
         ? const Color(0xFFFF6B6B)
         : const Color(0xFFEF5350);
@@ -163,13 +162,12 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                     ),
                     shape: const StadiumBorder(),
                     backgroundColor: selectedMode == 0
-                        ? bg
+                        ? widget.cs.primaryContainer
                         : Colors.transparent,
-                    side: BorderSide(
-                      color: selectedMode == 0
-                          ? Colors.black.withOpacity(0.6)
-                          : bg,
-                    ),
+                    foregroundColor: selectedMode == 0
+                        ? widget.cs.onPrimaryContainer
+                        : widget.cs.onSurface,
+                    side: BorderSide.none,
                   ),
                   child: const Text('All time'),
                 ),
@@ -188,13 +186,12 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                     ),
                     shape: const StadiumBorder(),
                     backgroundColor: selectedMode == 1
-                        ? bg
+                        ? widget.cs.primaryContainer
                         : Colors.transparent,
-                    side: BorderSide(
-                      color: selectedMode == 1
-                          ? Colors.black.withOpacity(0.6)
-                          : bg,
-                    ),
+                    foregroundColor: selectedMode == 1
+                        ? widget.cs.onPrimaryContainer
+                        : widget.cs.onSurface,
+                    side: BorderSide.none,
                   ),
                   child: Text(widget.year),
                 ),
@@ -207,7 +204,9 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
             child: Container(
               padding: const EdgeInsets.all(12),
               decoration: BoxDecoration(
-                color: bg,
+                color: widget.isDark
+                    ? Colors.grey[850]
+                    : widget.cs.surfaceContainerHighest,
                 borderRadius: BorderRadius.circular(16),
               ),
               child: GridView.builder(
@@ -226,6 +225,7 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                   // Get actual total from database
                   final total = widget.monthTotals?[index + 1] ?? 0.0;
                   final hasValue = total > 0;
+                  final isCurrentMonth = index == widget.currentMonth;
 
                   return Container(
                     decoration: BoxDecoration(
@@ -254,14 +254,14 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                         ),
                         minimumSize: Size.zero,
                         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                        backgroundColor: hasValue
+                        backgroundColor: isCurrentMonth
                             ? (isSelected
                                   ? expenseColor
                                   : expenseColor.withOpacity(0.3))
                             : (isSelected ? expenseColor : Colors.transparent),
                         foregroundColor: isSelected
                             ? Colors.white
-                            : Colors.grey[200],
+                            : widget.cs.onSurfaceVariant,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
                         ),
@@ -271,12 +271,9 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                         children: [
                           Text(
                             widget.months[index],
-                            style: TextStyle(
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.w600,
-                              color: isSelected
-                                  ? Colors.white
-                                  : Colors.grey[200],
                             ),
                           ),
                           if (hasValue) ...[
@@ -288,7 +285,9 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                                 fontWeight: FontWeight.w500,
                                 color: isSelected
                                     ? Colors.white.withOpacity(0.9)
-                                    : Colors.grey[400],
+                                    : widget.cs.onSurfaceVariant.withOpacity(
+                                        0.7,
+                                      ),
                               ),
                             ),
                           ],
