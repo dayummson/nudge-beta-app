@@ -7,6 +7,7 @@ class Income {
   final Category category;
   final double amount;
   final PlaceLocation? location;
+  final List<String> hashtags;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -16,6 +17,7 @@ class Income {
     required this.category,
     required this.amount,
     this.location,
+    this.hashtags = const [],
     required this.createdAt,
     this.updatedAt,
   });
@@ -27,6 +29,7 @@ class Expense {
   final Category category;
   final double amount;
   final PlaceLocation? location;
+  final List<String> hashtags;
   final DateTime createdAt;
   final DateTime? updatedAt;
 
@@ -36,6 +39,7 @@ class Expense {
     required this.category,
     required this.amount,
     this.location,
+    this.hashtags = const [],
     required this.createdAt,
     this.updatedAt,
   });

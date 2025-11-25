@@ -67,7 +67,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 2;
+  int get schemaVersion => 3;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -79,6 +79,11 @@ class AppDatabase extends _$AppDatabase {
         // Add roomId column to existing tables
         await m.addColumn(expenses, expenses.roomId);
         await m.addColumn(incomes, incomes.roomId);
+      }
+      if (from < 3) {
+        // Add hashtags column to existing tables
+        await m.addColumn(expenses, expenses.hashtags);
+        await m.addColumn(incomes, incomes.hashtags);
       }
     },
   );

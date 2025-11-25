@@ -1142,6 +1142,15 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       ).withConverter<PlaceLocation?>($ExpensesTable.$converterlocationn);
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> hashtags =
+      GeneratedColumn<String>(
+        'hashtags',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<List<String>>($ExpensesTable.$converterhashtags);
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1173,6 +1182,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     category,
     amount,
     location,
+    hashtags,
     createdAt,
     updatedAt,
   ];
@@ -1269,6 +1279,12 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
           data['${effectivePrefix}location'],
         ),
       ),
+      hashtags: $ExpensesTable.$converterhashtags.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}hashtags'],
+        )!,
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1291,6 +1307,8 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
       const LocationJsonConverter();
   static TypeConverter<PlaceLocation?, String?> $converterlocationn =
       NullAwareTypeConverter.wrap($converterlocation);
+  static TypeConverter<List<String>, String> $converterhashtags =
+      const HashtagsJsonConverter();
 }
 
 class Expense extends DataClass implements Insertable<Expense> {
@@ -1300,6 +1318,7 @@ class Expense extends DataClass implements Insertable<Expense> {
   final Category category;
   final double amount;
   final PlaceLocation? location;
+  final List<String> hashtags;
   final DateTime createdAt;
   final DateTime? updatedAt;
   const Expense({
@@ -1309,6 +1328,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     required this.category,
     required this.amount,
     this.location,
+    required this.hashtags,
     required this.createdAt,
     this.updatedAt,
   });
@@ -1329,6 +1349,11 @@ class Expense extends DataClass implements Insertable<Expense> {
         $ExpensesTable.$converterlocationn.toSql(location),
       );
     }
+    {
+      map['hashtags'] = Variable<String>(
+        $ExpensesTable.$converterhashtags.toSql(hashtags),
+      );
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1346,6 +1371,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       location: location == null && nullToAbsent
           ? const Value.absent()
           : Value(location),
+      hashtags: Value(hashtags),
       createdAt: Value(createdAt),
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
@@ -1365,6 +1391,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       category: serializer.fromJson<Category>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
       location: serializer.fromJson<PlaceLocation?>(json['location']),
+      hashtags: serializer.fromJson<List<String>>(json['hashtags']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -1379,6 +1406,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       'category': serializer.toJson<Category>(category),
       'amount': serializer.toJson<double>(amount),
       'location': serializer.toJson<PlaceLocation?>(location),
+      'hashtags': serializer.toJson<List<String>>(hashtags),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
@@ -1391,6 +1419,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     Category? category,
     double? amount,
     Value<PlaceLocation?> location = const Value.absent(),
+    List<String>? hashtags,
     DateTime? createdAt,
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => Expense(
@@ -1400,6 +1429,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     category: category ?? this.category,
     amount: amount ?? this.amount,
     location: location.present ? location.value : this.location,
+    hashtags: hashtags ?? this.hashtags,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
@@ -1413,6 +1443,7 @@ class Expense extends DataClass implements Insertable<Expense> {
       category: data.category.present ? data.category.value : this.category,
       amount: data.amount.present ? data.amount.value : this.amount,
       location: data.location.present ? data.location.value : this.location,
+      hashtags: data.hashtags.present ? data.hashtags.value : this.hashtags,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1427,6 +1458,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('category: $category, ')
           ..write('amount: $amount, ')
           ..write('location: $location, ')
+          ..write('hashtags: $hashtags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1441,6 +1473,7 @@ class Expense extends DataClass implements Insertable<Expense> {
     category,
     amount,
     location,
+    hashtags,
     createdAt,
     updatedAt,
   );
@@ -1454,6 +1487,7 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.category == this.category &&
           other.amount == this.amount &&
           other.location == this.location &&
+          other.hashtags == this.hashtags &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1465,6 +1499,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<Category> category;
   final Value<double> amount;
   final Value<PlaceLocation?> location;
+  final Value<List<String>> hashtags;
   final Value<DateTime> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
@@ -1475,6 +1510,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.category = const Value.absent(),
     this.amount = const Value.absent(),
     this.location = const Value.absent(),
+    this.hashtags = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1486,6 +1522,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     required Category category,
     required double amount,
     this.location = const Value.absent(),
+    required List<String> hashtags,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -1493,7 +1530,8 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
        roomId = Value(roomId),
        description = Value(description),
        category = Value(category),
-       amount = Value(amount);
+       amount = Value(amount),
+       hashtags = Value(hashtags);
   static Insertable<Expense> custom({
     Expression<String>? id,
     Expression<String>? roomId,
@@ -1501,6 +1539,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Expression<String>? category,
     Expression<double>? amount,
     Expression<String>? location,
+    Expression<String>? hashtags,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -1512,6 +1551,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       if (category != null) 'category': category,
       if (amount != null) 'amount': amount,
       if (location != null) 'location': location,
+      if (hashtags != null) 'hashtags': hashtags,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -1525,6 +1565,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<Category>? category,
     Value<double>? amount,
     Value<PlaceLocation?>? location,
+    Value<List<String>>? hashtags,
     Value<DateTime>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
@@ -1536,6 +1577,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       category: category ?? this.category,
       amount: amount ?? this.amount,
       location: location ?? this.location,
+      hashtags: hashtags ?? this.hashtags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -1567,6 +1609,11 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
         $ExpensesTable.$converterlocationn.toSql(location.value),
       );
     }
+    if (hashtags.present) {
+      map['hashtags'] = Variable<String>(
+        $ExpensesTable.$converterhashtags.toSql(hashtags.value),
+      );
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -1588,6 +1635,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('category: $category, ')
           ..write('amount: $amount, ')
           ..write('location: $location, ')
+          ..write('hashtags: $hashtags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -1657,6 +1705,15 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
         type: DriftSqlType.string,
         requiredDuringInsert: false,
       ).withConverter<PlaceLocation?>($IncomesTable.$converterlocationn);
+  @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String> hashtags =
+      GeneratedColumn<String>(
+        'hashtags',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<List<String>>($IncomesTable.$converterhashtags);
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1688,6 +1745,7 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
     category,
     amount,
     location,
+    hashtags,
     createdAt,
     updatedAt,
   ];
@@ -1784,6 +1842,12 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
           data['${effectivePrefix}location'],
         ),
       ),
+      hashtags: $IncomesTable.$converterhashtags.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}hashtags'],
+        )!,
+      ),
       createdAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}created_at'],
@@ -1806,6 +1870,8 @@ class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
       const LocationJsonConverter();
   static TypeConverter<PlaceLocation?, String?> $converterlocationn =
       NullAwareTypeConverter.wrap($converterlocation);
+  static TypeConverter<List<String>, String> $converterhashtags =
+      const HashtagsJsonConverter();
 }
 
 class Income extends DataClass implements Insertable<Income> {
@@ -1815,6 +1881,7 @@ class Income extends DataClass implements Insertable<Income> {
   final Category category;
   final double amount;
   final PlaceLocation? location;
+  final List<String> hashtags;
   final DateTime createdAt;
   final DateTime? updatedAt;
   const Income({
@@ -1824,6 +1891,7 @@ class Income extends DataClass implements Insertable<Income> {
     required this.category,
     required this.amount,
     this.location,
+    required this.hashtags,
     required this.createdAt,
     this.updatedAt,
   });
@@ -1844,6 +1912,11 @@ class Income extends DataClass implements Insertable<Income> {
         $IncomesTable.$converterlocationn.toSql(location),
       );
     }
+    {
+      map['hashtags'] = Variable<String>(
+        $IncomesTable.$converterhashtags.toSql(hashtags),
+      );
+    }
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -1861,6 +1934,7 @@ class Income extends DataClass implements Insertable<Income> {
       location: location == null && nullToAbsent
           ? const Value.absent()
           : Value(location),
+      hashtags: Value(hashtags),
       createdAt: Value(createdAt),
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
@@ -1880,6 +1954,7 @@ class Income extends DataClass implements Insertable<Income> {
       category: serializer.fromJson<Category>(json['category']),
       amount: serializer.fromJson<double>(json['amount']),
       location: serializer.fromJson<PlaceLocation?>(json['location']),
+      hashtags: serializer.fromJson<List<String>>(json['hashtags']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
     );
@@ -1894,6 +1969,7 @@ class Income extends DataClass implements Insertable<Income> {
       'category': serializer.toJson<Category>(category),
       'amount': serializer.toJson<double>(amount),
       'location': serializer.toJson<PlaceLocation?>(location),
+      'hashtags': serializer.toJson<List<String>>(hashtags),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
     };
@@ -1906,6 +1982,7 @@ class Income extends DataClass implements Insertable<Income> {
     Category? category,
     double? amount,
     Value<PlaceLocation?> location = const Value.absent(),
+    List<String>? hashtags,
     DateTime? createdAt,
     Value<DateTime?> updatedAt = const Value.absent(),
   }) => Income(
@@ -1915,6 +1992,7 @@ class Income extends DataClass implements Insertable<Income> {
     category: category ?? this.category,
     amount: amount ?? this.amount,
     location: location.present ? location.value : this.location,
+    hashtags: hashtags ?? this.hashtags,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
   );
@@ -1928,6 +2006,7 @@ class Income extends DataClass implements Insertable<Income> {
       category: data.category.present ? data.category.value : this.category,
       amount: data.amount.present ? data.amount.value : this.amount,
       location: data.location.present ? data.location.value : this.location,
+      hashtags: data.hashtags.present ? data.hashtags.value : this.hashtags,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
     );
@@ -1942,6 +2021,7 @@ class Income extends DataClass implements Insertable<Income> {
           ..write('category: $category, ')
           ..write('amount: $amount, ')
           ..write('location: $location, ')
+          ..write('hashtags: $hashtags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt')
           ..write(')'))
@@ -1956,6 +2036,7 @@ class Income extends DataClass implements Insertable<Income> {
     category,
     amount,
     location,
+    hashtags,
     createdAt,
     updatedAt,
   );
@@ -1969,6 +2050,7 @@ class Income extends DataClass implements Insertable<Income> {
           other.category == this.category &&
           other.amount == this.amount &&
           other.location == this.location &&
+          other.hashtags == this.hashtags &&
           other.createdAt == this.createdAt &&
           other.updatedAt == this.updatedAt);
 }
@@ -1980,6 +2062,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
   final Value<Category> category;
   final Value<double> amount;
   final Value<PlaceLocation?> location;
+  final Value<List<String>> hashtags;
   final Value<DateTime> createdAt;
   final Value<DateTime?> updatedAt;
   final Value<int> rowid;
@@ -1990,6 +2073,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
     this.category = const Value.absent(),
     this.amount = const Value.absent(),
     this.location = const Value.absent(),
+    this.hashtags = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2001,6 +2085,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
     required Category category,
     required double amount,
     this.location = const Value.absent(),
+    required List<String> hashtags,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -2008,7 +2093,8 @@ class IncomesCompanion extends UpdateCompanion<Income> {
        roomId = Value(roomId),
        description = Value(description),
        category = Value(category),
-       amount = Value(amount);
+       amount = Value(amount),
+       hashtags = Value(hashtags);
   static Insertable<Income> custom({
     Expression<String>? id,
     Expression<String>? roomId,
@@ -2016,6 +2102,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
     Expression<String>? category,
     Expression<double>? amount,
     Expression<String>? location,
+    Expression<String>? hashtags,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
     Expression<int>? rowid,
@@ -2027,6 +2114,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
       if (category != null) 'category': category,
       if (amount != null) 'amount': amount,
       if (location != null) 'location': location,
+      if (hashtags != null) 'hashtags': hashtags,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (rowid != null) 'rowid': rowid,
@@ -2040,6 +2128,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
     Value<Category>? category,
     Value<double>? amount,
     Value<PlaceLocation?>? location,
+    Value<List<String>>? hashtags,
     Value<DateTime>? createdAt,
     Value<DateTime?>? updatedAt,
     Value<int>? rowid,
@@ -2051,6 +2140,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
       category: category ?? this.category,
       amount: amount ?? this.amount,
       location: location ?? this.location,
+      hashtags: hashtags ?? this.hashtags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
       rowid: rowid ?? this.rowid,
@@ -2082,6 +2172,11 @@ class IncomesCompanion extends UpdateCompanion<Income> {
         $IncomesTable.$converterlocationn.toSql(location.value),
       );
     }
+    if (hashtags.present) {
+      map['hashtags'] = Variable<String>(
+        $IncomesTable.$converterhashtags.toSql(hashtags.value),
+      );
+    }
     if (createdAt.present) {
       map['created_at'] = Variable<DateTime>(createdAt.value);
     }
@@ -2103,6 +2198,7 @@ class IncomesCompanion extends UpdateCompanion<Income> {
           ..write('category: $category, ')
           ..write('amount: $amount, ')
           ..write('location: $location, ')
+          ..write('hashtags: $hashtags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('rowid: $rowid')
@@ -3695,6 +3791,7 @@ typedef $$ExpensesTableCreateCompanionBuilder =
       required Category category,
       required double amount,
       Value<PlaceLocation?> location,
+      required List<String> hashtags,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -3707,6 +3804,7 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
       Value<Category> category,
       Value<double> amount,
       Value<PlaceLocation?> location,
+      Value<List<String>> hashtags,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -3750,6 +3848,12 @@ class $$ExpensesTableFilterComposer
   ColumnWithTypeConverterFilters<PlaceLocation?, PlaceLocation, String>
   get location => $composableBuilder(
     column: $table.location,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
+  get hashtags => $composableBuilder(
+    column: $table.hashtags,
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
@@ -3803,6 +3907,11 @@ class $$ExpensesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get hashtags => $composableBuilder(
+    column: $table.hashtags,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -3842,6 +3951,9 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<PlaceLocation?, String> get location =>
       $composableBuilder(column: $table.location, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>, String> get hashtags =>
+      $composableBuilder(column: $table.hashtags, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -3884,6 +3996,7 @@ class $$ExpensesTableTableManager
                 Value<Category> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
                 Value<PlaceLocation?> location = const Value.absent(),
+                Value<List<String>> hashtags = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3894,6 +4007,7 @@ class $$ExpensesTableTableManager
                 category: category,
                 amount: amount,
                 location: location,
+                hashtags: hashtags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3906,6 +4020,7 @@ class $$ExpensesTableTableManager
                 required Category category,
                 required double amount,
                 Value<PlaceLocation?> location = const Value.absent(),
+                required List<String> hashtags,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -3916,6 +4031,7 @@ class $$ExpensesTableTableManager
                 category: category,
                 amount: amount,
                 location: location,
+                hashtags: hashtags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -3950,6 +4066,7 @@ typedef $$IncomesTableCreateCompanionBuilder =
       required Category category,
       required double amount,
       Value<PlaceLocation?> location,
+      required List<String> hashtags,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -3962,6 +4079,7 @@ typedef $$IncomesTableUpdateCompanionBuilder =
       Value<Category> category,
       Value<double> amount,
       Value<PlaceLocation?> location,
+      Value<List<String>> hashtags,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
       Value<int> rowid,
@@ -4005,6 +4123,12 @@ class $$IncomesTableFilterComposer
   ColumnWithTypeConverterFilters<PlaceLocation?, PlaceLocation, String>
   get location => $composableBuilder(
     column: $table.location,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
+  get hashtags => $composableBuilder(
+    column: $table.hashtags,
     builder: (column) => ColumnWithTypeConverterFilters(column),
   );
 
@@ -4058,6 +4182,11 @@ class $$IncomesTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get hashtags => $composableBuilder(
+    column: $table.hashtags,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get createdAt => $composableBuilder(
     column: $table.createdAt,
     builder: (column) => ColumnOrderings(column),
@@ -4097,6 +4226,9 @@ class $$IncomesTableAnnotationComposer
 
   GeneratedColumnWithTypeConverter<PlaceLocation?, String> get location =>
       $composableBuilder(column: $table.location, builder: (column) => column);
+
+  GeneratedColumnWithTypeConverter<List<String>, String> get hashtags =>
+      $composableBuilder(column: $table.hashtags, builder: (column) => column);
 
   GeneratedColumn<DateTime> get createdAt =>
       $composableBuilder(column: $table.createdAt, builder: (column) => column);
@@ -4139,6 +4271,7 @@ class $$IncomesTableTableManager
                 Value<Category> category = const Value.absent(),
                 Value<double> amount = const Value.absent(),
                 Value<PlaceLocation?> location = const Value.absent(),
+                Value<List<String>> hashtags = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4149,6 +4282,7 @@ class $$IncomesTableTableManager
                 category: category,
                 amount: amount,
                 location: location,
+                hashtags: hashtags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,
@@ -4161,6 +4295,7 @@ class $$IncomesTableTableManager
                 required Category category,
                 required double amount,
                 Value<PlaceLocation?> location = const Value.absent(),
+                required List<String> hashtags,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -4171,6 +4306,7 @@ class $$IncomesTableTableManager
                 category: category,
                 amount: amount,
                 location: location,
+                hashtags: hashtags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
                 rowid: rowid,

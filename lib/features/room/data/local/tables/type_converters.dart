@@ -19,6 +19,22 @@ class CategoryJsonConverter extends TypeConverter<Category, String> {
   }
 }
 
+/// Converter for List<String> <-> JSON String
+class HashtagsJsonConverter extends TypeConverter<List<String>, String> {
+  const HashtagsJsonConverter();
+
+  @override
+  List<String> fromSql(String fromDb) {
+    final List<dynamic> jsonList = jsonDecode(fromDb);
+    return jsonList.map((e) => e as String).toList();
+  }
+
+  @override
+  String toSql(List<String> value) {
+    return jsonEncode(value);
+  }
+}
+
 /// Converter for PlaceLocation <-> JSON String
 class LocationJsonConverter extends TypeConverter<PlaceLocation, String> {
   const LocationJsonConverter();
