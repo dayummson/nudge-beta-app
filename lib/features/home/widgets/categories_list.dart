@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/search_enabled_provider.dart';
+import '../presentation/providers/selected_category_provider.dart';
 import '../../../constants/categories.dart' as constants;
 
 class CategoriesList extends ConsumerStatefulWidget {
@@ -106,6 +107,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
   @override
   Widget build(BuildContext context) {
     final searchEnabled = ref.watch(searchEnabledProvider);
+    final selectedCategory = ref.watch(selectedCategoryProvider);
     final categoryTotals = _calculateCategoryTotals();
     final maxAmount = _getMaxCategoryAmount(categoryTotals);
     final showEmptyState = widget.hasBothEmptyTransactions;
@@ -137,6 +139,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                   final category = sortedCategories[index];
                   final total = categoryTotals[category.id] ?? 0.0;
                   final magnitude = total.abs();
+                  final isSelected = selectedCategory?.id == category.id;
 
                   // Calculate height based on percentage of MAX magnitude (not grand total)
                   // This makes the tallest category (by absolute value) reach maxHeight
@@ -159,43 +162,66 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                   //   );
                   // }
 
-                  return Container(
-                    margin: const EdgeInsets.only(right: 8),
-                    child: Align(
-                      alignment: Alignment.bottomCenter,
-                      child: Container(
-                        height: barHeight,
-                        width: 70,
-                        padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                        decoration: BoxDecoration(
-                          color: Colors.grey[850],
-                          borderRadius: BorderRadius.circular(16),
-                        ),
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.end,
-                          children: [
-                            Text(
-                              category.icon,
-                              style: const TextStyle(fontSize: 20, height: 1.0),
-                            ),
-                            const SizedBox(height: 4),
-                            Flexible(
-                              child: Text(
-                                magnitude == 0
-                                    ? '₱0'
-                                    : '₱${total.toStringAsFixed(0)}',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w700,
-                                  color: Colors.grey[400],
-                                  height: 1.2,
+                  return GestureDetector(
+                    onTap: () {
+                      final notifier = ref.read(
+                        selectedCategoryProvider.notifier,
+                      );
+                      if (isSelected) {
+                        notifier.clearCategory();
+                      } else {
+                        notifier.selectCategory(category);
+                      }
+                    },
+                    child: Container(
+                      margin: const EdgeInsets.only(right: 8),
+                      child: Align(
+                        alignment: Alignment.bottomCenter,
+                        child: AnimatedContainer(
+                          duration: const Duration(milliseconds: 200),
+                          height: barHeight,
+                          width: 70,
+                          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                          decoration: BoxDecoration(
+                            color: isSelected
+                                ? category.color.withOpacity(0.8)
+                                : Colors.grey[850],
+                            borderRadius: BorderRadius.circular(16),
+                            border: isSelected
+                                ? Border.all(color: category.color, width: 2)
+                                : null,
+                          ),
+                          child: Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Text(
+                                category.icon,
+                                style: const TextStyle(
+                                  fontSize: 20,
+                                  height: 1.0,
                                 ),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                textAlign: TextAlign.center,
                               ),
-                            ),
-                          ],
+                              const SizedBox(height: 4),
+                              Flexible(
+                                child: Text(
+                                  magnitude == 0
+                                      ? '₱0'
+                                      : '₱${total.toStringAsFixed(0)}',
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.w700,
+                                    color: isSelected
+                                        ? Colors.white
+                                        : Colors.grey[400],
+                                    height: 1.2,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  textAlign: TextAlign.center,
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
                       ),
                     ),

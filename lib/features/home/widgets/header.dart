@@ -7,8 +7,10 @@ import '../../room/widgets/rooms_sheet.dart';
 import 'settings_sheet.dart';
 import 'month_sheet.dart';
 import '../../categories/widgets/categories_sheet.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import '../presentation/providers/selected_category_provider.dart';
 
-class Header extends StatefulWidget {
+class Header extends ConsumerStatefulWidget {
   final double blurSigma;
   final double overlayOpacity;
   final double totalAmount;
@@ -38,10 +40,10 @@ class Header extends StatefulWidget {
   });
 
   @override
-  State<Header> createState() => _HeaderState();
+  ConsumerState<Header> createState() => _HeaderState();
 }
 
-class _HeaderState extends State<Header> {
+class _HeaderState extends ConsumerState<Header> {
   String _monthDisplayText = 'All time';
   int? _selectedMonth; // null for "All time", 1-12 for specific month
   int? _selectedYear; // null for "All time", year value for specific year
@@ -49,6 +51,7 @@ class _HeaderState extends State<Header> {
   @override
   Widget build(BuildContext context) {
     final colorScheme = Theme.of(context).colorScheme;
+    final selectedCategory = ref.watch(selectedCategoryProvider);
 
     return Positioned(
       top: 0,
@@ -223,49 +226,104 @@ class _HeaderState extends State<Header> {
                     ),
                   ),
                   const SizedBox(height: 8), // reduced bottom padding
-                  // Row with Month selector and Rooms button under the toggle
+                  // Row with Month/Category selector and Rooms button under the toggle
                   Align(
                     alignment: Alignment.centerLeft,
                     child: Row(
                       mainAxisSize: MainAxisSize.min,
                       children: [
-                        OutlinedButton(
-                          onPressed: () => _showMonthSheet(context),
-                          style: OutlinedButton.styleFrom(
+                        // Show either month selector or selected category
+                        if (selectedCategory == null)
+                          OutlinedButton(
+                            onPressed: () => _showMonthSheet(context),
+                            style: OutlinedButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(
+                                vertical: 6,
+                                horizontal: 12,
+                              ),
+                              shape: const StadiumBorder(),
+                              minimumSize: const Size(64, 36),
+                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                              textStyle: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
+                              side: BorderSide(
+                                color: colorScheme.onSurface.withOpacity(0.12),
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  _monthDisplayText,
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                Icon(
+                                  Icons.unfold_more,
+                                  size: 18,
+                                  color: colorScheme.onSurface,
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Container(
                             padding: const EdgeInsets.symmetric(
                               vertical: 6,
                               horizontal: 12,
                             ),
-                            shape: const StadiumBorder(),
-                            minimumSize: const Size(64, 36),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            textStyle: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                            decoration: BoxDecoration(
+                              color: selectedCategory.color.withOpacity(0.1),
+                              border: Border.all(
+                                color: selectedCategory.color.withOpacity(0.3),
+                              ),
+                              borderRadius: BorderRadius.circular(18),
                             ),
-                            side: BorderSide(
-                              color: colorScheme.onSurface.withOpacity(0.12),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Text(
-                                _monthDisplayText,
-                                style: TextStyle(
-                                  color: colorScheme.onSurface,
-                                  fontWeight: FontWeight.w600,
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Text(
+                                  selectedCategory.icon,
+                                  style: const TextStyle(fontSize: 16),
                                 ),
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(
-                                Icons.unfold_more,
-                                size: 18,
-                                color: colorScheme.onSurface,
-                              ),
-                            ],
+                                const SizedBox(width: 6),
+                                Text(
+                                  selectedCategory.name,
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                                const SizedBox(width: 6),
+                                GestureDetector(
+                                  onTap: _clearCategoryFilter,
+                                  child: Container(
+                                    width: 20,
+                                    height: 20,
+                                    decoration: BoxDecoration(
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.1,
+                                      ),
+                                      shape: BoxShape.circle,
+                                    ),
+                                    child: Icon(
+                                      Icons.close,
+                                      size: 14,
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.7,
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
                         const SizedBox(width: 8),
                         Padding(
                           padding: const EdgeInsets.symmetric(horizontal: 6),
@@ -386,6 +444,10 @@ class _HeaderState extends State<Header> {
         widget.onMonthFilterChanged?.call(month, year);
       },
     );
+  }
+
+  void _clearCategoryFilter() {
+    ref.read(selectedCategoryProvider.notifier).clearCategory();
   }
 
   void _showRoomsSheet(BuildContext context) {

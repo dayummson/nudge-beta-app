@@ -134,20 +134,17 @@ class _DateSheetContentState extends State<_DateSheetContent> {
         // Date Picker
         SizedBox(
           height: 300,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: CalendarDatePicker(
-              initialDate: _selectedDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-              onDateChanged: (date) {
-                setState(() {
-                  _selectedDate = date;
-                });
-                widget.onDateSelected(date);
-                Navigator.pop(context);
-              },
-            ),
+          child: CalendarDatePicker(
+            initialDate: _selectedDate,
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+            onDateChanged: (date) {
+              setState(() {
+                _selectedDate = date;
+              });
+              widget.onDateSelected(date);
+              Navigator.pop(context);
+            },
           ),
         ),
       ],

@@ -9,6 +9,7 @@ import "../../widgets/floating_action_buttons.dart";
 import "../../widgets/categories_list.dart";
 import "../../widgets/transactions_list.dart";
 import '../providers/search_input_provider.dart';
+import '../providers/selected_category_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -113,6 +114,7 @@ class _HomePageState extends ConsumerState<HomePage> {
   List<dynamic> _filterAndSortTransactions(
     List<dynamic> transactions,
     String searchInput,
+    String? selectedCategoryId,
   ) {
     List<dynamic> filtered = transactions;
 
@@ -121,6 +123,13 @@ class _HomePageState extends ConsumerState<HomePage> {
       filtered = filtered.where((transaction) {
         final description = transaction.description?.toLowerCase() ?? '';
         return description.contains(searchInput.toLowerCase());
+      }).toList();
+    }
+
+    // Filter by category if selected
+    if (selectedCategoryId != null) {
+      filtered = filtered.where((transaction) {
+        return transaction.category.id == selectedCategoryId;
       }).toList();
     }
 
@@ -257,13 +266,18 @@ class _HomePageState extends ConsumerState<HomePage> {
                           }
 
                           // Filter and sort transactions
+                          final selectedCategory = ref.watch(
+                            selectedCategoryProvider,
+                          );
                           final filteredExpenses = _filterAndSortTransactions(
                             _expenses,
                             searchInput,
+                            selectedCategory?.id,
                           );
                           final filteredIncomes = _filterAndSortTransactions(
                             _incomes,
                             searchInput,
+                            selectedCategory?.id,
                           );
 
                           // Calculate totals for filtered data
