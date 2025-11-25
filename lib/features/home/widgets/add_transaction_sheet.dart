@@ -1,11 +1,29 @@
 import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
+import 'package:intl/intl.dart';
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
 import 'package:nudge_1/features/room/widgets/rooms_sheet.dart';
 import '../../categories/widgets/categories_sheet.dart';
+
+/// Shows the date picker bottom sheet.
+void showDateSheet(
+  BuildContext context, {
+  DateTime? initialDate,
+  required Function(DateTime) onDateSelected,
+}) {
+  showAppBottomSheet(
+    context: context,
+    title: null,
+    mode: SheetMode.auto,
+    child: _DateSheetContent(
+      initialDate: initialDate ?? DateTime.now(),
+      onDateSelected: onDateSelected,
+    ),
+  );
+}
 
 /// Shows the add transaction bottom sheet.
 ///
@@ -50,7 +68,19 @@ class _AddTransactionSheetContentState
   final _inlineAmountFocusNode = FocusNode();
   bool _isExpense = true;
   String? _selectedCategoryId;
+  DateTime _selectedDate = DateTime.now();
   bool _isSaving = false;
+
+  String _getDateDisplay(DateTime date) {
+    final now = DateTime.now();
+    final today = DateTime(now.year, now.month, now.day);
+    final selected = DateTime(date.year, date.month, date.day);
+    final difference = selected.difference(today).inDays;
+    if (difference == -1) return 'Yesterday';
+    if (difference == 0) return 'Today';
+    if (difference == 1) return 'Tomorrow';
+    return DateFormat('MMM d, y').format(date);
+  }
 
   @override
   void initState() {
@@ -301,75 +331,117 @@ class _AddTransactionSheetContentState
       mainAxisSize: MainAxisSize.min,
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // Room selector button
+        // Room and Date selector buttons
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Align(
-            alignment: Alignment.centerLeft,
-            child: ValueListenableBuilder<String?>(
-              valueListenable: RoomSelection.selectedRoom,
-              builder: (context, selId, _) {
-                if (selId == null) {
-                  RoomSelection.getSelectedRoomId();
-                }
+          child: Row(
+            children: [
+              ValueListenableBuilder<String?>(
+                valueListenable: RoomSelection.selectedRoom,
+                builder: (context, selId, _) {
+                  if (selId == null) {
+                    RoomSelection.getSelectedRoomId();
+                  }
 
-                return StreamBuilder<List<Room>>(
-                  stream: AppDatabase().roomsDao.watchAllRooms(),
-                  builder: (context, snapshot) {
-                    var label = 'Rooms';
-                    if (snapshot.hasData && snapshot.data!.isNotEmpty) {
-                      final rooms = snapshot.data!;
-                      Room? chosen;
-                      if (selId != null) {
-                        try {
-                          chosen = rooms.firstWhere((r) => r.id == selId);
-                        } catch (_) {
-                          chosen = null;
+                  return StreamBuilder<List<Room>>(
+                    stream: AppDatabase().roomsDao.watchAllRooms(),
+                    builder: (context, snapshot) {
+                      var label = 'Rooms';
+                      if (snapshot.hasData && snapshot.data!.isNotEmpty) {
+                        final rooms = snapshot.data!;
+                        Room? chosen;
+                        if (selId != null) {
+                          try {
+                            chosen = rooms.firstWhere((r) => r.id == selId);
+                          } catch (_) {
+                            chosen = null;
+                          }
                         }
+                        chosen ??= rooms.first;
+                        label = chosen.name;
                       }
-                      chosen ??= rooms.first;
-                      label = chosen.name;
-                    }
 
-                    return OutlinedButton(
-                      onPressed: () => showRoomsSheet(
-                        context,
-                        onRoomChanged: widget.onRoomChanged,
-                      ),
-                      style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 6,
-                          horizontal: 12,
+                      return OutlinedButton(
+                        onPressed: () => showRoomsSheet(
+                          context,
+                          onRoomChanged: widget.onRoomChanged,
                         ),
-                        shape: const StadiumBorder(),
-                        side: BorderSide(color: cs.onSurface.withOpacity(0.2)),
-                        minimumSize: Size.zero,
-                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                      ),
-                      child: Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            label,
-                            style: TextStyle(
-                              color: cs.onSurface,
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
+                        style: OutlinedButton.styleFrom(
+                          padding: const EdgeInsets.symmetric(
+                            vertical: 6,
+                            horizontal: 12,
+                          ),
+                          shape: const StadiumBorder(),
+                          side: BorderSide(
+                            color: cs.onSurface.withOpacity(0.2),
+                          ),
+                          minimumSize: Size.zero,
+                          tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Text(
+                              label,
+                              style: TextStyle(
+                                color: cs.onSurface,
+                                fontSize: 13,
+                                fontWeight: FontWeight.w600,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 6),
-                          Icon(
-                            Icons.unfold_more,
-                            size: 16,
-                            color: cs.onSurface.withOpacity(0.5),
-                          ),
-                        ],
-                      ),
-                    );
+                            const SizedBox(width: 6),
+                            Icon(
+                              Icons.unfold_more,
+                              size: 16,
+                              color: cs.onSurface.withOpacity(0.5),
+                            ),
+                          ],
+                        ),
+                      );
+                    },
+                  );
+                },
+              ),
+              const SizedBox(width: 12),
+              OutlinedButton(
+                onPressed: () => showDateSheet(
+                  context,
+                  initialDate: _selectedDate,
+                  onDateSelected: (date) {
+                    setState(() => _selectedDate = date);
                   },
-                );
-              },
-            ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 6,
+                    horizontal: 12,
+                  ),
+                  shape: const StadiumBorder(),
+                  side: BorderSide(color: cs.onSurface.withOpacity(0.2)),
+                  minimumSize: Size.zero,
+                  tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                ),
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Text(
+                      _getDateDisplay(_selectedDate),
+                      style: TextStyle(
+                        color: cs.onSurface,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                    const SizedBox(width: 6),
+                    Icon(
+                      Icons.calendar_today,
+                      size: 16,
+                      color: cs.onSurface.withOpacity(0.5),
+                    ),
+                  ],
+                ),
+              ),
+            ],
           ),
         ),
         const SizedBox(height: 16),
@@ -774,6 +846,82 @@ class _AddTransactionSheetContentState
                     ],
                   ),
                 ),
+        ),
+      ],
+    );
+  }
+}
+
+class _DateSheetContent extends StatefulWidget {
+  final DateTime initialDate;
+  final Function(DateTime) onDateSelected;
+
+  const _DateSheetContent({
+    required this.initialDate,
+    required this.onDateSelected,
+  });
+
+  @override
+  State<_DateSheetContent> createState() => _DateSheetContentState();
+}
+
+class _DateSheetContentState extends State<_DateSheetContent> {
+  late DateTime _selectedDate;
+
+  @override
+  void initState() {
+    super.initState();
+    _selectedDate = widget.initialDate;
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    final cs = Theme.of(context).colorScheme;
+
+    return Column(
+      mainAxisSize: MainAxisSize.min,
+      children: [
+        // Header with Date and Close button
+        Padding(
+          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Text(
+                'Date',
+                style: TextStyle(
+                  fontSize: 20,
+                  fontWeight: FontWeight.w700,
+                  color: cs.onSurface,
+                ),
+              ),
+              IconButton(
+                onPressed: () => Navigator.pop(context),
+                icon: Icon(Icons.close, color: cs.onSurface),
+                padding: EdgeInsets.zero,
+                constraints: const BoxConstraints(),
+              ),
+            ],
+          ),
+        ),
+        // Date Picker
+        SizedBox(
+          height: 300,
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: CalendarDatePicker(
+              initialDate: _selectedDate,
+              firstDate: DateTime(2000),
+              lastDate: DateTime(2100),
+              onDateChanged: (date) {
+                setState(() {
+                  _selectedDate = date;
+                });
+                widget.onDateSelected(date);
+                Navigator.pop(context);
+              },
+            ),
+          ),
         ),
       ],
     );
