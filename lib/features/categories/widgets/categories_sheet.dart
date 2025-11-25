@@ -209,7 +209,7 @@ class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
               const SizedBox(height: 24),
               SizedBox(
                 width: double.infinity,
-                child: ElevatedButton.icon(
+                child: ElevatedButton(
                   onPressed: _hasText
                       ? () async {
                           final trimmed = _controller.text.trim();
@@ -218,11 +218,6 @@ class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
                           Navigator.pop(context);
                         }
                       : null,
-                  icon: const Icon(Icons.check, size: 18),
-                  label: const Padding(
-                    padding: EdgeInsets.symmetric(vertical: 12.0),
-                    child: Text('Save'),
-                  ),
                   style: ElevatedButton.styleFrom(
                     backgroundColor: _hasText ? incomeColor : Colors.grey[850],
                     foregroundColor: _hasText ? Colors.white : cs.onSurface,
@@ -230,10 +225,14 @@ class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     padding: const EdgeInsets.symmetric(
-                      vertical: 0,
+                      vertical: 12,
                       horizontal: 14,
                     ),
                     minimumSize: const Size(64, 48),
+                  ),
+                  child: const Text(
+                    'Save',
+                    style: TextStyle(fontSize: 16, fontWeight: FontWeight.w500),
                   ),
                 ),
               ),
