@@ -54,13 +54,16 @@ class CategorySelectionSection extends StatelessWidget {
                     OutlinedButton(
                       onPressed: () => showCategoriesSheet(context),
                       style: OutlinedButton.styleFrom(
-                        fixedSize: const Size(32, 32),
-                        shape: const CircleBorder(),
+                        padding: const EdgeInsets.symmetric(
+                          vertical: 8,
+                          horizontal: 8,
+                        ),
+                        shape: const StadiumBorder(),
                         side: BorderSide(color: borderColor),
                         backgroundColor: cs.surfaceVariant,
                         foregroundColor: cs.onSurfaceVariant,
                       ),
-                      child: const Icon(Icons.add, size: 16),
+                      child: const Icon(Icons.add, size: 18),
                     ),
                     const SizedBox(width: 8),
                     ...constants.categories.map((cat) {
