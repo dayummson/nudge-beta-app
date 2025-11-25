@@ -52,7 +52,7 @@ class AmountInputSection extends StatelessWidget {
         );
 
     Widget toggle() {
-      const w = 88.0;
+      const w = 140.0;
       const h = 36.0;
       final activeColor = isExpense ? expenseColor : incomeColor;
       return GestureDetector(
@@ -97,9 +97,9 @@ class AmountInputSection extends StatelessWidget {
                   Expanded(
                     child: Center(
                       child: Text(
-                        '-',
+                        'expense',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: isExpense
                               ? Colors.white
@@ -111,9 +111,9 @@ class AmountInputSection extends StatelessWidget {
                   Expanded(
                     child: Center(
                       child: Text(
-                        '+',
+                        'income',
                         style: TextStyle(
-                          fontSize: 16,
+                          fontSize: 12,
                           fontWeight: FontWeight.bold,
                           color: !isExpense
                               ? Colors.white
