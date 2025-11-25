@@ -30,9 +30,10 @@ class ActionButtonsSection extends StatelessWidget {
               onPressed: () {},
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
-                  vertical: 10,
+                  vertical: 14,
                   horizontal: 16,
                 ),
+                fixedSize: const Size(48, 48),
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
@@ -73,15 +74,7 @@ class ActionButtonsSection extends StatelessWidget {
                           color: cs.onPrimary,
                         ),
                       )
-                    : Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Icon(Icons.check, size: 18, color: cs.onPrimary),
-                          const SizedBox(width: 8),
-                          const Text('Save'),
-                        ],
-                      ),
+                    : const Text('Save'),
               ),
             ),
           ],
