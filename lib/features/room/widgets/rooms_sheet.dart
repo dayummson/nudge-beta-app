@@ -176,7 +176,7 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                             key: ValueKey(r.id),
                             endActionPane: ActionPane(
                               motion: const ScrollMotion(),
-                              extentRatio: 0.3,
+                              extentRatio: r.id == 'room-private' ? 0.2 : 0.3,
                               children: [
                                 CustomSlidableAction(
                                   onPressed: (ctx) async {
@@ -205,59 +205,62 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                   foregroundColor: cs.onSurface,
                                   child: const Icon(Icons.edit),
                                 ),
-                                CustomSlidableAction(
-                                  onPressed: (ctx) async {
-                                    // Delete
-                                    final confirm = await showDialog<bool>(
-                                      context: context2,
-                                      builder: (dc) => AlertDialog(
-                                        title: const Text('Delete room'),
-                                        content: const Text(
-                                          'Are you sure you want to delete this room?',
+                                if (r.id != 'room-private')
+                                  CustomSlidableAction(
+                                    onPressed: (ctx) async {
+                                      // Delete
+                                      final confirm = await showDialog<bool>(
+                                        context: context2,
+                                        builder: (dc) => AlertDialog(
+                                          title: const Text('Delete room'),
+                                          content: const Text(
+                                            'Are you sure you want to delete this room?',
+                                          ),
+                                          actions: [
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(dc, false),
+                                              child: const Text('Cancel'),
+                                            ),
+                                            TextButton(
+                                              onPressed: () =>
+                                                  Navigator.pop(dc, true),
+                                              child: const Text('Delete'),
+                                            ),
+                                          ],
                                         ),
-                                        actions: [
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(dc, false),
-                                            child: const Text('Cancel'),
-                                          ),
-                                          TextButton(
-                                            onPressed: () =>
-                                                Navigator.pop(dc, true),
-                                            child: const Text('Delete'),
-                                          ),
-                                        ],
-                                      ),
-                                    );
-                                    if (confirm == true) {
-                                      await db.roomsDao.deleteRoomById(r.id);
-                                      if (isSelected) {
-                                        final remaining = await db.roomsDao
-                                            .getAllRooms();
-                                        if (remaining.isNotEmpty) {
-                                          await RoomSelection.setSelectedRoomId(
-                                            remaining.first.id,
-                                          );
-                                          if (context2.mounted) {
-                                            setState2(
-                                              () => selectedId =
-                                                  remaining.first.id,
+                                      );
+                                      if (confirm == true) {
+                                        await db.roomsDao.deleteRoomById(r.id);
+                                        if (isSelected) {
+                                          final remaining = await db.roomsDao
+                                              .getAllRooms();
+                                          if (remaining.isNotEmpty) {
+                                            await RoomSelection.setSelectedRoomId(
+                                              remaining.first.id,
                                             );
-                                          }
-                                          onRoomChanged?.call();
-                                        } else {
-                                          await RoomSelection.clear();
-                                          if (context2.mounted) {
-                                            setState2(() => selectedId = null);
+                                            if (context2.mounted) {
+                                              setState2(
+                                                () => selectedId =
+                                                    remaining.first.id,
+                                              );
+                                            }
+                                            onRoomChanged?.call();
+                                          } else {
+                                            await RoomSelection.clear();
+                                            if (context2.mounted) {
+                                              setState2(
+                                                () => selectedId = null,
+                                              );
+                                            }
                                           }
                                         }
                                       }
-                                    }
-                                  },
-                                  backgroundColor: Colors.transparent,
-                                  foregroundColor: cs.onSurface,
-                                  child: const Icon(Icons.delete),
-                                ),
+                                    },
+                                    backgroundColor: Colors.transparent,
+                                    foregroundColor: cs.onSurface,
+                                    child: const Icon(Icons.delete),
+                                  ),
                                 CustomSlidableAction(
                                   onPressed: (ctx) {
                                     // Share placeholder
