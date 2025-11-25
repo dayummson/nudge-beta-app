@@ -224,6 +224,9 @@ class _AddTransactionSheetContentState
         ),
         const SizedBox(height: 16),
         ActionButtonsSection(isSaving: _isSaving, onSave: _saveTransaction),
+        const SizedBox(
+          height: 20,
+        ), // Add space to avoid keyboard covering bottom
       ],
     );
   }
