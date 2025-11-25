@@ -51,7 +51,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
         : magnitudes.reduce((a, b) => a > b ? a : b);
   }
 
-  Widget _buildEmptyPlaceholder(BuildContext context) {
+  Widget _buildEmptyPlaceholder(BuildContext context, bool isDark) {
     final colorScheme = Theme.of(context).colorScheme;
     // Create hierarchical placeholder bars with decreasing heights
     final placeholderHeights = [
@@ -80,7 +80,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                     height: height,
                     width: 80,
                     decoration: BoxDecoration(
-                      color: Colors.grey[850],
+                      color: isDark ? Colors.grey[850] : Colors.grey[300],
                       borderRadius: BorderRadius.circular(16),
                     ),
                   );
@@ -111,6 +111,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
     final categoryTotals = _calculateCategoryTotals();
     final maxAmount = _getMaxCategoryAmount(categoryTotals);
     final showEmptyState = widget.hasBothEmptyTransactions;
+    final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Sort categories by their total values (descending - highest first)
     final sortedCategories = List.from(constants.categories)
@@ -131,7 +132,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
           child: searchEnabled
               ? const SizedBox.shrink()
               : showEmptyState
-              ? _buildEmptyPlaceholder(context)
+              ? _buildEmptyPlaceholder(context, isDark)
               : ListView.builder(
                   scrollDirection: Axis.horizontal,
                   padding: const EdgeInsets.only(
@@ -190,7 +191,9 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                             decoration: BoxDecoration(
                               color: isSelected
                                   ? category.color.withOpacity(0.8)
-                                  : Colors.grey[850],
+                                  : isDark
+                                  ? Colors.grey[850]
+                                  : Colors.grey[300],
                               borderRadius: BorderRadius.circular(16),
                               border: isSelected
                                   ? Border.all(color: category.color, width: 2)
@@ -217,7 +220,9 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                                       fontWeight: FontWeight.w700,
                                       color: isSelected
                                           ? Colors.white
-                                          : Colors.grey[400],
+                                          : isDark
+                                          ? Colors.grey[400]
+                                          : Colors.grey[700],
                                       height: 1.2,
                                     ),
                                     maxLines: 1,
