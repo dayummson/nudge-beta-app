@@ -39,6 +39,9 @@ class _HomePageState extends ConsumerState<HomePage> {
   List<Expense> _expenses = [];
   List<Income> _incomes = [];
 
+  // Flag to track initial load
+  bool _initialLoadDone = false;
+
   // Current selected room ID
   String? _selectedRoomId;
 
@@ -89,6 +92,7 @@ class _HomePageState extends ConsumerState<HomePage> {
         // Clear cache when room changes to prevent showing old data
         _expenses = [];
         _incomes = [];
+        _initialLoadDone = false;
       });
     }
   }
@@ -244,11 +248,15 @@ class _HomePageState extends ConsumerState<HomePage> {
                           // Update cached incomes only if data is available
                           if (incomeSnapshot.hasData) {
                             _incomes = incomeSnapshot.data!;
+                            if (expenseSnapshot.hasData) {
+                              _initialLoadDone = true;
+                              if (expenseSnapshot.hasData) {
+                                _initialLoadDone = true;
+                              }
+                            }
                           }
 
-                          // Show loading only on initial load (both caches empty)
-                          if (_expenses.isEmpty &&
-                              _incomes.isEmpty &&
+                          if (!_initialLoadDone &&
                               (expenseSnapshot.connectionState ==
                                       ConnectionState.waiting ||
                                   incomeSnapshot.connectionState ==
