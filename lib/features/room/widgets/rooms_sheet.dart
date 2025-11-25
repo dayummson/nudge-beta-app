@@ -57,7 +57,7 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                   child: Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
-                      color: Colors.grey[850],
+                      color: cs.surfaceContainerHighest,
                       borderRadius: BorderRadius.circular(16),
                     ),
                     child: Row(
@@ -294,7 +294,7 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                       width: 48,
                                       height: 48,
                                       decoration: BoxDecoration(
-                                        color: Colors.grey[850],
+                                        color: cs.surfaceContainerHighest,
                                         shape: BoxShape.circle,
                                       ),
                                       child: const Center(

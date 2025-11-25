@@ -14,7 +14,7 @@ class ActionButtonsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? Colors.grey.shade800 : Colors.grey.shade400;
+    final borderColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),

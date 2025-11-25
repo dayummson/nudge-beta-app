@@ -186,7 +186,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                           child: AnimatedContainer(
                             duration: const Duration(milliseconds: 200),
                             height: barHeight,
-                            width: 70,
+                            width: 80,
                             padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
                             decoration: BoxDecoration(
                               color: isSelected
