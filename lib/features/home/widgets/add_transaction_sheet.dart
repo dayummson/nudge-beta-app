@@ -110,6 +110,9 @@ class _AddTransactionSheetContentState
       final db = AppDatabase();
 
       final isEditing = widget.transaction != null;
+      final originalIsExpense = isEditing
+          ? widget.transaction.runtimeType.toString() == 'Expense'
+          : _isExpense;
       final id = isEditing
           ? widget.transaction.id
           : 'txn-${DateTime.now().millisecondsSinceEpoch}';
@@ -126,41 +129,54 @@ class _AddTransactionSheetContentState
         return;
       }
 
-      if (_isExpense) {
-        final companion = ExpensesCompanion(
-          id: drift.Value(id),
-          roomId: drift.Value(roomId),
-          description: drift.Value(description),
-          category: drift.Value(category),
-          amount: drift.Value(amount),
-          location: const drift.Value(null),
-          createdAt: drift.Value(
-            isEditing ? widget.transaction.createdAt : _selectedDate,
-          ),
-        );
+      final companion = _isExpense
+          ? ExpensesCompanion(
+              id: drift.Value(id),
+              roomId: drift.Value(roomId),
+              description: drift.Value(description),
+              category: drift.Value(category),
+              amount: drift.Value(amount),
+              location: const drift.Value(null),
+              createdAt: drift.Value(
+                isEditing ? widget.transaction.createdAt : _selectedDate,
+              ),
+            )
+          : IncomesCompanion(
+              id: drift.Value(id),
+              roomId: drift.Value(roomId),
+              description: drift.Value(description),
+              category: drift.Value(category),
+              amount: drift.Value(amount),
+              location: const drift.Value(null),
+              createdAt: drift.Value(
+                isEditing ? widget.transaction.createdAt : _selectedDate,
+              ),
+            );
 
-        if (isEditing) {
-          await db.expensesDao.updateEntry(companion);
+      if (isEditing) {
+        if (originalIsExpense != _isExpense) {
+          // Type changed, delete from old table and insert to new
+          if (originalIsExpense) {
+            await db.expensesDao.deleteById(id);
+            await db.incomesDao.insert(companion as IncomesCompanion);
+          } else {
+            await db.incomesDao.deleteById(id);
+            await db.expensesDao.insert(companion as ExpensesCompanion);
+          }
         } else {
-          await db.expensesDao.insert(companion);
+          // Same type, update
+          if (_isExpense) {
+            await db.expensesDao.updateEntry(companion as ExpensesCompanion);
+          } else {
+            await db.incomesDao.updateEntry(companion as IncomesCompanion);
+          }
         }
       } else {
-        final companion = IncomesCompanion(
-          id: drift.Value(id),
-          roomId: drift.Value(roomId),
-          description: drift.Value(description),
-          category: drift.Value(category),
-          amount: drift.Value(amount),
-          location: const drift.Value(null),
-          createdAt: drift.Value(
-            isEditing ? widget.transaction.createdAt : _selectedDate,
-          ),
-        );
-
-        if (isEditing) {
-          await db.incomesDao.updateEntry(companion);
+        // New transaction
+        if (_isExpense) {
+          await db.expensesDao.insert(companion as ExpensesCompanion);
         } else {
-          await db.incomesDao.insert(companion);
+          await db.incomesDao.insert(companion as IncomesCompanion);
         }
       }
 
