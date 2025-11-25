@@ -49,7 +49,15 @@ class _FloatingActionButtonsState extends ConsumerState<FloatingActionButtons>
     super.dispose();
   }
 
-  void _toggleSearch() => ref.read(searchEnabledProvider.notifier).toggle();
+  void _toggleSearch() {
+    final currentlyEnabled = ref.read(searchEnabledProvider);
+    ref.read(searchEnabledProvider.notifier).toggle();
+
+    // Clear search input when closing search
+    if (currentlyEnabled) {
+      _searchController.clear();
+    }
+  }
 
   void _showAddTransactionSheet() {
     showAddTransactionSheet(context, onRoomChanged: widget.onRoomChanged);
