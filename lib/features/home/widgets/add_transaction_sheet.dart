@@ -895,11 +895,19 @@ class _DateSheetContentState extends State<_DateSheetContent> {
                   color: cs.onSurface,
                 ),
               ),
-              IconButton(
-                onPressed: () => Navigator.pop(context),
-                icon: Icon(Icons.close, color: cs.onSurface),
-                padding: EdgeInsets.zero,
-                constraints: const BoxConstraints(),
+              Container(
+                width: 40,
+                height: 40,
+                decoration: BoxDecoration(
+                  border: Border.all(color: cs.onSurface.withOpacity(0.2)),
+                  borderRadius: BorderRadius.circular(20),
+                ),
+                child: IconButton(
+                  onPressed: () => Navigator.pop(context),
+                  icon: Icon(Icons.close, color: cs.onSurface),
+                  padding: EdgeInsets.zero,
+                  constraints: const BoxConstraints(),
+                ),
               ),
             ],
           ),
@@ -907,20 +915,17 @@ class _DateSheetContentState extends State<_DateSheetContent> {
         // Date Picker
         SizedBox(
           height: 300,
-          child: Padding(
-            padding: const EdgeInsets.all(16),
-            child: CalendarDatePicker(
-              initialDate: _selectedDate,
-              firstDate: DateTime(2000),
-              lastDate: DateTime(2100),
-              onDateChanged: (date) {
-                setState(() {
-                  _selectedDate = date;
-                });
-                widget.onDateSelected(date);
-                Navigator.pop(context);
-              },
-            ),
+          child: CalendarDatePicker(
+            initialDate: _selectedDate,
+            firstDate: DateTime(2000),
+            lastDate: DateTime(2100),
+            onDateChanged: (date) {
+              setState(() {
+                _selectedDate = date;
+              });
+              widget.onDateSelected(date);
+              Navigator.pop(context);
+            },
           ),
         ),
       ],
