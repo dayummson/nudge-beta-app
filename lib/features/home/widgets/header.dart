@@ -20,6 +20,7 @@ class Header extends ConsumerStatefulWidget {
   final void Function(bool) toggleMode;
   final VoidCallback? onRoomChanged;
   final Function(int?, int?)? onMonthFilterChanged;
+  final Map<int, double>? monthTotals;
   // Optional debug overrides (null in normal mode)
   final double? debugBlurOverride;
   final Color? debugOverlayColor;
@@ -35,6 +36,7 @@ class Header extends ConsumerStatefulWidget {
     required this.toggleMode,
     this.onRoomChanged,
     this.onMonthFilterChanged,
+    this.monthTotals,
     this.debugBlurOverride,
     this.debugOverlayColor,
   });
@@ -153,55 +155,58 @@ class _HeaderState extends ConsumerState<Header> {
                   ),
                   const SizedBox(height: 8),
                   // Total in header
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        "Total",
-                        style: TextStyle(
-                          color: colorScheme.onSurface,
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
+                  if (widget.totalAmount > 0)
+                    Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          "Total",
+                          style: TextStyle(
+                            color: colorScheme.onSurface,
+                            fontSize: 12,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
-                      ),
-                      Row(
-                        children: [
-                          Container(
-                            width: 20,
-                            height: 20,
-                            margin: const EdgeInsets.only(right: 8),
-                            decoration: BoxDecoration(
-                              color: colorScheme.surface,
-                              border: Border.all(
-                                color: colorScheme.onSurface.withOpacity(0.2),
-                                width: 1.5,
+                        Row(
+                          children: [
+                            Container(
+                              width: 20,
+                              height: 20,
+                              margin: const EdgeInsets.only(right: 8),
+                              decoration: BoxDecoration(
+                                color: colorScheme.surface,
+                                border: Border.all(
+                                  color: colorScheme.onSurface.withOpacity(0.2),
+                                  width: 1.5,
+                                ),
+                                shape: BoxShape.circle,
                               ),
-                              shape: BoxShape.circle,
-                            ),
-                            child: Center(
-                              child: Text(
-                                '-',
-                                style: TextStyle(
-                                  color: colorScheme.onSurface,
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  height: 1.0,
+                              child: Center(
+                                child: Text(
+                                  '-',
+                                  style: TextStyle(
+                                    color: colorScheme.onSurface,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    height: 1.0,
+                                  ),
                                 ),
                               ),
                             ),
-                          ),
-                          Text(
-                            widget.totalAmount.toStringAsFixed(2),
-                            style: TextStyle(
-                              color: colorScheme.onSurface,
-                              fontSize: 40,
-                              fontWeight: FontWeight.w900,
+                            Text(
+                              widget.totalAmount.toStringAsFixed(2),
+                              style: TextStyle(
+                                color: colorScheme.onSurface,
+                                fontSize: 40,
+                                fontWeight: FontWeight.w900,
+                              ),
                             ),
-                          ),
-                        ],
-                      ),
-                    ],
-                  ),
+                          ],
+                        ),
+                      ],
+                    )
+                  else
+                    const SizedBox.shrink(),
                   // Toggle with fade section
                   Padding(
                     padding: const EdgeInsets.only(bottom: 10),
@@ -434,6 +439,7 @@ class _HeaderState extends ConsumerState<Header> {
       context,
       currentDisplayText: _monthDisplayText,
       isExpense: widget.isExpense,
+      monthTotals: widget.monthTotals,
       onApply: (String newText, int? month, int? year) {
         setState(() {
           _monthDisplayText = newText;

@@ -300,6 +300,50 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     ? filteredExpenses.cast<dynamic>()
                                     : filteredIncomes.cast<dynamic>());
 
+                          // Calculate month totals for the month sheet
+                          Map<int, double> monthTotals = {};
+                          final currentYear = DateTime.now().year;
+                          for (int month = 1; month <= 12; month++) {
+                            final monthExpenses = _expenses
+                                .where(
+                                  (e) =>
+                                      e.createdAt.month == month &&
+                                      e.createdAt.year == currentYear &&
+                                      e.roomId == _selectedRoomId,
+                                )
+                                .toList();
+                            final monthIncomes = _incomes
+                                .where(
+                                  (i) =>
+                                      i.createdAt.month == month &&
+                                      i.createdAt.year == currentYear &&
+                                      i.roomId == _selectedRoomId,
+                                )
+                                .toList();
+                            // Filter by category if selected
+                            final selectedCategory = ref.watch(
+                              selectedCategoryProvider,
+                            );
+                            if (selectedCategory != null) {
+                              monthExpenses.retainWhere(
+                                (e) => e.category.id == selectedCategory.id,
+                              );
+                              monthIncomes.retainWhere(
+                                (i) => i.category.id == selectedCategory.id,
+                              );
+                            }
+                            final expenseSum = monthExpenses.fold(
+                              0.0,
+                              (sum, e) => sum + e.amount,
+                            );
+                            final incomeSum = monthIncomes.fold(
+                              0.0,
+                              (sum, i) => sum + i.amount,
+                            );
+                            final net = expenseSum - incomeSum;
+                            if (net.abs() > 0) monthTotals[month] = net.abs();
+                          }
+
                           // Net total = Expenses - Incomes (overall balance)
                           final totalAmount = expenseTotal - incomeTotal;
 
@@ -401,6 +445,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     toggleMode: toggleMode,
                                     onRoomChanged: _loadSelectedRoom,
                                     onMonthFilterChanged: _onMonthFilterChanged,
+                                    monthTotals: monthTotals,
                                     // debug overrides
                                     debugBlurOverride: _debugMode == 1
                                         ? 20.0

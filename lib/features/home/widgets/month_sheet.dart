@@ -11,6 +11,7 @@ void showMonthSheet(
   BuildContext context, {
   required String currentDisplayText,
   required bool isExpense,
+  required Map<int, double>? monthTotals,
   required Function(String, int?, int?) onApply,
 }) {
   final cs = Theme.of(context).colorScheme;
@@ -58,6 +59,7 @@ void showMonthSheet(
       months: months,
       monthsFull: monthsFull,
       currentDisplayText: currentDisplayText,
+      monthTotals: monthTotals,
       onApply: onApply,
     ),
   );
@@ -71,6 +73,7 @@ class _MonthSheetContent extends StatefulWidget {
   final List<String> months;
   final List<String> monthsFull;
   final String currentDisplayText;
+  final Map<int, double>? monthTotals;
   final Function(String, int?, int?) onApply;
 
   const _MonthSheetContent({
@@ -81,6 +84,7 @@ class _MonthSheetContent extends StatefulWidget {
     required this.months,
     required this.monthsFull,
     required this.currentDisplayText,
+    required this.monthTotals,
     required this.onApply,
   });
 
@@ -219,14 +223,9 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                 itemBuilder: (context, index) {
                   final isSelected =
                       selectedMonthIndex == index && selectedMode == 1;
-                  // TODO: Replace with actual totals from database
-                  // For now using test data to show the UI works
-                  final expenseTotal = index == 10
-                      ? 12.0
-                      : 0.0; // November has data for testing
-                  final incomeTotal = 0.0;
-                  final netTotal = (expenseTotal - incomeTotal).abs();
-                  final hasValue = netTotal > 0;
+                  // Get actual total from database
+                  final total = widget.monthTotals?[index + 1] ?? 0.0;
+                  final hasValue = total > 0;
 
                   return Container(
                     decoration: BoxDecoration(
@@ -283,7 +282,7 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                           if (hasValue) ...[
                             const SizedBox(height: 4),
                             Text(
-                              '₱${netTotal.toStringAsFixed(0)}',
+                              '₱${total.toStringAsFixed(0)}',
                               style: TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.w500,
