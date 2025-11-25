@@ -146,7 +146,10 @@ class _HeaderState extends ConsumerState<Header> {
                     children: [
                       const Expanded(child: SizedBox()),
                       IconButton(
-                        onPressed: () => _showSettingsSheet(context),
+                        onPressed: () {
+                          FocusScope.of(context).unfocus();
+                          _showSettingsSheet(context);
+                        },
                         iconSize: 18,
                         padding: EdgeInsets.zero,
                         constraints: const BoxConstraints(),
@@ -249,7 +252,10 @@ class _HeaderState extends ConsumerState<Header> {
                         children: [
                           (selectedCategory == null
                               ? OutlinedButton(
-                                  onPressed: () => _showMonthSheet(context),
+                                  onPressed: () {
+                                    FocusScope.of(context).unfocus();
+                                    _showMonthSheet(context);
+                                  },
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 6,
@@ -357,7 +363,10 @@ class _HeaderState extends ConsumerState<Header> {
                           const SizedBox(width: 8),
                           Container(
                             child: OutlinedButton(
-                              onPressed: () => _showRoomsSheet(context),
+                              onPressed: () {
+                                FocusScope.of(context).unfocus();
+                                _showRoomsSheet(context);
+                              },
                               style: OutlinedButton.styleFrom(
                                 padding: const EdgeInsets.symmetric(
                                   vertical: 6,
@@ -447,8 +456,10 @@ class _HeaderState extends ConsumerState<Header> {
                                     ? 'Income'
                                     : 'Income & Expenses';
                                 return OutlinedButton(
-                                  onPressed: () =>
-                                      showTransactionTypeSheet(context),
+                                  onPressed: () {
+                                    FocusScope.of(context).unfocus();
+                                    showTransactionTypeSheet(context);
+                                  },
                                   style: OutlinedButton.styleFrom(
                                     padding: const EdgeInsets.symmetric(
                                       vertical: 6,
@@ -507,7 +518,10 @@ class _HeaderState extends ConsumerState<Header> {
   void _showSettingsSheet(BuildContext context) {
     showSettingsSheet(
       context,
-      onEditCategoriesPressed: () => showCategoriesSheet(context),
+      onEditCategoriesPressed: () {
+        FocusScope.of(context).unfocus();
+        showCategoriesSheet(context);
+      },
     );
   }
 

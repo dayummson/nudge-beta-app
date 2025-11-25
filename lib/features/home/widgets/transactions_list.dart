@@ -207,6 +207,9 @@ class TransactionsList extends StatelessWidget {
                               );
 
                               if (confirmed == true) {
+                                if (context.mounted) {
+                                  FocusScope.of(context).unfocus();
+                                }
                                 try {
                                   // Delete the transaction from database
                                   final deleteResult = isExpense
