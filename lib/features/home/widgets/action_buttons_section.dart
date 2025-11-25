@@ -3,11 +3,13 @@ import 'package:flutter/material.dart';
 class ActionButtonsSection extends StatelessWidget {
   final bool isSaving;
   final VoidCallback onSave;
+  final VoidCallback? onHashtag;
 
   const ActionButtonsSection({
     super.key,
     required this.isSaving,
     required this.onSave,
+    this.onHashtag,
   });
 
   @override
@@ -26,7 +28,7 @@ class ActionButtonsSection extends StatelessWidget {
         child: Row(
           children: [
             OutlinedButton(
-              onPressed: () {},
+              onPressed: onHashtag,
               style: OutlinedButton.styleFrom(
                 padding: const EdgeInsets.symmetric(
                   vertical: 14,

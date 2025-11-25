@@ -25,6 +25,7 @@ class HashtagsJsonConverter extends TypeConverter<List<String>, String> {
 
   @override
   List<String> fromSql(String fromDb) {
+    if (fromDb.isEmpty) return [];
     final List<dynamic> jsonList = jsonDecode(fromDb);
     return jsonList.map((e) => e as String).toList();
   }

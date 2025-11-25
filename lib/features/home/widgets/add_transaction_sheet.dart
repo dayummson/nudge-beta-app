@@ -55,6 +55,7 @@ class _AddTransactionSheetContentState
   String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
   bool _isSaving = false;
+  List<String> _hashtags = [];
 
   @override
   void initState() {
@@ -67,6 +68,7 @@ class _AddTransactionSheetContentState
       _selectedCategoryId = txn.category.id;
       _isExpense = txn.runtimeType.toString() == 'Expense';
       _selectedDate = txn.createdAt;
+      _hashtags = txn.hashtags ?? [];
     }
   }
 
@@ -76,6 +78,45 @@ class _AddTransactionSheetContentState
     _amountController.dispose();
     _inlineAmountFocusNode.dispose();
     super.dispose();
+  }
+
+  void _showHashtagsDialog() {
+    final controller = TextEditingController(text: _hashtags.join(', '));
+    showDialog(
+      context: context,
+      builder: (dialogContext) => AlertDialog(
+        title: const Text('Add Hashtags'),
+        content: TextField(
+          controller: controller,
+          decoration: const InputDecoration(
+            hintText: 'Enter hashtags separated by commas',
+            helperText: 'e.g. food, lunch, restaurant',
+          ),
+          maxLines: 3,
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(dialogContext),
+            child: const Text('Cancel'),
+          ),
+          TextButton(
+            onPressed: () {
+              final text = controller.text.trim();
+              final hashtags = text.isEmpty
+                  ? <String>[]
+                  : text
+                        .split(',')
+                        .map((s) => s.trim())
+                        .where((s) => s.isNotEmpty)
+                        .toList();
+              setState(() => _hashtags = hashtags);
+              Navigator.pop(dialogContext);
+            },
+            child: const Text('Save'),
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _saveTransaction() async {
@@ -137,6 +178,7 @@ class _AddTransactionSheetContentState
               category: drift.Value(category),
               amount: drift.Value(amount),
               location: const drift.Value(null),
+              hashtags: drift.Value(_hashtags),
               createdAt: drift.Value(
                 isEditing ? widget.transaction.createdAt : _selectedDate,
               ),
@@ -148,6 +190,7 @@ class _AddTransactionSheetContentState
               category: drift.Value(category),
               amount: drift.Value(amount),
               location: const drift.Value(null),
+              hashtags: drift.Value(_hashtags),
               createdAt: drift.Value(
                 isEditing ? widget.transaction.createdAt : _selectedDate,
               ),
@@ -239,7 +282,11 @@ class _AddTransactionSheetContentState
           isExpense: _isExpense,
         ),
         const SizedBox(height: 16),
-        ActionButtonsSection(isSaving: _isSaving, onSave: _saveTransaction),
+        ActionButtonsSection(
+          isSaving: _isSaving,
+          onSave: _saveTransaction,
+          onHashtag: _showHashtagsDialog,
+        ),
         const SizedBox(
           height: 20,
         ), // Add space to avoid keyboard covering bottom
