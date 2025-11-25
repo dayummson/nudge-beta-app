@@ -45,5 +45,11 @@ Future<T?> showAppBottomSheet<T>({
 
       return sheet;
     },
-  );
+  ).then((value) {
+    // Unfocus when the sheet is dismissed to prevent keyboard from opening
+    if (context.mounted) {
+      FocusScope.of(context).unfocus();
+    }
+    return value;
+  });
 }
