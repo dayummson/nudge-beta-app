@@ -18,7 +18,7 @@ class CategorySelectionSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? Colors.grey.shade700 : Colors.grey.shade400;
+    final borderColor = isDark ? Colors.grey.shade800 : Colors.grey.shade600;
     final incomeColor = const Color(0xFF58CC02);
     final expenseColor = isDark
         ? const Color(0xFFFF6B6B)

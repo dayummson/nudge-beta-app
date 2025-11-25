@@ -305,7 +305,7 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
             padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
             child: Align(
               alignment: Alignment.center,
-              child: ElevatedButton.icon(
+              child: ElevatedButton(
                 onPressed: () {
                   String displayText;
                   int? month;
@@ -328,8 +328,6 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                   widget.onApply(displayText, month, year);
                   Navigator.pop(context);
                 },
-                icon: const Icon(Icons.check, size: 16),
-                label: const Text('Apply'),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(
                     vertical: 8,
@@ -339,7 +337,7 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                   foregroundColor: widget.cs.onPrimary,
                   textStyle: const TextStyle(
                     fontWeight: FontWeight.w500,
-                    fontSize: 16,
+                    fontSize: 14,
                   ),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(8),
@@ -347,6 +345,7 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                   minimumSize: const Size(64, 36),
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                 ),
+                child: const Text('Apply'),
               ),
             ),
           ),
