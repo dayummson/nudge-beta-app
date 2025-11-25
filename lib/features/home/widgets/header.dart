@@ -21,6 +21,7 @@ class Header extends ConsumerStatefulWidget {
   final VoidCallback? onRoomChanged;
   final Function(int?, int?)? onMonthFilterChanged;
   final Map<int, double>? monthTotals;
+  final bool isSearchActive;
   // Optional debug overrides (null in normal mode)
   final double? debugBlurOverride;
   final Color? debugOverlayColor;
@@ -37,6 +38,7 @@ class Header extends ConsumerStatefulWidget {
     this.onRoomChanged,
     this.onMonthFilterChanged,
     this.monthTotals,
+    this.isSearchActive = false,
     this.debugBlurOverride,
     this.debugOverlayColor,
   });
@@ -205,28 +207,31 @@ class _HeaderState extends ConsumerState<Header> {
                     ],
                   ),
                   // Toggle with fade section
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 10),
-                    child: LayoutBuilder(
-                      builder: (context, constraints) {
-                        final maxW = constraints.maxWidth;
-                        final toggleW = maxW.isFinite
-                            ? (maxW * 0.9).clamp(140.0, 200.0)
-                            : 180.0;
-                        return Align(
-                          alignment: Alignment.centerLeft,
-                          child: ToggleMode(
-                            isExpense: widget.isExpense,
-                            onChanged: (val) => widget.toggleMode(val),
-                            expenseTotal: widget.expenseTotal,
-                            incomeTotal: widget.incomeTotal,
-                            width: toggleW,
-                            height: 40,
-                          ),
-                        );
-                      },
-                    ),
-                  ),
+                  if (!widget.isSearchActive)
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 10),
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final maxW = constraints.maxWidth;
+                          final toggleW = maxW.isFinite
+                              ? (maxW * 0.9).clamp(140.0, 200.0)
+                              : 180.0;
+                          return Align(
+                            alignment: Alignment.centerLeft,
+                            child: ToggleMode(
+                              isExpense: widget.isExpense,
+                              onChanged: (val) => widget.toggleMode(val),
+                              expenseTotal: widget.expenseTotal,
+                              incomeTotal: widget.incomeTotal,
+                              width: toggleW,
+                              height: 40,
+                            ),
+                          );
+                        },
+                      ),
+                    )
+                  else
+                    const SizedBox.shrink(),
                   const SizedBox(height: 8), // reduced bottom padding
                   // Row with Month/Category selector and Rooms button under the toggle
                   Align(

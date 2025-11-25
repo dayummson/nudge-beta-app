@@ -10,6 +10,7 @@ import "../../widgets/categories_list.dart";
 import "../../widgets/transactions_list.dart";
 import '../providers/search_input_provider.dart';
 import '../providers/selected_category_provider.dart';
+import '../providers/search_enabled_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -446,6 +447,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                     onRoomChanged: _loadSelectedRoom,
                                     onMonthFilterChanged: _onMonthFilterChanged,
                                     monthTotals: monthTotals,
+                                    isSearchActive: ref.watch(
+                                      searchEnabledProvider,
+                                    ),
                                     // debug overrides
                                     debugBlurOverride: _debugMode == 1
                                         ? 20.0
