@@ -425,8 +425,8 @@ class _HeaderState extends ConsumerState<Header> {
                           const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 6,
+                              horizontal: 8,
+                              vertical: 4,
                             ),
                             decoration: BoxDecoration(
                               color: colorScheme.surface.withOpacity(0.9),
@@ -434,7 +434,7 @@ class _HeaderState extends ConsumerState<Header> {
                                 color: colorScheme.onSurface.withOpacity(0.2),
                                 width: 1,
                               ),
-                              borderRadius: BorderRadius.circular(8),
+                              borderRadius: BorderRadius.circular(20),
                             ),
                             child: Consumer(
                               builder: (context, ref, child) {
@@ -481,7 +481,7 @@ class _HeaderState extends ConsumerState<Header> {
                                       fontWeight: FontWeight.w600,
                                     ),
                                     dropdownColor: colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(8),
+                                    borderRadius: BorderRadius.circular(12),
                                   ),
                                 );
                               },
