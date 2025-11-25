@@ -9,6 +9,7 @@ import 'month_sheet.dart';
 import '../../categories/widgets/categories_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/selected_category_provider.dart';
+import '../presentation/providers/transaction_type_provider.dart';
 
 class Header extends ConsumerStatefulWidget {
   final double blurSigma;
@@ -420,6 +421,73 @@ class _HeaderState extends ConsumerState<Header> {
                             ],
                           ),
                         ),
+                        if (widget.isSearchActive) ...[
+                          const SizedBox(width: 8),
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 12,
+                              vertical: 6,
+                            ),
+                            decoration: BoxDecoration(
+                              color: colorScheme.surface.withOpacity(0.9),
+                              border: Border.all(
+                                color: colorScheme.onSurface.withOpacity(0.2),
+                                width: 1,
+                              ),
+                              borderRadius: BorderRadius.circular(8),
+                            ),
+                            child: Consumer(
+                              builder: (context, ref, child) {
+                                final transactionType = ref.watch(
+                                  transactionTypeProvider,
+                                );
+                                return DropdownButtonHideUnderline(
+                                  child: DropdownButton<TransactionType>(
+                                    value: transactionType,
+                                    onChanged: (TransactionType? newValue) {
+                                      if (newValue != null) {
+                                        ref
+                                            .read(
+                                              transactionTypeProvider.notifier,
+                                            )
+                                            .setTransactionType(newValue);
+                                      }
+                                    },
+                                    items: TransactionType.values.map((
+                                      TransactionType type,
+                                    ) {
+                                      return DropdownMenuItem<TransactionType>(
+                                        value: type,
+                                        child: Text(
+                                          type == TransactionType.expense
+                                              ? 'Expenses'
+                                              : 'Income',
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface,
+                                            fontSize: 13,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                      );
+                                    }).toList(),
+                                    icon: Icon(
+                                      Icons.arrow_drop_down,
+                                      color: colorScheme.onSurface,
+                                      size: 18,
+                                    ),
+                                    style: TextStyle(
+                                      color: colorScheme.onSurface,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    dropdownColor: colorScheme.surface,
+                                    borderRadius: BorderRadius.circular(8),
+                                  ),
+                                );
+                              },
+                            ),
+                          ),
+                        ],
                       ],
                     ),
                   ),

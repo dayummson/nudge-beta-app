@@ -11,6 +11,7 @@ import "../../widgets/transactions_list.dart";
 import '../providers/search_input_provider.dart';
 import '../providers/selected_category_provider.dart';
 import '../providers/search_enabled_provider.dart';
+import '../providers/transaction_type_provider.dart';
 
 class HomePage extends ConsumerStatefulWidget {
   const HomePage({super.key});
@@ -270,6 +271,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                           final selectedCategory = ref.watch(
                             selectedCategoryProvider,
                           );
+                          final searchEnabled = ref.watch(
+                            searchEnabledProvider,
+                          );
+                          final transactionType = ref.watch(
+                            transactionTypeProvider,
+                          );
+
                           final filteredExpenses = _filterAndSortTransactions(
                             _expenses,
                             searchInput,
@@ -292,14 +300,23 @@ class _HomePageState extends ConsumerState<HomePage> {
                           );
 
                           // Use filtered and sorted data for display
-                          // When both are empty, use the same empty list to prevent flicker
-                          final List<dynamic> transactions =
-                              (filteredExpenses.isEmpty &&
-                                  filteredIncomes.isEmpty)
-                              ? const <dynamic>[]
-                              : (isExpense
-                                    ? filteredExpenses.cast<dynamic>()
-                                    : filteredIncomes.cast<dynamic>());
+                          // When search is enabled, use transaction type filter
+                          final List<dynamic> transactions;
+                          if (searchEnabled) {
+                            transactions =
+                                transactionType == TransactionType.expense
+                                ? filteredExpenses.cast<dynamic>()
+                                : filteredIncomes.cast<dynamic>();
+                          } else {
+                            // Normal mode: use toggle state
+                            transactions =
+                                (filteredExpenses.isEmpty &&
+                                    filteredIncomes.isEmpty)
+                                ? const <dynamic>[]
+                                : (isExpense
+                                      ? filteredExpenses.cast<dynamic>()
+                                      : filteredIncomes.cast<dynamic>());
+                          }
 
                           // Calculate month totals for the month sheet
                           Map<int, double> monthTotals = {};
@@ -392,7 +409,9 @@ class _HomePageState extends ConsumerState<HomePage> {
                                                       },
                                                   child: CategoriesList(
                                                     key: ValueKey(
-                                                      'categories_$isExpense',
+                                                      searchEnabled
+                                                          ? 'categories_search_${transactionType.name}'
+                                                          : 'categories_$isExpense',
                                                     ),
                                                     transactions: transactions,
                                                     scrollOffset: _scrollOffset,
