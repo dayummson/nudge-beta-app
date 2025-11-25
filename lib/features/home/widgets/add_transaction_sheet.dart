@@ -51,7 +51,9 @@ class _AddTransactionSheetContentState
   final _descriptionController = TextEditingController();
   final _amountController = TextEditingController();
   final _inlineAmountFocusNode = FocusNode();
+  final _hashtagController = TextEditingController();
   bool _isExpense = true;
+  bool _isHashtagsExpanded = false;
   String? _selectedCategoryId;
   DateTime _selectedDate = DateTime.now();
   bool _isSaving = false;
@@ -77,46 +79,8 @@ class _AddTransactionSheetContentState
     _descriptionController.dispose();
     _amountController.dispose();
     _inlineAmountFocusNode.dispose();
+    _hashtagController.dispose();
     super.dispose();
-  }
-
-  void _showHashtagsDialog() {
-    final controller = TextEditingController(text: _hashtags.join(', '));
-    showDialog(
-      context: context,
-      builder: (dialogContext) => AlertDialog(
-        title: const Text('Add Hashtags'),
-        content: TextField(
-          controller: controller,
-          decoration: const InputDecoration(
-            hintText: 'Enter hashtags separated by commas',
-            helperText: 'e.g. food, lunch, restaurant',
-          ),
-          maxLines: 3,
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.pop(dialogContext),
-            child: const Text('Cancel'),
-          ),
-          TextButton(
-            onPressed: () {
-              final text = controller.text.trim();
-              final hashtags = text.isEmpty
-                  ? <String>[]
-                  : text
-                        .split(',')
-                        .map((s) => s.trim())
-                        .where((s) => s.isNotEmpty)
-                        .toList();
-              setState(() => _hashtags = hashtags);
-              Navigator.pop(dialogContext);
-            },
-            child: const Text('Save'),
-          ),
-        ],
-      ),
-    );
   }
 
   Future<void> _saveTransaction() async {
@@ -285,7 +249,17 @@ class _AddTransactionSheetContentState
         ActionButtonsSection(
           isSaving: _isSaving,
           onSave: _saveTransaction,
-          onHashtag: _showHashtagsDialog,
+          onHashtag: () => setState(() => _isHashtagsExpanded = true),
+          isExpanded: _isHashtagsExpanded,
+          hashtags: _hashtags,
+          hashtagController: _hashtagController,
+          onHashtagSubmit: (value) {
+            setState(() {
+              _hashtags.add(value);
+              _hashtagController.clear();
+            });
+          },
+          onCollapse: () => setState(() => _isHashtagsExpanded = false),
         ),
         const SizedBox(
           height: 20,
