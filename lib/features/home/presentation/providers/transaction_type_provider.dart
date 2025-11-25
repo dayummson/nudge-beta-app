@@ -1,11 +1,11 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-enum TransactionType { expense, income }
+enum TransactionType { expense, income, both }
 
 /// Notifier for managing transaction type filter state
 class TransactionTypeNotifier extends Notifier<TransactionType> {
   @override
-  TransactionType build() => TransactionType.expense;
+  TransactionType build() => TransactionType.both;
 
   /// Set transaction type
   void setTransactionType(TransactionType type) => state = type;
@@ -20,8 +20,8 @@ class TransactionTypeNotifier extends Notifier<TransactionType> {
 
 /// Provider for managing transaction type filter state
 ///
-/// Controls whether to show expense or income transactions when search is active.
-/// Defaults to expense.
+/// Controls whether to show expense, income, or both transactions when search is active.
+/// Defaults to both.
 final transactionTypeProvider =
     NotifierProvider<TransactionTypeNotifier, TransactionType>(
       TransactionTypeNotifier.new,

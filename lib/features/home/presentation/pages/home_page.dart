@@ -303,10 +303,17 @@ class _HomePageState extends ConsumerState<HomePage> {
                           // When search is enabled, use transaction type filter
                           final List<dynamic> transactions;
                           if (searchEnabled) {
-                            transactions =
-                                transactionType == TransactionType.expense
-                                ? filteredExpenses.cast<dynamic>()
-                                : filteredIncomes.cast<dynamic>();
+                            if (transactionType == TransactionType.both) {
+                              transactions = [
+                                ...filteredExpenses,
+                                ...filteredIncomes,
+                              ].cast<dynamic>();
+                            } else {
+                              transactions =
+                                  transactionType == TransactionType.expense
+                                  ? filteredExpenses.cast<dynamic>()
+                                  : filteredIncomes.cast<dynamic>();
+                            }
                           } else {
                             // Normal mode: use toggle state
                             transactions =

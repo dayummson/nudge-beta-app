@@ -241,254 +241,277 @@ class _HeaderState extends ConsumerState<Header> {
                   // Row with Month/Category selector and Rooms button under the toggle
                   Align(
                     alignment: Alignment.centerLeft,
-                    child: Row(
-                      mainAxisSize: MainAxisSize.min,
-                      children: [
-                        // Show either month selector or selected category
-                        if (selectedCategory == null)
-                          OutlinedButton(
-                            onPressed: () => _showMonthSheet(context),
-                            style: OutlinedButton.styleFrom(
-                              padding: const EdgeInsets.symmetric(
-                                vertical: 6,
-                                horizontal: 12,
-                              ),
-                              shape: const StadiumBorder(),
-                              minimumSize: const Size(64, 36),
-                              tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                              textStyle: const TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.w600,
-                              ),
-                              side: BorderSide(
-                                color: colorScheme.onSurface.withOpacity(0.12),
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  _monthDisplayText,
-                                  style: TextStyle(
-                                    color: colorScheme.onSurface,
-                                    fontWeight: FontWeight.w600,
+                    child: SingleChildScrollView(
+                      scrollDirection: Axis.horizontal,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.max,
+                        children: [
+                          (selectedCategory == null
+                              ? OutlinedButton(
+                                  onPressed: () => _showMonthSheet(context),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                      horizontal: 12,
+                                    ),
+                                    shape: const StadiumBorder(),
+                                    minimumSize: const Size(64, 36),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    textStyle: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    side: BorderSide(
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.12,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                                const SizedBox(width: 8),
-                                Icon(
-                                  Icons.unfold_more,
-                                  size: 18,
-                                  color: colorScheme.onSurface,
-                                ),
-                              ],
-                            ),
-                          )
-                        else
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 6,
-                              horizontal: 12,
-                            ),
-                            decoration: BoxDecoration(
-                              color: selectedCategory.color.withOpacity(0.1),
-                              border: Border.all(
-                                color: selectedCategory.color.withOpacity(0.3),
-                              ),
-                              borderRadius: BorderRadius.circular(18),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Text(
-                                  selectedCategory.icon,
-                                  style: const TextStyle(fontSize: 16),
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  selectedCategory.name,
-                                  style: TextStyle(
-                                    color: colorScheme.onSurface,
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                  ),
-                                ),
-                                const SizedBox(width: 6),
-                                GestureDetector(
-                                  onTap: _clearCategoryFilter,
                                   child: Container(
-                                    width: 20,
-                                    height: 20,
-                                    decoration: BoxDecoration(
-                                      color: colorScheme.onSurface.withOpacity(
-                                        0.1,
-                                      ),
-                                      shape: BoxShape.circle,
-                                    ),
-                                    child: Icon(
-                                      Icons.close,
-                                      size: 14,
-                                      color: colorScheme.onSurface.withOpacity(
-                                        0.7,
-                                      ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          _monthDisplayText,
+                                          style: TextStyle(
+                                            color: colorScheme.onSurface,
+                                            fontWeight: FontWeight.w600,
+                                          ),
+                                        ),
+                                        const SizedBox(width: 8),
+                                        Icon(
+                                          Icons.unfold_more,
+                                          size: 18,
+                                          color: colorScheme.onSurface,
+                                        ),
+                                      ],
                                     ),
                                   ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        const SizedBox(width: 8),
-                        Padding(
-                          padding: const EdgeInsets.symmetric(horizontal: 6),
-                          child: Text(
-                            'in',
-                            style: TextStyle(
-                              color: colorScheme.onSurface.withOpacity(0.75),
-                              fontSize: 13,
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 8),
-                        OutlinedButton(
-                          onPressed: () => _showRoomsSheet(context),
-                          style: OutlinedButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(
-                              vertical: 6,
-                              horizontal: 12,
-                            ),
-                            shape: const StadiumBorder(),
-                            minimumSize: const Size(64, 36),
-                            tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                            textStyle: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            side: BorderSide(
-                              color: colorScheme.onSurface.withOpacity(0.12),
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              ValueListenableBuilder<String?>(
-                                valueListenable: RoomSelection.selectedRoom,
-                                builder: (context, selId, _) {
-                                  // If notifier hasn't been initialized yet,
-                                  // trigger a load of the persisted value. This
-                                  // will update the notifier once the Future
-                                  // completes and cause a rebuild.
-                                  if (selId == null) {
-                                    RoomSelection.getSelectedRoomId();
-                                  }
-
-                                  return StreamBuilder<List<Room>>(
-                                    stream: AppDatabase().roomsDao
-                                        .watchAllRooms(),
-                                    builder: (context, snapshot) {
-                                      var label = 'Rooms';
-                                      if (snapshot.hasData &&
-                                          snapshot.data!.isNotEmpty) {
-                                        final rooms = snapshot.data!;
-                                        Room? chosen;
-                                        if (selId != null) {
-                                          try {
-                                            chosen = rooms.firstWhere(
-                                              (r) => r.id == selId,
-                                            );
-                                          } catch (_) {
-                                            chosen = null;
-                                          }
-                                        }
-                                        chosen ??= rooms.first;
-                                        label = chosen.name;
-                                      }
-                                      return Text(
-                                        label,
-                                        style: TextStyle(
-                                          color: colorScheme.onSurface,
-                                          fontWeight: FontWeight.w600,
+                                )
+                              : Container(
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                      horizontal: 12,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      border: Border.all(
+                                        color: selectedCategory.color
+                                            .withOpacity(0.3),
+                                      ),
+                                      borderRadius: BorderRadius.circular(18),
+                                    ),
+                                    child: Row(
+                                      mainAxisSize: MainAxisSize.min,
+                                      children: [
+                                        Text(
+                                          selectedCategory.icon,
+                                          style: const TextStyle(fontSize: 16),
                                         ),
-                                      );
-                                    },
-                                  );
-                                },
-                              ),
-                              const SizedBox(width: 8),
-                              Icon(
-                                Icons.unfold_more,
-                                size: 18,
-                                color: colorScheme.onSurface,
-                              ),
-                            ],
-                          ),
-                        ),
-                        if (widget.isSearchActive) ...[
-                          const SizedBox(width: 8),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 8,
-                              vertical: 4,
-                            ),
-                            decoration: BoxDecoration(
-                              color: colorScheme.surface.withOpacity(0.9),
-                              border: Border.all(
-                                color: colorScheme.onSurface.withOpacity(0.2),
-                                width: 1,
-                              ),
-                              borderRadius: BorderRadius.circular(20),
-                            ),
-                            child: Consumer(
-                              builder: (context, ref, child) {
-                                final transactionType = ref.watch(
-                                  transactionTypeProvider,
-                                );
-                                return DropdownButtonHideUnderline(
-                                  child: DropdownButton<TransactionType>(
-                                    value: transactionType,
-                                    onChanged: (TransactionType? newValue) {
-                                      if (newValue != null) {
-                                        ref
-                                            .read(
-                                              transactionTypeProvider.notifier,
-                                            )
-                                            .setTransactionType(newValue);
-                                      }
-                                    },
-                                    items: TransactionType.values.map((
-                                      TransactionType type,
-                                    ) {
-                                      return DropdownMenuItem<TransactionType>(
-                                        value: type,
-                                        child: Text(
-                                          type == TransactionType.expense
-                                              ? 'Expenses'
-                                              : 'Income',
+                                        const SizedBox(width: 6),
+                                        Text(
+                                          selectedCategory.name,
                                           style: TextStyle(
                                             color: colorScheme.onSurface,
                                             fontSize: 13,
                                             fontWeight: FontWeight.w600,
                                           ),
                                         ),
-                                      );
-                                    }).toList(),
-                                    icon: Icon(
-                                      Icons.arrow_drop_down,
-                                      color: colorScheme.onSurface,
-                                      size: 18,
+                                        const SizedBox(width: 6),
+                                        GestureDetector(
+                                          onTap: _clearCategoryFilter,
+                                          child: Container(
+                                            width: 20,
+                                            height: 20,
+                                            decoration: BoxDecoration(
+                                              color: colorScheme.onSurface
+                                                  .withOpacity(0.1),
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.close,
+                                              size: 14,
+                                              color: colorScheme.onSurface
+                                                  .withOpacity(0.7),
+                                            ),
+                                          ),
+                                        ),
+                                      ],
                                     ),
-                                    style: TextStyle(
-                                      color: colorScheme.onSurface,
-                                      fontSize: 13,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                    dropdownColor: colorScheme.surface,
-                                    borderRadius: BorderRadius.circular(12),
                                   ),
-                                );
-                              },
+                                )),
+                          const SizedBox(width: 8),
+                          Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 6),
+                            child: Text(
+                              'in',
+                              style: TextStyle(
+                                color: colorScheme.onSurface.withOpacity(0.75),
+                                fontSize: 13,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
+                          Container(
+                            child: OutlinedButton(
+                              onPressed: () => _showRoomsSheet(context),
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 6,
+                                  horizontal: 12,
+                                ),
+                                shape: const StadiumBorder(),
+                                minimumSize: const Size(64, 36),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                side: BorderSide(
+                                  color: colorScheme.onSurface.withOpacity(
+                                    0.12,
+                                  ),
+                                ),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  ValueListenableBuilder<String?>(
+                                    valueListenable: RoomSelection.selectedRoom,
+                                    builder: (context, selId, _) {
+                                      // If notifier hasn't been initialized yet,
+                                      // trigger a load of the persisted value. This
+                                      // will update the notifier once the Future
+                                      // completes and cause a rebuild.
+                                      if (selId == null) {
+                                        RoomSelection.getSelectedRoomId();
+                                      }
+
+                                      return StreamBuilder<List<Room>>(
+                                        stream: AppDatabase().roomsDao
+                                            .watchAllRooms(),
+                                        builder: (context, snapshot) {
+                                          var label = 'Rooms';
+                                          if (snapshot.hasData &&
+                                              snapshot.data!.isNotEmpty) {
+                                            final rooms = snapshot.data!;
+                                            Room? chosen;
+                                            if (selId != null) {
+                                              try {
+                                                chosen = rooms.firstWhere(
+                                                  (r) => r.id == selId,
+                                                );
+                                              } catch (_) {
+                                                chosen = null;
+                                              }
+                                            }
+                                            chosen ??= rooms.first;
+                                            label = chosen.name;
+                                          }
+                                          return Text(
+                                            label,
+                                            style: TextStyle(
+                                              color: colorScheme.onSurface,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          );
+                                        },
+                                      );
+                                    },
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Icon(
+                                    Icons.unfold_more,
+                                    size: 18,
+                                    color: colorScheme.onSurface,
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+
+                          if (widget.isSearchActive) ...[
+                            const SizedBox(width: 8),
+                            OutlinedButton(
+                              onPressed: () {},
+                              style: OutlinedButton.styleFrom(
+                                padding: const EdgeInsets.symmetric(
+                                  vertical: 0,
+                                  horizontal: 16,
+                                ),
+                                shape: const StadiumBorder(),
+                                minimumSize: const Size(64, 36),
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                textStyle: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                                side: BorderSide(
+                                  color: colorScheme.onSurface.withOpacity(
+                                    0.12,
+                                  ),
+                                ),
+                              ),
+                              child: Consumer(
+                                builder: (context, ref, child) {
+                                  final transactionType = ref.watch(
+                                    transactionTypeProvider,
+                                  );
+                                  return DropdownButtonHideUnderline(
+                                    child: DropdownButton<TransactionType>(
+                                      value: transactionType,
+                                      onChanged: (TransactionType? newValue) {
+                                        if (newValue != null) {
+                                          ref
+                                              .read(
+                                                transactionTypeProvider
+                                                    .notifier,
+                                              )
+                                              .setTransactionType(newValue);
+                                        }
+                                      },
+                                      items: TransactionType.values.map((
+                                        TransactionType type,
+                                      ) {
+                                        return DropdownMenuItem<
+                                          TransactionType
+                                        >(
+                                          value: type,
+                                          child: Text(
+                                            type == TransactionType.expense
+                                                ? 'Expenses'
+                                                : type == TransactionType.income
+                                                ? 'Income'
+                                                : 'Income & Expenses',
+                                            style: TextStyle(
+                                              color: colorScheme.onSurface,
+                                              fontSize: 13,
+                                              fontWeight: FontWeight.w600,
+                                            ),
+                                          ),
+                                        );
+                                      }).toList(),
+                                      icon: Icon(
+                                        Icons.arrow_drop_down,
+                                        color: colorScheme.onSurface,
+                                        size: 18,
+                                      ),
+                                      style: TextStyle(
+                                        color: colorScheme.onSurface,
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                      ),
+                                      dropdownColor: colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(16),
+                                    ),
+                                  );
+                                },
+                              ),
+                            ),
+                          ],
                         ],
-                      ],
+                      ),
                     ),
                   ),
                   const SizedBox(height: 12), // Bottom padding
