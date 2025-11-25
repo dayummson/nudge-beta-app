@@ -14,7 +14,6 @@ class ActionButtonsSection extends StatelessWidget {
   Widget build(BuildContext context) {
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final borderColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
 
     return AnimatedSwitcher(
       duration: const Duration(milliseconds: 250),
@@ -37,8 +36,8 @@ class ActionButtonsSection extends StatelessWidget {
                 shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(10),
                 ),
-                backgroundColor: cs.surfaceVariant,
-                side: BorderSide(color: borderColor),
+                backgroundColor: isDark ? Colors.grey[850] : Colors.grey[300],
+                side: BorderSide.none,
                 foregroundColor: cs.onSurfaceVariant,
                 minimumSize: Size.zero,
                 tapTargetSize: MaterialTapTargetSize.shrinkWrap,
