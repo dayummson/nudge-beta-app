@@ -9,6 +9,7 @@ class ActionButtonsSection extends StatelessWidget {
   final TextEditingController? hashtagController;
   final ValueChanged<String>? onHashtagSubmit;
   final VoidCallback? onCollapse;
+  final VoidCallback? onDelete;
 
   const ActionButtonsSection({
     super.key,
@@ -20,6 +21,7 @@ class ActionButtonsSection extends StatelessWidget {
     this.hashtagController,
     this.onHashtagSubmit,
     this.onCollapse,
+    this.onDelete,
   });
 
   @override
@@ -42,24 +44,59 @@ class ActionButtonsSection extends StatelessWidget {
                     child: TextField(
                       controller: hashtagController,
                       decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
                         hintText: 'Enter hashtag',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.grey[850]!
+                                : Colors.grey[300]!,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.grey[850]!
+                                : Colors.grey[300]!,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.grey[850]!
+                                : Colors.grey[300]!,
+                          ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: isDark ? Colors.grey[850] : Colors.grey[300],
                         prefixIcon: hashtags.isNotEmpty
-                            ? Wrap(
-                                spacing: 4,
-                                runSpacing: 2,
-                                children: hashtags
-                                    .map(
-                                      (tag) => Chip(
-                                        label: Text(
-                                          '#$tag',
-                                          style: const TextStyle(fontSize: 10),
+                            ? Container(
+                                alignment: Alignment.centerLeft,
+                                child: Wrap(
+                                  spacing: 4,
+                                  runSpacing: 4,
+                                  children: hashtags
+                                      .map(
+                                        (tag) => Chip(
+                                          label: Text(
+                                            '#$tag',
+                                            style: const TextStyle(
+                                              fontSize: 10,
+                                            ),
+                                          ),
+                                          padding: EdgeInsets.zero,
+                                          materialTapTargetSize:
+                                              MaterialTapTargetSize.shrinkWrap,
                                         ),
-                                        padding: EdgeInsets.zero,
-                                        materialTapTargetSize:
-                                            MaterialTapTargetSize.shrinkWrap,
-                                      ),
-                                    )
-                                    .toList(),
+                                      )
+                                      .toList(),
+                                ),
                               )
                             : null,
                       ),
@@ -70,9 +107,49 @@ class ActionButtonsSection extends StatelessWidget {
                       },
                     ),
                   ),
-                  IconButton(
-                    icon: const Icon(Icons.check),
-                    onPressed: onCollapse,
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 48,
+                    width: 48,
+
+                    child: OutlinedButton(
+                      onPressed: onDelete,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide(
+                          color: isDark ? Colors.grey[850]! : Colors.grey[300]!,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Icon(Icons.delete),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  SizedBox(
+                    height: 48,
+                    width: 48,
+
+                    child: OutlinedButton(
+                      onPressed: onCollapse,
+                      style: OutlinedButton.styleFrom(
+                        backgroundColor: Colors.transparent,
+                        side: BorderSide(
+                          color: isDark ? Colors.grey[850]! : Colors.grey[300]!,
+                        ),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        padding: const EdgeInsets.all(12),
+                        minimumSize: Size.zero,
+                        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                      ),
+                      child: const Icon(Icons.check),
+                    ),
                   ),
                 ],
               )

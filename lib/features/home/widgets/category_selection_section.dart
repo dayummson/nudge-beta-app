@@ -50,20 +50,17 @@ class CategorySelectionSection extends StatelessWidget {
                 scrollDirection: Axis.horizontal,
                 child: Row(
                   children: [
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 8),
                     OutlinedButton(
                       onPressed: () => showCategoriesSheet(context),
                       style: OutlinedButton.styleFrom(
-                        padding: const EdgeInsets.symmetric(
-                          vertical: 8,
-                          horizontal: 12,
-                        ),
-                        shape: const StadiumBorder(),
+                        fixedSize: const Size(32, 32),
+                        shape: const CircleBorder(),
                         side: BorderSide(color: borderColor),
                         backgroundColor: cs.surfaceVariant,
                         foregroundColor: cs.onSurfaceVariant,
                       ),
-                      child: const Icon(Icons.add, size: 18),
+                      child: const Icon(Icons.add, size: 16),
                     ),
                     const SizedBox(width: 8),
                     ...constants.categories.map((cat) {
@@ -111,7 +108,7 @@ class CategorySelectionSection extends StatelessWidget {
                         ),
                       );
                     }).toList(),
-                    const SizedBox(width: 16),
+                    const SizedBox(width: 8),
                   ],
                 ),
               )
