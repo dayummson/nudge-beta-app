@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class ActionButtonsSection extends StatelessWidget {
   final bool isSaving;
@@ -10,7 +11,7 @@ class ActionButtonsSection extends StatelessWidget {
   final ValueChanged<String>? onHashtagSubmit;
   final VoidCallback? onCollapse;
   final VoidCallback? onDelete;
-  final VoidCallback? onRemoveLast;
+  final ValueChanged<String>? onRemoveLast;
 
   const ActionButtonsSection({
     super.key,
@@ -32,7 +33,7 @@ class ActionButtonsSection extends StatelessWidget {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     return AnimatedSwitcher(
-      duration: const Duration(milliseconds: 250),
+      duration: const Duration(milliseconds: 150),
       switchInCurve: Curves.easeOut,
       switchOutCurve: Curves.easeIn,
       transitionBuilder: (child, animation) =>
@@ -43,97 +44,109 @@ class ActionButtonsSection extends StatelessWidget {
             ? Row(
                 children: [
                   Expanded(
-                    child: TextField(
-                      controller: hashtagController,
-                      decoration: InputDecoration(
-                        contentPadding: const EdgeInsets.symmetric(
-                          horizontal: 14,
-                          vertical: 10,
-                        ),
-                        hintText: 'Tag',
-                        border: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            width: 4,
-                            color: isDark
-                                ? Colors.grey[850]!
-                                : Colors.grey[300]!,
+                    child: RawKeyboardListener(
+                      focusNode: FocusNode(),
+                      onKey: (event) {
+                        if (event is RawKeyDownEvent &&
+                            event.logicalKey == LogicalKeyboardKey.backspace &&
+                            hashtagController!.text.isEmpty &&
+                            hashtags.isNotEmpty) {
+                          onRemoveLast?.call(hashtags.last);
+                        }
+                      },
+                      child: TextField(
+                        controller: hashtagController,
+                        decoration: InputDecoration(
+                          contentPadding: const EdgeInsets.symmetric(
+                            horizontal: 14,
+                            vertical: 10,
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: isDark
-                                ? const Color.fromARGB(255, 67, 67, 67)
-                                : Colors.grey[300]!,
+                          hintText: 'Tag',
+                          border: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              width: 4,
+                              color: isDark
+                                  ? Colors.grey[850]!
+                                  : Colors.grey[300]!,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderSide: BorderSide(
-                            color: isDark
-                                ? Colors.grey[850]!
-                                : Colors.grey[300]!,
+                          enabledBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? const Color.fromARGB(255, 67, 67, 67)
+                                  : Colors.grey[300]!,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
                           ),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        filled: true,
-                        fillColor: isDark
-                            ? const Color.fromARGB(255, 36, 36, 36)
-                            : Colors.grey[300],
-                        prefixIcon: hashtags.isNotEmpty
-                            ? Padding(
-                                padding: const EdgeInsets.all(6),
-                                child: SizedBox(
-                                  height: 32, // Adjust height to fit chips
-                                  child: SingleChildScrollView(
-                                    scrollDirection: Axis.horizontal,
-                                    child: Row(
-                                      children: hashtags
-                                          .map(
-                                            (tag) => Padding(
-                                              padding: const EdgeInsets.only(
-                                                right: 4,
-                                              ),
-                                              child: Chip(
-                                                label: Text(
-                                                  '#$tag',
-                                                  style: const TextStyle(
-                                                    fontSize: 12,
-                                                    fontWeight: FontWeight.w600,
-                                                  ),
+                          focusedBorder: OutlineInputBorder(
+                            borderSide: BorderSide(
+                              color: isDark
+                                  ? Colors.grey[850]!
+                                  : Colors.grey[300]!,
+                            ),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          filled: true,
+                          fillColor: isDark
+                              ? const Color.fromARGB(255, 36, 36, 36)
+                              : Colors.grey[300],
+                          prefixIcon: hashtags.isNotEmpty
+                              ? Padding(
+                                  padding: const EdgeInsets.all(6),
+                                  child: SizedBox(
+                                    height: 32, // Adjust height to fit chips
+                                    child: SingleChildScrollView(
+                                      scrollDirection: Axis.horizontal,
+                                      child: Row(
+                                        children: hashtags
+                                            .map(
+                                              (tag) => Padding(
+                                                padding: const EdgeInsets.only(
+                                                  right: 4,
                                                 ),
-                                                padding: EdgeInsets.zero,
-                                                side: BorderSide.none,
-                                                backgroundColor:
-                                                    const Color.fromARGB(
-                                                      255,
-                                                      52,
-                                                      52,
-                                                      52,
+                                                child: Chip(
+                                                  label: Text(
+                                                    '#$tag',
+                                                    style: const TextStyle(
+                                                      fontSize: 12,
+                                                      fontWeight:
+                                                          FontWeight.w600,
                                                     ),
-                                                materialTapTargetSize:
-                                                    MaterialTapTargetSize
-                                                        .shrinkWrap,
+                                                  ),
+                                                  padding: EdgeInsets.zero,
+                                                  side: BorderSide.none,
+                                                  backgroundColor:
+                                                      const Color.fromARGB(
+                                                        255,
+                                                        52,
+                                                        52,
+                                                        52,
+                                                      ),
+                                                  materialTapTargetSize:
+                                                      MaterialTapTargetSize
+                                                          .shrinkWrap,
+                                                ),
                                               ),
-                                            ),
-                                          )
-                                          .toList(),
+                                            )
+                                            .toList(),
+                                      ),
                                     ),
                                   ),
-                                ),
-                              )
-                            : null,
+                                )
+                              : null,
+                        ),
+                        onChanged: (value) {
+                          if (value.isEmpty && hashtags.isNotEmpty) {
+                            onRemoveLast?.call(hashtags.last);
+                          }
+                        },
+                        onSubmitted: (value) {
+                          if (value.trim().isNotEmpty && hashtags.length < 5) {
+                            onHashtagSubmit?.call(value.trim());
+                          }
+                        },
                       ),
-                      onChanged: (value) {
-                        if (value.isEmpty && hashtags.isNotEmpty) {
-                          onRemoveLast?.call();
-                        }
-                      },
-                      onSubmitted: (value) {
-                        if (value.trim().isNotEmpty && hashtags.length < 5) {
-                          onHashtagSubmit?.call(value.trim());
-                        }
-                      },
                     ),
                   ),
                   const SizedBox(width: 8),
