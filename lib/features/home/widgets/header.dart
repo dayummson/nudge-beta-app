@@ -207,31 +207,35 @@ class _HeaderState extends ConsumerState<Header> {
                     ],
                   ),
                   // Toggle with fade section
-                  if (!widget.isSearchActive)
-                    Padding(
-                      padding: const EdgeInsets.only(bottom: 10),
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final maxW = constraints.maxWidth;
-                          final toggleW = maxW.isFinite
-                              ? (maxW * 0.9).clamp(140.0, 200.0)
-                              : 180.0;
-                          return Align(
-                            alignment: Alignment.centerLeft,
-                            child: ToggleMode(
-                              isExpense: widget.isExpense,
-                              onChanged: (val) => widget.toggleMode(val),
-                              expenseTotal: widget.expenseTotal,
-                              incomeTotal: widget.incomeTotal,
-                              width: toggleW,
-                              height: 40,
+                  AnimatedOpacity(
+                    opacity: widget.isSearchActive ? 0.0 : 1.0,
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeInOut,
+                    child: widget.isSearchActive
+                        ? const SizedBox.shrink()
+                        : Padding(
+                            padding: const EdgeInsets.only(bottom: 10),
+                            child: LayoutBuilder(
+                              builder: (context, constraints) {
+                                final maxW = constraints.maxWidth;
+                                final toggleW = maxW.isFinite
+                                    ? (maxW * 0.9).clamp(140.0, 200.0)
+                                    : 180.0;
+                                return Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: ToggleMode(
+                                    isExpense: widget.isExpense,
+                                    onChanged: (val) => widget.toggleMode(val),
+                                    expenseTotal: widget.expenseTotal,
+                                    incomeTotal: widget.incomeTotal,
+                                    width: toggleW,
+                                    height: 40,
+                                  ),
+                                );
+                              },
                             ),
-                          );
-                        },
-                      ),
-                    )
-                  else
-                    const SizedBox.shrink(),
+                          ),
+                  ),
                   const SizedBox(height: 8), // reduced bottom padding
                   // Row with Month/Category selector and Rooms button under the toggle
                   Align(
