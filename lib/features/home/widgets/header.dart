@@ -10,6 +10,7 @@ import '../../categories/widgets/categories_sheet.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/selected_category_provider.dart';
 import '../presentation/providers/transaction_type_provider.dart';
+import 'transaction_type_sheet.dart';
 
 class Header extends ConsumerStatefulWidget {
   final double blurSigma;
@@ -433,81 +434,59 @@ class _HeaderState extends ConsumerState<Header> {
 
                           if (widget.isSearchActive) ...[
                             const SizedBox(width: 8),
-                            OutlinedButton(
-                              onPressed: () {},
-                              style: OutlinedButton.styleFrom(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 0,
-                                  horizontal: 16,
-                                ),
-                                shape: const StadiumBorder(),
-                                minimumSize: const Size(64, 36),
-                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                textStyle: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
-                                ),
-                                side: BorderSide(
-                                  color: colorScheme.onSurface.withOpacity(
-                                    0.12,
-                                  ),
-                                ),
-                              ),
-                              child: Consumer(
-                                builder: (context, ref, child) {
-                                  final transactionType = ref.watch(
-                                    transactionTypeProvider,
-                                  );
-                                  return DropdownButtonHideUnderline(
-                                    child: DropdownButton<TransactionType>(
-                                      value: transactionType,
-                                      onChanged: (TransactionType? newValue) {
-                                        if (newValue != null) {
-                                          ref
-                                              .read(
-                                                transactionTypeProvider
-                                                    .notifier,
-                                              )
-                                              .setTransactionType(newValue);
-                                        }
-                                      },
-                                      items: TransactionType.values.map((
-                                        TransactionType type,
-                                      ) {
-                                        return DropdownMenuItem<
-                                          TransactionType
-                                        >(
-                                          value: type,
-                                          child: Text(
-                                            type == TransactionType.expense
-                                                ? 'Expenses'
-                                                : type == TransactionType.income
-                                                ? 'Income'
-                                                : 'Income & Expenses',
-                                            style: TextStyle(
-                                              color: colorScheme.onSurface,
-                                              fontSize: 13,
-                                              fontWeight: FontWeight.w600,
-                                            ),
-                                          ),
-                                        );
-                                      }).toList(),
-                                      icon: Icon(
-                                        Icons.arrow_drop_down,
-                                        color: colorScheme.onSurface,
-                                        size: 18,
-                                      ),
-                                      style: TextStyle(
-                                        color: colorScheme.onSurface,
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                      dropdownColor: colorScheme.surface,
-                                      borderRadius: BorderRadius.circular(16),
+                            Consumer(
+                              builder: (context, ref, child) {
+                                final transactionType = ref.watch(
+                                  transactionTypeProvider,
+                                );
+                                final label =
+                                    transactionType == TransactionType.expense
+                                    ? 'Expenses'
+                                    : transactionType == TransactionType.income
+                                    ? 'Income'
+                                    : 'Income & Expenses';
+                                return OutlinedButton(
+                                  onPressed: () =>
+                                      showTransactionTypeSheet(context),
+                                  style: OutlinedButton.styleFrom(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 6,
+                                      horizontal: 12,
                                     ),
-                                  );
-                                },
-                              ),
+                                    shape: const StadiumBorder(),
+                                    minimumSize: const Size(64, 36),
+                                    tapTargetSize:
+                                        MaterialTapTargetSize.shrinkWrap,
+                                    textStyle: const TextStyle(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                    side: BorderSide(
+                                      color: colorScheme.onSurface.withOpacity(
+                                        0.12,
+                                      ),
+                                    ),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Text(
+                                        label,
+                                        style: TextStyle(
+                                          color: colorScheme.onSurface,
+                                          fontWeight: FontWeight.w600,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 8),
+                                      Icon(
+                                        Icons.unfold_more,
+                                        size: 18,
+                                        color: colorScheme.onSurface,
+                                      ),
+                                    ],
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ],
