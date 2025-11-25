@@ -120,114 +120,120 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
         return bTotal.compareTo(aTotal); // Descending order
       });
 
-    return AnimatedContainer(
+    return AnimatedSize(
       duration: const Duration(milliseconds: 300),
       curve: Curves.easeInOut,
-      height: searchEnabled ? 0 : maxCategoryHeight,
-      child: AnimatedOpacity(
-        duration: const Duration(milliseconds: 200),
-        opacity: searchEnabled ? 0 : 1,
-        child: searchEnabled
-            ? const SizedBox.shrink()
-            : showEmptyState
-            ? _buildEmptyPlaceholder(context)
-            : ListView.builder(
-                scrollDirection: Axis.horizontal,
-                padding: const EdgeInsets.only(left: 16, right: 16, bottom: 8),
-                itemCount: sortedCategories.length,
-                itemBuilder: (context, index) {
-                  final category = sortedCategories[index];
-                  final total = categoryTotals[category.id] ?? 0.0;
-                  final magnitude = total.abs();
-                  final isSelected = selectedCategory?.id == category.id;
+      child: SizedBox(
+        height: searchEnabled ? 0 : maxCategoryHeight,
+        child: AnimatedOpacity(
+          duration: const Duration(milliseconds: 200),
+          opacity: searchEnabled ? 0 : 1,
+          child: searchEnabled
+              ? const SizedBox.shrink()
+              : showEmptyState
+              ? _buildEmptyPlaceholder(context)
+              : ListView.builder(
+                  scrollDirection: Axis.horizontal,
+                  padding: const EdgeInsets.only(
+                    left: 16,
+                    right: 16,
+                    bottom: 8,
+                  ),
+                  itemCount: sortedCategories.length,
+                  itemBuilder: (context, index) {
+                    final category = sortedCategories[index];
+                    final total = categoryTotals[category.id] ?? 0.0;
+                    final magnitude = total.abs();
+                    final isSelected = selectedCategory?.id == category.id;
 
-                  // Calculate height based on percentage of MAX magnitude (not grand total)
-                  // This makes the tallest category (by absolute value) reach maxHeight
-                  final percentage = maxAmount > 0
-                      ? (magnitude / maxAmount)
-                      : 0.0;
-                  final barHeight = magnitude > 0
-                      ? (maxCategoryHeight * percentage).clamp(
-                          minCategoryHeight,
-                          maxCategoryHeight,
-                        )
-                      : minCategoryHeight;
-                  // if (kDebugMode) {
-                  //   debugPrint(
-                  //     'Category ${category.id} (${category.name}) -> total: '
-                  //     '${total.toStringAsFixed(2)}, mag: ${magnitude.toStringAsFixed(2)}, '
-                  //     'max: ${maxAmount.toStringAsFixed(2)}, '
-                  //     'pct: ${(percentage * 100).toStringAsFixed(1)}%, '
-                  //     'height: ${barHeight.toStringAsFixed(1)}',
-                  //   );
-                  // }
+                    // Calculate height based on percentage of MAX magnitude (not grand total)
+                    // This makes the tallest category (by absolute value) reach maxHeight
+                    final percentage = maxAmount > 0
+                        ? (magnitude / maxAmount)
+                        : 0.0;
+                    final barHeight = magnitude > 0
+                        ? (maxCategoryHeight * percentage).clamp(
+                            minCategoryHeight,
+                            maxCategoryHeight,
+                          )
+                        : minCategoryHeight;
+                    // if (kDebugMode) {
+                    //   debugPrint(
+                    //     'Category ${category.id} (${category.name}) -> total: '
+                    //     '${total.toStringAsFixed(2)}, mag: ${magnitude.toStringAsFixed(2)}, '
+                    //     'max: ${maxAmount.toStringAsFixed(2)}, '
+                    //     'pct: ${(percentage * 100).toStringAsFixed(1)}%, '
+                    //     'height: ${barHeight.toStringAsFixed(1)}',
+                    //   );
+                    // }
 
-                  return GestureDetector(
-                    onTap: () {
-                      final notifier = ref.read(
-                        selectedCategoryProvider.notifier,
-                      );
-                      if (isSelected) {
-                        notifier.clearCategory();
-                      } else {
-                        notifier.selectCategory(category);
-                      }
-                    },
-                    child: Container(
-                      margin: const EdgeInsets.only(right: 8),
-                      child: Align(
-                        alignment: Alignment.bottomCenter,
-                        child: AnimatedContainer(
-                          duration: const Duration(milliseconds: 200),
-                          height: barHeight,
-                          width: 70,
-                          padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
-                          decoration: BoxDecoration(
-                            color: isSelected
-                                ? category.color.withOpacity(0.8)
-                                : Colors.grey[850],
-                            borderRadius: BorderRadius.circular(16),
-                            border: isSelected
-                                ? Border.all(color: category.color, width: 2)
-                                : null,
-                          ),
-                          child: Column(
-                            mainAxisAlignment: MainAxisAlignment.end,
-                            children: [
-                              Text(
-                                category.icon,
-                                style: const TextStyle(
-                                  fontSize: 20,
-                                  height: 1.0,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Flexible(
-                                child: Text(
-                                  magnitude == 0
-                                      ? '₱0'
-                                      : '₱${total.toStringAsFixed(0)}',
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.w700,
-                                    color: isSelected
-                                        ? Colors.white
-                                        : Colors.grey[400],
-                                    height: 1.2,
+                    return GestureDetector(
+                      onTap: () {
+                        final notifier = ref.read(
+                          selectedCategoryProvider.notifier,
+                        );
+                        if (isSelected) {
+                          notifier.clearCategory();
+                        } else {
+                          notifier.selectCategory(category);
+                        }
+                      },
+                      child: Container(
+                        margin: const EdgeInsets.only(right: 8),
+                        child: Align(
+                          alignment: Alignment.bottomCenter,
+                          child: AnimatedContainer(
+                            duration: const Duration(milliseconds: 200),
+                            height: barHeight,
+                            width: 70,
+                            padding: const EdgeInsets.fromLTRB(8, 8, 8, 8),
+                            decoration: BoxDecoration(
+                              color: isSelected
+                                  ? category.color.withOpacity(0.8)
+                                  : Colors.grey[850],
+                              borderRadius: BorderRadius.circular(16),
+                              border: isSelected
+                                  ? Border.all(color: category.color, width: 2)
+                                  : null,
+                            ),
+                            child: Column(
+                              mainAxisAlignment: MainAxisAlignment.end,
+                              children: [
+                                Text(
+                                  category.icon,
+                                  style: const TextStyle(
+                                    fontSize: 20,
+                                    height: 1.0,
                                   ),
-                                  maxLines: 1,
-                                  overflow: TextOverflow.ellipsis,
-                                  textAlign: TextAlign.center,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 4),
+                                Flexible(
+                                  child: Text(
+                                    magnitude == 0
+                                        ? '₱0'
+                                        : '₱${total.toStringAsFixed(0)}',
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.w700,
+                                      color: isSelected
+                                          ? Colors.white
+                                          : Colors.grey[400],
+                                      height: 1.2,
+                                    ),
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    textAlign: TextAlign.center,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                  );
-                },
-              ),
+                    );
+                  },
+                ),
+        ),
       ),
     );
   }
