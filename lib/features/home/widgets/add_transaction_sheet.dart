@@ -66,6 +66,7 @@ class _AddTransactionSheetContentState
       _amountController.text = txn.amount.toString();
       _selectedCategoryId = txn.category.id;
       _isExpense = txn.runtimeType.toString() == 'Expense';
+      _selectedDate = txn.createdAt;
     }
   }
 
@@ -134,7 +135,7 @@ class _AddTransactionSheetContentState
           amount: drift.Value(amount),
           location: const drift.Value(null),
           createdAt: drift.Value(
-            isEditing ? widget.transaction.createdAt : DateTime.now(),
+            isEditing ? widget.transaction.createdAt : _selectedDate,
           ),
         );
 
@@ -152,7 +153,7 @@ class _AddTransactionSheetContentState
           amount: drift.Value(amount),
           location: const drift.Value(null),
           createdAt: drift.Value(
-            isEditing ? widget.transaction.createdAt : DateTime.now(),
+            isEditing ? widget.transaction.createdAt : _selectedDate,
           ),
         );
 
