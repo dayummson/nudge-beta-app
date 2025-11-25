@@ -298,14 +298,63 @@ class TransactionsList extends StatelessWidget {
                             fontSize: 12,
                           ),
                         ),
-                        subtitle: transaction.description.isNotEmpty
-                            ? Text(
-                                transaction.description,
-                                style: TextStyle(
-                                  color: miniTextColor,
-                                  fontSize: 14,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                        subtitle:
+                            transaction.description.isNotEmpty ||
+                                transaction.hashtags.isNotEmpty
+                            ? Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  if (transaction.description.isNotEmpty)
+                                    Text(
+                                      transaction.description,
+                                      style: TextStyle(
+                                        color: miniTextColor,
+                                        fontSize: 14,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                    ),
+                                  if (transaction.hashtags.isNotEmpty)
+                                    Wrap(
+                                      spacing: 4,
+                                      runSpacing: 2,
+                                      children:
+                                          (transaction.hashtags as List<String>)
+                                              .map(
+                                                (tag) => Container(
+                                                  padding:
+                                                      const EdgeInsets.symmetric(
+                                                        horizontal: 6,
+                                                        vertical: 2,
+                                                      ),
+                                                  decoration: BoxDecoration(
+                                                    color:
+                                                        Theme.of(
+                                                              context,
+                                                            ).brightness ==
+                                                            Brightness.dark
+                                                        ? Colors.grey[850]
+                                                        : Colors.grey[300],
+                                                    borderRadius:
+                                                        BorderRadius.circular(
+                                                          8,
+                                                        ),
+                                                  ),
+                                                  child: Text(
+                                                    '#$tag',
+                                                    style: TextStyle(
+                                                      color: Theme.of(context)
+                                                          .colorScheme
+                                                          .onSurfaceVariant,
+                                                      fontSize: 10,
+                                                      fontWeight:
+                                                          FontWeight.w600,
+                                                    ),
+                                                  ),
+                                                ),
+                                              )
+                                              .toList(),
+                                    ),
+                                ],
                               )
                             : null,
                         trailing: Container(

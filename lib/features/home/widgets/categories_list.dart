@@ -194,6 +194,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
                                   : isDark
                                   ? Colors.grey[850]
                                   : Colors.grey[300],
+
                               borderRadius: BorderRadius.circular(16),
                               border: isSelected
                                   ? Border.all(color: category.color, width: 2)

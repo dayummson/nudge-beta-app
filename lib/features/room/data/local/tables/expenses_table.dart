@@ -11,8 +11,7 @@ class Expenses extends Table {
   RealColumn get amount => real()();
   TextColumn get location =>
       text().map(const LocationJsonConverter()).nullable()();
-  TextColumn get hashtags =>
-      text().map(const HashtagsJsonConverter()).nullable()();
+  TextColumn get hashtags => text().map(HashtagsJsonConverter())();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
 
@@ -30,7 +29,7 @@ class Incomes extends Table {
   RealColumn get amount => real()();
   TextColumn get location =>
       text().map(const LocationJsonConverter()).nullable()();
-  TextColumn get hashtags => text().map(const HashtagsJsonConverter())();
+  TextColumn get hashtags => text().map(HashtagsJsonConverter())();
   DateTimeColumn get createdAt => dateTime().withDefault(currentDateAndTime)();
   DateTimeColumn get updatedAt => dateTime().nullable()();
 
