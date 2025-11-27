@@ -1,6 +1,89 @@
 import 'package:flutter/material.dart';
 import '../../../constants/categories.dart' as constants;
 
+/// Manages a queue of notifications to prevent overlapping
+class _NotificationQueue {
+  static final List<_QueuedNotification> _queue = [];
+  static bool _isShowing = false;
+
+  static void add({
+    required BuildContext context,
+    required String categoryId,
+    required double amount,
+    required bool isExpense,
+    required String action,
+  }) {
+    _queue.add(
+      _QueuedNotification(
+        context: context,
+        categoryId: categoryId,
+        amount: amount,
+        isExpense: isExpense,
+        action: action,
+      ),
+    );
+
+    if (!_isShowing) {
+      _showNext();
+    }
+  }
+
+  static void _showNext() {
+    if (_queue.isEmpty) {
+      _isShowing = false;
+      return;
+    }
+
+    _isShowing = true;
+    final notification = _queue.removeAt(0);
+
+    final overlay = Overlay.of(notification.context);
+    late OverlayEntry overlayEntry;
+    final animationKey = GlobalKey<_AnimatedNotificationState>();
+
+    overlayEntry = OverlayEntry(
+      builder: (context) => _AnimatedNotification(
+        key: animationKey,
+        child: TransactionNotification(
+          categoryId: notification.categoryId,
+          amount: notification.amount,
+          isExpense: notification.isExpense,
+          action: notification.action,
+        ),
+        onDismiss: () {
+          overlayEntry.remove();
+          _showNext();
+        },
+      ),
+    );
+
+    overlay.insert(overlayEntry);
+
+    // Auto remove after 3 seconds with slide up animation
+    Future.delayed(const Duration(seconds: 3), () {
+      if (overlayEntry.mounted && animationKey.currentState != null) {
+        animationKey.currentState!._slideUpAndRemove();
+      }
+    });
+  }
+}
+
+class _QueuedNotification {
+  final BuildContext context;
+  final String categoryId;
+  final double amount;
+  final bool isExpense;
+  final String action;
+
+  _QueuedNotification({
+    required this.context,
+    required this.categoryId,
+    required this.amount,
+    required this.isExpense,
+    required this.action,
+  });
+}
+
 /// A custom notification widget for transaction operations (create/edit/delete).
 /// Shows category icon, name, and amount in a compact rounded container.
 class TransactionNotification extends StatefulWidget {
@@ -29,31 +112,13 @@ class TransactionNotification extends StatefulWidget {
     required bool isExpense,
     required String action,
   }) {
-    final overlay = Overlay.of(context);
-    late OverlayEntry overlayEntry;
-    final animationKey = GlobalKey<_AnimatedNotificationState>();
-
-    overlayEntry = OverlayEntry(
-      builder: (context) => _AnimatedNotification(
-        key: animationKey,
-        child: TransactionNotification(
-          categoryId: categoryId,
-          amount: amount,
-          isExpense: isExpense,
-          action: action,
-        ),
-        onDismiss: () => overlayEntry.remove(),
-      ),
+    _NotificationQueue.add(
+      context: context,
+      categoryId: categoryId,
+      amount: amount,
+      isExpense: isExpense,
+      action: action,
     );
-
-    overlay.insert(overlayEntry);
-
-    // Auto remove after 3 seconds with slide up animation
-    Future.delayed(const Duration(seconds: 3), () {
-      if (overlayEntry.mounted && animationKey.currentState != null) {
-        animationKey.currentState!._slideUpAndRemove();
-      }
-    });
   }
 }
 
@@ -93,7 +158,13 @@ class _TransactionNotificationState extends State<TransactionNotification> {
               color: category.color.withOpacity(0.15),
               shape: BoxShape.circle,
             ),
-            child: Text(category.icon, style: const TextStyle(fontSize: 16)),
+            child: Text(
+              category.icon,
+              style: const TextStyle(
+                fontSize: 16,
+                decoration: TextDecoration.none,
+              ),
+            ),
           ),
           const SizedBox(width: 8),
           // Category name and action
@@ -108,6 +179,7 @@ class _TransactionNotificationState extends State<TransactionNotification> {
                     fontSize: 13,
                     fontWeight: FontWeight.w600,
                     color: colorScheme.onSurface,
+                    decoration: TextDecoration.none,
                   ),
                 ),
               ],
@@ -131,6 +203,7 @@ class _TransactionNotificationState extends State<TransactionNotification> {
                 color: widget.isExpense
                     ? const Color(0xFFFF6B6B)
                     : const Color(0xFF58CC02),
+                decoration: TextDecoration.none,
               ),
             ),
           ),
@@ -195,7 +268,13 @@ class _AnimatedNotificationState extends State<_AnimatedNotification>
       left: 0,
       right: 0,
       child: Center(
-        child: SlideTransition(position: _slideAnimation, child: widget.child),
+        child: GestureDetector(
+          onTap: _slideUpAndRemove,
+          child: SlideTransition(
+            position: _slideAnimation,
+            child: widget.child,
+          ),
+        ),
       ),
     );
   }
