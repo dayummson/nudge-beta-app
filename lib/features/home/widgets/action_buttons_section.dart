@@ -34,42 +34,17 @@ class ActionButtonsSection extends StatefulWidget {
 
 class _ActionButtonsSectionState extends State<ActionButtonsSection> {
   late final FocusNode _focusNode;
-  String _previousText = '';
 
   @override
   void initState() {
     super.initState();
     _focusNode = FocusNode();
-    _previousText = widget.hashtagController?.text ?? '';
   }
 
   @override
   void dispose() {
     _focusNode.dispose();
     super.dispose();
-  }
-
-  void _handleTextChange(String value) {
-    // Check if text became empty (backspace was pressed)
-    if (_previousText.isNotEmpty &&
-        value.isEmpty &&
-        widget.hashtags.isNotEmpty) {
-      // Remove the last hashtag and set it as the current text
-      final lastTag = widget.hashtags.last;
-      widget.onRemoveLast?.call(lastTag);
-
-      // Set the text to the removed tag (without #) and position cursor at end
-      if (widget.hashtagController != null) {
-        widget.hashtagController!.value = TextEditingValue(
-          text: lastTag,
-          selection: TextSelection.fromPosition(
-            TextPosition(offset: lastTag.length),
-          ),
-        );
-      }
-    }
-
-    _previousText = value;
   }
 
   @override
@@ -151,9 +126,8 @@ class _ActionButtonsSectionState extends State<ActionButtonsSection> {
                                                   if (widget
                                                           .hashtagController !=
                                                       null) {
-                                                    widget.onRemoveLast?.call(
-                                                      tag,
-                                                    );
+                                                    widget.onRemoveHashtag
+                                                        ?.call(tag);
                                                     widget
                                                             .hashtagController!
                                                             .text =
@@ -208,7 +182,7 @@ class _ActionButtonsSectionState extends State<ActionButtonsSection> {
                               )
                             : null,
                       ),
-                      onChanged: _handleTextChange,
+                      onChanged: null,
                       onSubmitted: (value) {
                         if (value.trim().isNotEmpty &&
                             widget.hashtags.length < 3) {
