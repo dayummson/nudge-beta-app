@@ -5,6 +5,7 @@ import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:ui';
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/features/home/widgets/add_transaction_sheet.dart';
+import 'transaction_notification.dart';
 
 class TransactionsList extends StatelessWidget {
   final List<dynamic> transactions; // Can be Expense or Income
@@ -226,11 +227,12 @@ class TransactionsList extends StatelessWidget {
 
                                   // Show success message
                                   if (context.mounted) {
-                                    ScaffoldMessenger.of(context).showSnackBar(
-                                      const SnackBar(
-                                        content: Text('Transaction deleted'),
-                                        duration: Duration(seconds: 1),
-                                      ),
+                                    TransactionNotification.show(
+                                      context,
+                                      categoryId: transaction.category.id,
+                                      amount: transaction.amount,
+                                      isExpense: isExpense,
+                                      action: 'deleted',
                                     );
                                   }
                                 } catch (e) {

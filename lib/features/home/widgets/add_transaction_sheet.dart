@@ -9,6 +9,7 @@ import 'amount_input_section.dart';
 import 'category_selection_section.dart';
 import 'date_selector_button.dart';
 import 'room_selector_button.dart';
+import 'transaction_notification.dart';
 
 /// Shows the add transaction bottom sheet.
 ///
@@ -192,12 +193,12 @@ class _AddTransactionSheetContentState
       if (mounted) {
         FocusManager.instance.primaryFocus?.unfocus();
         Navigator.pop(context);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-              '${_isExpense ? 'Expense' : 'Income'} ${isEditing ? 'updated' : 'saved'} successfully',
-            ),
-          ),
+        TransactionNotification.show(
+          context,
+          categoryId: category.id,
+          amount: amount,
+          isExpense: _isExpense,
+          action: isEditing ? 'updated' : 'created',
         );
       }
     } catch (e) {
