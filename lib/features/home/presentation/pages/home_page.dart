@@ -128,7 +128,23 @@ class _HomePageState extends ConsumerState<HomePage> {
     if (searchInput.isNotEmpty) {
       filtered = filtered.where((transaction) {
         final description = transaction.description?.toLowerCase() ?? '';
-        return description.contains(searchInput.toLowerCase());
+        final hashtags = transaction.hashtags ?? [];
+
+        // Check if search input matches description
+        final descriptionMatch = description.contains(
+          searchInput.toLowerCase(),
+        );
+
+        // Check if search input matches any hashtag (case insensitive)
+        // Remove # prefix from search input if present for hashtag matching
+        final cleanSearchInput = searchInput.toLowerCase().startsWith('#')
+            ? searchInput.toLowerCase().substring(1)
+            : searchInput.toLowerCase();
+        final hashtagMatch = (hashtags as List<String>).any(
+          (hashtag) => hashtag.toLowerCase().contains(cleanSearchInput),
+        );
+
+        return descriptionMatch || hashtagMatch;
       }).toList();
     }
 
