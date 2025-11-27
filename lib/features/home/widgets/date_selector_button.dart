@@ -122,7 +122,10 @@ class _DateSheetContentState extends State<_DateSheetContent> {
                   borderRadius: BorderRadius.circular(20),
                 ),
                 child: IconButton(
-                  onPressed: () => Navigator.pop(context),
+                  onPressed: () {
+                    FocusManager.instance.primaryFocus?.unfocus();
+                    Navigator.pop(context);
+                  },
                   icon: Icon(Icons.close, color: cs.onSurface),
                   padding: EdgeInsets.zero,
                   constraints: const BoxConstraints(),
@@ -143,6 +146,7 @@ class _DateSheetContentState extends State<_DateSheetContent> {
                 _selectedDate = date;
               });
               widget.onDateSelected(date);
+              FocusManager.instance.primaryFocus?.unfocus();
               Navigator.pop(context);
             },
           ),

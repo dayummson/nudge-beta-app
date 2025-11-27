@@ -215,6 +215,7 @@ class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
                           final trimmed = _controller.text.trim();
                           // TODO: Implement add category logic
                           print('Add category: $trimmed');
+                          FocusManager.instance.primaryFocus?.unfocus();
                           Navigator.pop(context);
                         }
                       : null,

@@ -126,7 +126,10 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Navigator.pop(context);
+                },
                 icon: Icon(Icons.close, color: widget.cs.onSurface),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -325,6 +328,7 @@ class _MonthSheetContentState extends State<_MonthSheetContent> {
                   }
 
                   widget.onApply(displayText, month, year);
+                  FocusManager.instance.primaryFocus?.unfocus();
                   Navigator.pop(context);
                 },
                 style: ElevatedButton.styleFrom(

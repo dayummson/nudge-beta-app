@@ -30,6 +30,7 @@ void showSettingsSheet(
           leading: const Icon(Icons.person),
           title: const Text('Profile'),
           onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
             // TODO: Navigate to profile
           },
@@ -38,6 +39,7 @@ void showSettingsSheet(
           leading: const Icon(Icons.notifications),
           title: const Text('Notifications'),
           onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
             // TODO: Navigate to notifications
           },
@@ -46,6 +48,7 @@ void showSettingsSheet(
           leading: const Icon(Icons.dark_mode),
           title: const Text('Theme'),
           onTap: () async {
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
 
             // Get current theme
@@ -71,6 +74,7 @@ void showSettingsSheet(
           leading: const Icon(Icons.category),
           title: const Text('Edit Categories'),
           onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
             onEditCategoriesPressed();
           },
@@ -79,6 +83,7 @@ void showSettingsSheet(
           leading: const Icon(Icons.storage),
           title: const Text('Debug: Database'),
           onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
             Navigator.of(
               context,
@@ -89,6 +94,7 @@ void showSettingsSheet(
           leading: const Icon(Icons.help),
           title: const Text('Help & Support'),
           onTap: () {
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
             // TODO: Navigate to help
           },

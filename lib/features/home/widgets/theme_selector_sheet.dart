@@ -29,6 +29,7 @@ void showThemeSelectorSheet(
               : null,
           onTap: () {
             onThemeSelected(AppThemeMode.light);
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
           },
         ),
@@ -40,6 +41,7 @@ void showThemeSelectorSheet(
               : null,
           onTap: () {
             onThemeSelected(AppThemeMode.dark);
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
           },
         ),
@@ -52,6 +54,7 @@ void showThemeSelectorSheet(
               : null,
           onTap: () {
             onThemeSelected(AppThemeMode.system);
+            FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
           },
         ),

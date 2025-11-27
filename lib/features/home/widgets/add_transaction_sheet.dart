@@ -188,6 +188,7 @@ class _AddTransactionSheetContentState
       }
 
       if (mounted) {
+        FocusManager.instance.primaryFocus?.unfocus();
         Navigator.pop(context);
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(

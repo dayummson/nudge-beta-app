@@ -44,7 +44,10 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                   mainAxisAlignment: MainAxisAlignment.end,
                   children: [
                     IconButton(
-                      onPressed: () => Navigator.pop(context),
+                      onPressed: () {
+                        FocusManager.instance.primaryFocus?.unfocus();
+                        Navigator.pop(context);
+                      },
                       icon: Icon(Icons.close, color: cs.onSurface),
                       padding: EdgeInsets.zero,
                       constraints: const BoxConstraints(),
@@ -430,6 +433,7 @@ class _EditRoomSheetState extends State<_EditRoomSheet> {
                           final trimmed = _controller.text.trim();
                           await widget.onSave(trimmed);
                           if (context.mounted) {
+                            FocusManager.instance.primaryFocus?.unfocus();
                             Navigator.pop(context);
                           }
                         }

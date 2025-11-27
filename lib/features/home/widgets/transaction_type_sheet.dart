@@ -35,7 +35,10 @@ class _TransactionTypeSheetContent extends ConsumerWidget {
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
               IconButton(
-                onPressed: () => Navigator.pop(context),
+                onPressed: () {
+                  FocusManager.instance.primaryFocus?.unfocus();
+                  Navigator.pop(context);
+                },
                 icon: Icon(Icons.close, color: cs.onSurface),
                 padding: EdgeInsets.zero,
                 constraints: const BoxConstraints(),
@@ -72,6 +75,7 @@ class _TransactionTypeSheetContent extends ConsumerWidget {
                       ref
                           .read(transactionTypeProvider.notifier)
                           .setTransactionType(type);
+                      FocusManager.instance.primaryFocus?.unfocus();
                       Navigator.pop(context);
                     },
                     style: OutlinedButton.styleFrom(
