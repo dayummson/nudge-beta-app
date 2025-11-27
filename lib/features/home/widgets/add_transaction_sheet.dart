@@ -55,13 +55,19 @@ class _AddTransactionSheetContentState
   bool _isExpense = true;
   bool _isHashtagsExpanded = false;
   String? _selectedCategoryId;
-  DateTime _selectedDate = DateTime.now();
+  late DateTime _selectedDate;
   bool _isSaving = false;
   List<String> _hashtags = [];
 
   @override
   void initState() {
     super.initState();
+    // Initialize selected date to current date at midnight
+    _selectedDate = DateTime(
+      DateTime.now().year,
+      DateTime.now().month,
+      DateTime.now().day,
+    );
     // If editing, populate fields with transaction data
     if (widget.transaction != null) {
       final txn = widget.transaction;
@@ -143,9 +149,7 @@ class _AddTransactionSheetContentState
               amount: drift.Value(amount),
               location: const drift.Value(null),
               hashtags: drift.Value(_hashtags),
-              createdAt: drift.Value(
-                isEditing ? widget.transaction.createdAt : _selectedDate,
-              ),
+              createdAt: drift.Value(_selectedDate),
             )
           : IncomesCompanion(
               id: drift.Value(id),
@@ -155,9 +159,7 @@ class _AddTransactionSheetContentState
               amount: drift.Value(amount),
               location: const drift.Value(null),
               hashtags: drift.Value(_hashtags),
-              createdAt: drift.Value(
-                isEditing ? widget.transaction.createdAt : _selectedDate,
-              ),
+              createdAt: drift.Value(_selectedDate),
             );
 
       if (isEditing) {
