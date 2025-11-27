@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 
-class ActionButtonsSection extends StatelessWidget {
+class ActionButtonsSection extends StatefulWidget {
   final bool isSaving;
   final VoidCallback onSave;
   final VoidCallback? onHashtag;
@@ -12,6 +11,7 @@ class ActionButtonsSection extends StatelessWidget {
   final VoidCallback? onCollapse;
   final VoidCallback? onDelete;
   final ValueChanged<String>? onRemoveLast;
+  final ValueChanged<String>? onRemoveHashtag;
 
   const ActionButtonsSection({
     super.key,
@@ -25,7 +25,52 @@ class ActionButtonsSection extends StatelessWidget {
     this.onCollapse,
     this.onDelete,
     this.onRemoveLast,
+    this.onRemoveHashtag,
   });
+
+  @override
+  State<ActionButtonsSection> createState() => _ActionButtonsSectionState();
+}
+
+class _ActionButtonsSectionState extends State<ActionButtonsSection> {
+  late final FocusNode _focusNode;
+  String _previousText = '';
+
+  @override
+  void initState() {
+    super.initState();
+    _focusNode = FocusNode();
+    _previousText = widget.hashtagController?.text ?? '';
+  }
+
+  @override
+  void dispose() {
+    _focusNode.dispose();
+    super.dispose();
+  }
+
+  void _handleTextChange(String value) {
+    // Check if text became empty (backspace was pressed)
+    if (_previousText.isNotEmpty &&
+        value.isEmpty &&
+        widget.hashtags.isNotEmpty) {
+      // Remove the last hashtag and set it as the current text
+      final lastTag = widget.hashtags.last;
+      widget.onRemoveLast?.call(lastTag);
+
+      // Set the text to the removed tag (without #) and position cursor at end
+      if (widget.hashtagController != null) {
+        widget.hashtagController!.value = TextEditingValue(
+          text: lastTag,
+          selection: TextSelection.fromPosition(
+            TextPosition(offset: lastTag.length),
+          ),
+        );
+      }
+    }
+
+    _previousText = value;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -39,72 +84,90 @@ class ActionButtonsSection extends StatelessWidget {
       transitionBuilder: (child, animation) =>
           FadeTransition(opacity: animation, child: child),
       child: Padding(
+        key: ValueKey(
+          'action_buttons_${widget.hashtags.isNotEmpty || widget.isExpanded}',
+        ),
         padding: const EdgeInsets.symmetric(horizontal: 12),
-        child: (hashtags.isNotEmpty || isExpanded)
+        child: (widget.hashtags.isNotEmpty || widget.isExpanded)
             ? Row(
+                key: const ValueKey('expanded'),
                 children: [
                   Expanded(
-                    child: RawKeyboardListener(
-                      focusNode: FocusNode(),
-                      onKey: (event) {
-                        if (event is RawKeyDownEvent &&
-                            event.logicalKey == LogicalKeyboardKey.backspace &&
-                            hashtagController!.text.isEmpty &&
-                            hashtags.isNotEmpty) {
-                          onRemoveLast?.call(hashtags.last);
-                        }
-                      },
-                      child: TextField(
-                        controller: hashtagController,
-                        decoration: InputDecoration(
-                          contentPadding: const EdgeInsets.symmetric(
-                            horizontal: 14,
-                            vertical: 10,
+                    child: TextField(
+                      focusNode: _focusNode,
+                      controller: widget.hashtagController,
+                      decoration: InputDecoration(
+                        contentPadding: const EdgeInsets.symmetric(
+                          horizontal: 14,
+                          vertical: 10,
+                        ),
+                        hintText: 'Tag',
+                        border: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            width: 4,
+                            color: isDark
+                                ? Colors.grey[850]!
+                                : Colors.grey[300]!,
                           ),
-                          hintText: 'Tag',
-                          border: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              width: 4,
-                              color: isDark
-                                  ? Colors.grey[850]!
-                                  : Colors.grey[300]!,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        enabledBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? const Color.fromARGB(255, 67, 67, 67)
+                                : Colors.grey[300]!,
                           ),
-                          enabledBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: isDark
-                                  ? const Color.fromARGB(255, 67, 67, 67)
-                                  : Colors.grey[300]!,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        focusedBorder: OutlineInputBorder(
+                          borderSide: BorderSide(
+                            color: isDark
+                                ? Colors.grey[850]!
+                                : Colors.grey[300]!,
                           ),
-                          focusedBorder: OutlineInputBorder(
-                            borderSide: BorderSide(
-                              color: isDark
-                                  ? Colors.grey[850]!
-                                  : Colors.grey[300]!,
-                            ),
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          filled: true,
-                          fillColor: isDark
-                              ? const Color.fromARGB(255, 36, 36, 36)
-                              : Colors.grey[300],
-                          prefixIcon: hashtags.isNotEmpty
-                              ? Padding(
-                                  padding: const EdgeInsets.all(6),
-                                  child: SizedBox(
-                                    height: 32, // Adjust height to fit chips
-                                    child: SingleChildScrollView(
-                                      scrollDirection: Axis.horizontal,
-                                      child: Row(
-                                        children: hashtags
-                                            .map(
-                                              (tag) => Padding(
-                                                padding: const EdgeInsets.only(
-                                                  right: 4,
-                                                ),
+                          borderRadius: BorderRadius.circular(8),
+                        ),
+                        filled: true,
+                        fillColor: isDark
+                            ? const Color.fromARGB(255, 36, 36, 36)
+                            : Colors.grey[300],
+                        prefixIcon: widget.hashtags.isNotEmpty
+                            ? Padding(
+                                padding: const EdgeInsets.all(6),
+                                child: SizedBox(
+                                  height: 32,
+                                  child: SingleChildScrollView(
+                                    scrollDirection: Axis.horizontal,
+                                    child: Row(
+                                      children: widget.hashtags
+                                          .map(
+                                            (tag) => Padding(
+                                              padding: const EdgeInsets.only(
+                                                right: 4,
+                                              ),
+                                              child: GestureDetector(
+                                                onTap: () {
+                                                  // Allow tapping chips to edit them
+                                                  if (widget
+                                                          .hashtagController !=
+                                                      null) {
+                                                    widget.onRemoveLast?.call(
+                                                      tag,
+                                                    );
+                                                    widget
+                                                            .hashtagController!
+                                                            .text =
+                                                        tag;
+                                                    widget
+                                                            .hashtagController!
+                                                            .selection =
+                                                        TextSelection.fromPosition(
+                                                          TextPosition(
+                                                            offset: tag.length,
+                                                          ),
+                                                        );
+                                                  }
+                                                },
                                                 child: Chip(
                                                   label: Text(
                                                     '#$tag',
@@ -114,6 +177,14 @@ class ActionButtonsSection extends StatelessWidget {
                                                           FontWeight.w600,
                                                     ),
                                                   ),
+                                                  deleteIcon: const Icon(
+                                                    Icons.close,
+                                                    size: 16,
+                                                  ),
+                                                  onDeleted: () {
+                                                    widget.onRemoveHashtag
+                                                        ?.call(tag);
+                                                  },
                                                   padding: EdgeInsets.zero,
                                                   side: BorderSide.none,
                                                   backgroundColor:
@@ -128,25 +199,22 @@ class ActionButtonsSection extends StatelessWidget {
                                                           .shrinkWrap,
                                                 ),
                                               ),
-                                            )
-                                            .toList(),
-                                      ),
+                                            ),
+                                          )
+                                          .toList(),
                                     ),
                                   ),
-                                )
-                              : null,
-                        ),
-                        onChanged: (value) {
-                          if (value.isEmpty && hashtags.isNotEmpty) {
-                            onRemoveLast?.call(hashtags.last);
-                          }
-                        },
-                        onSubmitted: (value) {
-                          if (value.trim().isNotEmpty && hashtags.length < 5) {
-                            onHashtagSubmit?.call(value.trim());
-                          }
-                        },
+                                ),
+                              )
+                            : null,
                       ),
+                      onChanged: _handleTextChange,
+                      onSubmitted: (value) {
+                        if (value.trim().isNotEmpty &&
+                            widget.hashtags.length < 3) {
+                          widget.onHashtagSubmit?.call(value.trim());
+                        }
+                      },
                     ),
                   ),
                   const SizedBox(width: 8),
@@ -155,7 +223,7 @@ class ActionButtonsSection extends StatelessWidget {
                     width: 48,
 
                     child: OutlinedButton(
-                      onPressed: onDelete,
+                      onPressed: widget.onDelete,
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         side: BorderSide(
@@ -177,7 +245,9 @@ class ActionButtonsSection extends StatelessWidget {
                     width: 48,
 
                     child: OutlinedButton(
-                      onPressed: hashtags.isNotEmpty ? onSave : onCollapse,
+                      onPressed: widget.hashtags.isNotEmpty
+                          ? widget.onSave
+                          : widget.onCollapse,
                       style: OutlinedButton.styleFrom(
                         backgroundColor: Colors.transparent,
                         side: BorderSide(
@@ -198,7 +268,7 @@ class ActionButtonsSection extends StatelessWidget {
             : Row(
                 children: [
                   OutlinedButton(
-                    onPressed: onHashtag,
+                    onPressed: widget.onHashtag,
                     style: OutlinedButton.styleFrom(
                       padding: const EdgeInsets.symmetric(
                         vertical: 14,
@@ -221,13 +291,15 @@ class ActionButtonsSection extends StatelessWidget {
                       ),
                     ),
                     child: Text(
-                      hashtags.isEmpty ? '#' : '# ${hashtags.length}',
+                      widget.hashtags.isEmpty
+                          ? '#'
+                          : '# ${widget.hashtags.length}',
                     ),
                   ),
                   const SizedBox(width: 12),
                   Expanded(
                     child: ElevatedButton(
-                      onPressed: isSaving ? null : onSave,
+                      onPressed: widget.isSaving ? null : widget.onSave,
                       style: ElevatedButton.styleFrom(
                         padding: const EdgeInsets.symmetric(vertical: 14),
                         shape: RoundedRectangleBorder(
@@ -240,7 +312,7 @@ class ActionButtonsSection extends StatelessWidget {
                           fontWeight: FontWeight.w700,
                         ),
                       ),
-                      child: isSaving
+                      child: widget.isSaving
                           ? SizedBox(
                               width: 18,
                               height: 18,

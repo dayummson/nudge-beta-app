@@ -260,6 +260,11 @@ class _AddTransactionSheetContentState
             });
           },
           onCollapse: () => setState(() => _isHashtagsExpanded = false),
+          onRemoveHashtag: (tag) {
+            setState(() {
+              _hashtags.remove(tag);
+            });
+          },
         ),
         const SizedBox(
           height: 20,
