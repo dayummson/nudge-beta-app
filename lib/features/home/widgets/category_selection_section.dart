@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 import 'package:nudge_1/constants/categories.dart' as constants;
+import '../../../core/db/app_database.dart';
+import '../../../features/room/domain/entities/category.dart' as domain;
 import '../../categories/widgets/categories_sheet.dart';
 
-class CategorySelectionSection extends StatelessWidget {
+class CategorySelectionSection extends StatefulWidget {
   final String? selectedCategoryId;
   final Function(String?) onCategorySelected;
   final bool isExpense;
@@ -13,6 +15,40 @@ class CategorySelectionSection extends StatelessWidget {
     required this.onCategorySelected,
     required this.isExpense,
   });
+
+  @override
+  State<CategorySelectionSection> createState() =>
+      _CategorySelectionSectionState();
+}
+
+class _CategorySelectionSectionState extends State<CategorySelectionSection> {
+  List<domain.Category> _categories = constants.categories;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final db = AppDatabase();
+    final categoryRows = await db.categoriesDao.getAll();
+
+    // Convert database rows to domain categories
+    final customCategories = categoryRows.map((row) => row.category).toList();
+
+    // Combine with default categories, filtering out duplicates by id
+    final allCategories = [...constants.categories];
+    for (final customCategory in customCategories) {
+      if (!allCategories.any((cat) => cat.id == customCategory.id)) {
+        allCategories.add(customCategory);
+      }
+    }
+
+    setState(() {
+      _categories = allCategories;
+    });
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -44,7 +80,7 @@ class CategorySelectionSection extends StatelessWidget {
             child: SlideTransition(position: slide, child: child),
           );
         },
-        child: selectedCategoryId == null
+        child: widget.selectedCategoryId == null
             ? SingleChildScrollView(
                 key: const ValueKey('chipsFull'),
                 scrollDirection: Axis.horizontal,
@@ -66,14 +102,14 @@ class CategorySelectionSection extends StatelessWidget {
                       child: const Icon(Icons.add, size: 18),
                     ),
                     const SizedBox(width: 8),
-                    ...constants.categories.map((cat) {
-                      final selected = cat.id == selectedCategoryId;
+                    ..._categories.map((cat) {
+                      final selected = cat.id == widget.selectedCategoryId;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
                           selected: selected,
                           onSelected: (val) =>
-                              onCategorySelected(val ? cat.id : null),
+                              widget.onCategorySelected(val ? cat.id : null),
                           label: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -96,7 +132,9 @@ class CategorySelectionSection extends StatelessWidget {
                           shape: const StadiumBorder(),
                           side: BorderSide(
                             color: selected
-                                ? (isExpense ? expenseColor : incomeColor)
+                                ? (widget.isExpense
+                                      ? expenseColor
+                                      : incomeColor)
                                 : borderColor,
                           ),
                           backgroundColor: Colors.transparent,
@@ -122,20 +160,24 @@ class CategorySelectionSection extends StatelessWidget {
                   children: [
                     ChoiceChip(
                       selected: true,
-                      onSelected: (_) => onCategorySelected(null),
+                      onSelected: (_) => widget.onCategorySelected(null),
                       label: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            constants.categories
-                                .firstWhere((c) => c.id == selectedCategoryId)
+                            _categories
+                                .firstWhere(
+                                  (c) => c.id == widget.selectedCategoryId,
+                                )
                                 .icon,
                             style: const TextStyle(fontSize: 14),
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            constants.categories
-                                .firstWhere((c) => c.id == selectedCategoryId)
+                            _categories
+                                .firstWhere(
+                                  (c) => c.id == widget.selectedCategoryId,
+                                )
                                 .name,
                           ),
                           const SizedBox(width: 6),
@@ -149,7 +191,7 @@ class CategorySelectionSection extends StatelessWidget {
                       showCheckmark: false,
                       shape: const StadiumBorder(),
                       side: BorderSide(
-                        color: isExpense ? expenseColor : incomeColor,
+                        color: widget.isExpense ? expenseColor : incomeColor,
                       ),
                       backgroundColor: Colors.transparent,
                       selectedColor: cs.surface.withOpacity(0.06),

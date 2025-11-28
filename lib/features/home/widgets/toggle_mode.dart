@@ -4,6 +4,7 @@ import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
 import 'package:nudge_1/features/room/domain/entities/transaction.dart';
+import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
 
 // This is change
 /// A two-option sliding toggle for Income (left, green) and Expense (right, red).
@@ -35,11 +36,33 @@ class ToggleMode extends StatefulWidget {
 class _ToggleModeState extends State<ToggleMode> {
   late bool _isExpense;
   bool _showQuickAdd = false;
+  List<domain.Category> _categories = constants.categories;
 
   @override
   void initState() {
     super.initState();
     _isExpense = widget.isExpense;
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final db = AppDatabase();
+    final categoryRows = await db.categoriesDao.getAll();
+
+    // Convert database rows to domain categories
+    final customCategories = categoryRows.map((row) => row.category).toList();
+
+    // Combine with default categories, filtering out duplicates by id
+    final allCategories = [...constants.categories];
+    for (final customCategory in customCategories) {
+      if (!allCategories.any((cat) => cat.id == customCategory.id)) {
+        allCategories.add(customCategory);
+      }
+    }
+
+    setState(() {
+      _categories = allCategories;
+    });
   }
 
   @override
@@ -86,10 +109,10 @@ class _ToggleModeState extends State<ToggleMode> {
 
       // Get the first available category for the current mode
       final categories = _isExpense
-          ? constants.categories
+          ? _categories
                 .where((c) => expenseCategoryIds.contains(c.id))
                 .toList()
-          : constants.categories
+          : _categories
                 .where((c) => !expenseCategoryIds.contains(c.id))
                 .toList();
 
