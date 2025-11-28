@@ -301,9 +301,9 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                         color: cs.surfaceContainerHighest,
                                         shape: BoxShape.circle,
                                       ),
-                                      child: const Center(
+                                      child: Center(
                                         child: Text(
-                                          '🤫',
+                                          r.isShared ? '🤝' : '🤫',
                                           style: TextStyle(fontSize: 20),
                                         ),
                                       ),
@@ -330,7 +330,9 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                               ),
                                               const SizedBox(width: 6),
                                               Text(
-                                                'Only you',
+                                                r.isShared
+                                                    ? 'Shared'
+                                                    : 'Only you',
                                                 style: TextStyle(
                                                   fontSize: 12,
                                                   color: cs.onSurface

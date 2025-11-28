@@ -139,12 +139,28 @@ class _HeaderState extends ConsumerState<Header> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   const SizedBox(height: 40),
-                  // Top row: title + settings
+                  // Top row: QR scan + settings (justified between)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      const Expanded(child: SizedBox()),
+                      IconButton(
+                        onPressed: () {
+                          // TODO: Implement QR scan functionality
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            const SnackBar(
+                              content: Text('QR scan coming soon!'),
+                            ),
+                          );
+                        },
+                        iconSize: 18,
+                        padding: EdgeInsets.zero,
+                        constraints: const BoxConstraints(),
+                        icon: Icon(
+                          Icons.qr_code_scanner,
+                          color: colorScheme.onSurface,
+                        ),
+                      ),
                       IconButton(
                         onPressed: () {
                           FocusScope.of(context).unfocus();
