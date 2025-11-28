@@ -1,10 +1,12 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/constants/categories.dart';
 import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:drift/drift.dart' as drift;
+import '../../home/presentation/providers/categories_provider.dart';
 
 /// Shows the categories editing bottom sheet.
 ///
@@ -19,193 +21,135 @@ void showCategoriesSheet(BuildContext context) {
   );
 }
 
-class _CategoriesSheetContent extends StatefulWidget {
+class _CategoriesSheetContent extends ConsumerWidget {
   const _CategoriesSheetContent();
 
   @override
-  State<_CategoriesSheetContent> createState() =>
-      _CategoriesSheetContentState();
-}
-
-class _CategoriesSheetContentState extends State<_CategoriesSheetContent> {
-  late Future<List<domain.Category>> _categoriesFuture;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    setState(() {
-      _categoriesFuture = _getAllCategories();
-    });
-  }
-
-  Future<List<domain.Category>> _getAllCategories() async {
-    final db = AppDatabase();
-    final categoryRows = await db.categoriesDao.getAll();
-
-    // Convert database rows to domain categories
-    final customCategories = categoryRows.map((row) => row.category).toList();
-
-    // Combine with default categories, filtering out duplicates by id
-    final allCategories = [...categories];
-    for (final customCategory in customCategories) {
-      if (!allCategories.any((cat) => cat.id == customCategory.id)) {
-        allCategories.add(customCategory);
-      }
-    }
-
-    return allCategories;
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categories = ref.watch(categoriesProvider);
     return SizedBox(
       height: MediaQuery.of(context).size.height * 0.8,
-      child: FutureBuilder<List<domain.Category>>(
-        future: _categoriesFuture,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const Center(child: CircularProgressIndicator());
-          }
-
-          if (snapshot.hasError) {
-            return Center(
-              child: Text('Error loading categories: ${snapshot.error}'),
-            );
-          }
-
-          final displayCategories = snapshot.data ?? categories;
-
-          return Column(
-            children: [
-              // Categories Grid
-              Expanded(
-                child: GridView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 16),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 0.85,
-                  ),
-                  itemCount: displayCategories.length + 1, // +1 for add button
-                  itemBuilder: (context, index) {
-                    // Add button at the end
-                    if (index == displayCategories.length) {
-                      return GestureDetector(
-                        onTap: () async {
-                          // Open add category bottom sheet
-                          await showAddCategorySheet(context);
-                          // Reload categories after adding
-                          _loadCategories();
-                        },
-                        child: Column(
-                          mainAxisAlignment: MainAxisAlignment.center,
-                          children: [
-                            SizedBox(
-                              width: 80,
-                              height: 80,
-                              child: DashedBorder(
+      child: Column(
+        children: [
+          // Categories Grid
+          Expanded(
+            child: GridView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 16),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 0.85,
+              ),
+              itemCount: categories.length + 1, // +1 for add button
+              itemBuilder: (context, index) {
+                // Add button at the end
+                if (index == categories.length) {
+                  return GestureDetector(
+                    onTap: () async {
+                      // Open add category bottom sheet
+                      await showAddCategorySheet(context);
+                      // Categories will be refreshed automatically by the provider
+                    },
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        SizedBox(
+                          width: 80,
+                          height: 80,
+                          child: DashedBorder(
+                            color: Theme.of(
+                              context,
+                            ).colorScheme.outline.withOpacity(0.3),
+                            strokeWidth: 2,
+                            dashLength: 8,
+                            gapLength: 4,
+                            child: Center(
+                              child: Icon(
+                                Icons.add,
+                                size: 24,
                                 color: Theme.of(
                                   context,
                                 ).colorScheme.outline.withOpacity(0.3),
-                                strokeWidth: 2,
-                                dashLength: 8,
-                                gapLength: 4,
-                                child: Center(
-                                  child: Icon(
-                                    Icons.add,
-                                    size: 24,
-                                    color: Theme.of(
-                                      context,
-                                    ).colorScheme.outline.withOpacity(0.3),
-                                  ),
-                                ),
                               ),
-                            ),
-                            const SizedBox(height: 8),
-                            Text(
-                              'Add',
-                              style: TextStyle(
-                                fontSize: 12,
-                                color: Theme.of(context).colorScheme.onSurface,
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-                    }
-
-                    // Category item
-                    final category = displayCategories[index];
-                    return Column(
-                      mainAxisAlignment: MainAxisAlignment.center,
-                      children: [
-                        Container(
-                          width: 80,
-                          height: 80,
-                          decoration: BoxDecoration(
-                            color: category.color.withOpacity(0.2),
-                            borderRadius: BorderRadius.circular(16),
-                          ),
-                          child: Center(
-                            child: Text(
-                              category.icon,
-                              style: const TextStyle(fontSize: 24),
                             ),
                           ),
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          category.name,
+                          'Add',
                           style: TextStyle(
                             fontSize: 12,
-                            fontWeight: FontWeight.bold,
                             color: Theme.of(context).colorScheme.onSurface,
                           ),
-                          textAlign: TextAlign.center,
-                          maxLines: 2,
-                          overflow: TextOverflow.ellipsis,
                         ),
                       ],
-                    );
-                  },
-                ),
-              ),
-              // Done button
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: () => Navigator.of(context).pop(),
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF58CC02),
-                      foregroundColor: Colors.white,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(12),
+                    ),
+                  );
+                }
+
+                // Category item
+                final category = categories[index];
+                return Column(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    Container(
+                      width: 80,
+                      height: 80,
+                      decoration: BoxDecoration(
+                        color: category.color.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(16),
                       ),
-                      padding: const EdgeInsets.symmetric(
-                        vertical: 10,
-                        horizontal: 20,
+                      child: Center(
+                        child: Text(
+                          category.icon,
+                          style: const TextStyle(fontSize: 24),
+                        ),
                       ),
                     ),
-                    child: const Text(
-                      'Done',
+                    const SizedBox(height: 8),
+                    Text(
+                      category.name,
                       style: TextStyle(
+                        fontSize: 12,
                         fontWeight: FontWeight.bold,
-                        fontSize: 16,
+                        color: Theme.of(context).colorScheme.onSurface,
                       ),
+                      textAlign: TextAlign.center,
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
                     ),
+                  ],
+                );
+              },
+            ),
+          ),
+          // Done button
+          Padding(
+            padding: const EdgeInsets.all(16),
+            child: SizedBox(
+              width: double.infinity,
+              child: ElevatedButton(
+                onPressed: () => Navigator.of(context).pop(),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: const Color(0xFF58CC02),
+                  foregroundColor: Colors.white,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  padding: const EdgeInsets.symmetric(
+                    vertical: 10,
+                    horizontal: 20,
                   ),
                 ),
+                child: const Text(
+                  'Done',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16),
+                ),
               ),
-            ],
-          );
-        },
+            ),
+          ),
+        ],
       ),
     );
   }
@@ -222,15 +166,16 @@ Future<void> showAddCategorySheet(BuildContext context) {
   );
 }
 
-class _AddCategorySheetContent extends StatefulWidget {
+class _AddCategorySheetContent extends ConsumerStatefulWidget {
   const _AddCategorySheetContent();
 
   @override
-  State<_AddCategorySheetContent> createState() =>
+  ConsumerState<_AddCategorySheetContent> createState() =>
       _AddCategorySheetContentState();
 }
 
-class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
+class _AddCategorySheetContentState
+    extends ConsumerState<_AddCategorySheetContent> {
   final TextEditingController _nameController = TextEditingController();
   final TextEditingController _emojiController = TextEditingController();
   bool _hasName = false;
@@ -548,6 +493,13 @@ class _AddCategorySheetContentState extends State<_AddCategorySheetContent> {
                         );
 
                         debugPrint('✅ Category saved to database');
+
+                        // Refresh categories provider
+                        if (context.mounted) {
+                          ref
+                              .read(categoriesProvider.notifier)
+                              .refreshCategories();
+                        }
 
                         // Close sheet
                         FocusManager.instance.primaryFocus?.unfocus();

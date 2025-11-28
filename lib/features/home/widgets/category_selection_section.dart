@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
-import 'package:nudge_1/constants/categories.dart' as constants;
-import '../../../core/db/app_database.dart';
-import '../../../features/room/domain/entities/category.dart' as domain;
+import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
 import '../../categories/widgets/categories_sheet.dart';
+import '../presentation/providers/categories_provider.dart';
 
-class CategorySelectionSection extends StatefulWidget {
+class CategorySelectionSection extends ConsumerWidget {
   final String? selectedCategoryId;
   final Function(String?) onCategorySelected;
   final bool isExpense;
@@ -17,41 +17,8 @@ class CategorySelectionSection extends StatefulWidget {
   });
 
   @override
-  State<CategorySelectionSection> createState() =>
-      _CategorySelectionSectionState();
-}
-
-class _CategorySelectionSectionState extends State<CategorySelectionSection> {
-  List<domain.Category> _categories = constants.categories;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    final db = AppDatabase();
-    final categoryRows = await db.categoriesDao.getAll();
-
-    // Convert database rows to domain categories
-    final customCategories = categoryRows.map((row) => row.category).toList();
-
-    // Combine with default categories, filtering out duplicates by id
-    final allCategories = [...constants.categories];
-    for (final customCategory in customCategories) {
-      if (!allCategories.any((cat) => cat.id == customCategory.id)) {
-        allCategories.add(customCategory);
-      }
-    }
-
-    setState(() {
-      _categories = allCategories;
-    });
-  }
-
-  @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final List<domain.Category> categories = ref.watch(categoriesProvider);
     final cs = Theme.of(context).colorScheme;
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final borderColor = isDark ? Colors.grey.shade800 : Colors.grey.shade300;
@@ -80,7 +47,7 @@ class _CategorySelectionSectionState extends State<CategorySelectionSection> {
             child: SlideTransition(position: slide, child: child),
           );
         },
-        child: widget.selectedCategoryId == null
+        child: selectedCategoryId == null
             ? SingleChildScrollView(
                 key: const ValueKey('chipsFull'),
                 scrollDirection: Axis.horizontal,
@@ -102,14 +69,14 @@ class _CategorySelectionSectionState extends State<CategorySelectionSection> {
                       child: const Icon(Icons.add, size: 18),
                     ),
                     const SizedBox(width: 8),
-                    ..._categories.map((cat) {
-                      final selected = cat.id == widget.selectedCategoryId;
+                    ...categories.map((cat) {
+                      final selected = cat.id == selectedCategoryId;
                       return Padding(
                         padding: const EdgeInsets.only(right: 8),
                         child: ChoiceChip(
                           selected: selected,
                           onSelected: (val) =>
-                              widget.onCategorySelected(val ? cat.id : null),
+                              onCategorySelected(val ? cat.id : null),
                           label: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
@@ -132,9 +99,7 @@ class _CategorySelectionSectionState extends State<CategorySelectionSection> {
                           shape: const StadiumBorder(),
                           side: BorderSide(
                             color: selected
-                                ? (widget.isExpense
-                                      ? expenseColor
-                                      : incomeColor)
+                                ? (isExpense ? expenseColor : incomeColor)
                                 : borderColor,
                           ),
                           backgroundColor: Colors.transparent,
@@ -160,24 +125,20 @@ class _CategorySelectionSectionState extends State<CategorySelectionSection> {
                   children: [
                     ChoiceChip(
                       selected: true,
-                      onSelected: (_) => widget.onCategorySelected(null),
+                      onSelected: (_) => onCategorySelected(null),
                       label: Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
-                            _categories
-                                .firstWhere(
-                                  (c) => c.id == widget.selectedCategoryId,
-                                )
+                            categories
+                                .firstWhere((c) => c.id == selectedCategoryId)
                                 .icon,
                             style: const TextStyle(fontSize: 14),
                           ),
                           const SizedBox(width: 6),
                           Text(
-                            _categories
-                                .firstWhere(
-                                  (c) => c.id == widget.selectedCategoryId,
-                                )
+                            categories
+                                .firstWhere((c) => c.id == selectedCategoryId)
                                 .name,
                           ),
                           const SizedBox(width: 6),
@@ -191,7 +152,7 @@ class _CategorySelectionSectionState extends State<CategorySelectionSection> {
                       showCheckmark: false,
                       shape: const StadiumBorder(),
                       side: BorderSide(
-                        color: widget.isExpense ? expenseColor : incomeColor,
+                        color: isExpense ? expenseColor : incomeColor,
                       ),
                       backgroundColor: Colors.transparent,
                       selectedColor: cs.surface.withOpacity(0.06),

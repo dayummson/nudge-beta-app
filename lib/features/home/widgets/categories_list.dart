@@ -2,11 +2,13 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/search_enabled_provider.dart';
 import '../presentation/providers/selected_category_provider.dart';
-import '../../../constants/categories.dart' as constants;
-import '../../../core/db/app_database.dart';
+import '../presentation/providers/categories_provider.dart';
 import '../../../features/room/domain/entities/category.dart' as domain;
 
-class CategoriesList extends ConsumerStatefulWidget {
+class CategoriesList extends ConsumerWidget {
+  static const double maxCategoryHeight = 200.0;
+  static const double minCategoryHeight = 60.0;
+
   final List<dynamic> transactions;
   final double scrollOffset;
   final bool hasBothEmptyTransactions;
@@ -18,52 +20,18 @@ class CategoriesList extends ConsumerStatefulWidget {
     this.hasBothEmptyTransactions = false,
   });
 
-  @override
-  ConsumerState<CategoriesList> createState() => _CategoriesListState();
-}
-
-class _CategoriesListState extends ConsumerState<CategoriesList> {
-  static const double maxCategoryHeight = 200.0;
-  static const double minCategoryHeight = 60.0;
-
-  List<domain.Category> _categories = constants.categories;
-
-  @override
-  void initState() {
-    super.initState();
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    final db = AppDatabase();
-    final categoryRows = await db.categoriesDao.getAll();
-
-    // Convert database rows to domain categories
-    final customCategories = categoryRows.map((row) => row.category).toList();
-
-    // Combine with default categories, filtering out duplicates by id
-    final allCategories = [...constants.categories];
-    for (final customCategory in customCategories) {
-      if (!allCategories.any((cat) => cat.id == customCategory.id)) {
-        allCategories.add(customCategory);
-      }
-    }
-
-    setState(() {
-      _categories = allCategories;
-    });
-  }
-
   // Calculate total per category for current transaction list
-  Map<String, double> _calculateCategoryTotals() {
+  Map<String, double> _calculateCategoryTotals(
+    List<domain.Category> categories,
+  ) {
     final Map<String, double> totals = {};
 
-    for (final category in _categories) {
+    for (final category in categories) {
       totals[category.id] = 0.0;
     }
 
     // Sum up amounts from the filtered transactions (expense or income)
-    for (final transaction in widget.transactions) {
+    for (final transaction in transactions) {
       final categoryId = transaction.category.id;
       totals[categoryId] = (totals[categoryId] ?? 0.0) + transaction.amount;
     }
@@ -135,20 +103,21 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
   }
 
   @override
-  Widget build(BuildContext context) {
+  Widget build(BuildContext context, WidgetRef ref) {
+    final categories = ref.watch(categoriesProvider);
     final searchEnabled = ref.watch(searchEnabledProvider);
     final selectedCategory = ref.watch(selectedCategoryProvider);
-    final categoryTotals = _calculateCategoryTotals();
+    final categoryTotals = _calculateCategoryTotals(categories);
     final maxAmount = _getMaxCategoryAmount(categoryTotals);
-    final showEmptyState = widget.hasBothEmptyTransactions;
+    final showEmptyState = hasBothEmptyTransactions;
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Sort categories by their total values (descending - highest first)
-    final sortedCategories = List.from(_categories)
+    final sortedCategories = List.from(categories)
       ..sort((a, b) {
         final aTotal = (categoryTotals[a.id] ?? 0.0).abs();
         final bTotal = (categoryTotals[b.id] ?? 0.0).abs();
-        return bTotal.compareTo(aTotal); // Descending order
+        return bTotal.compareTo(aTotal);
       });
 
     return SizedBox(

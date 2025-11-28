@@ -1,17 +1,17 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
-import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
 import 'package:nudge_1/features/room/domain/entities/transaction.dart';
-import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
+import '../presentation/providers/categories_provider.dart';
 
 // This is change
 /// A two-option sliding toggle for Income (left, green) and Expense (right, red).
 ///
 /// Usage:
 /// ToggleMode(isExpense: false, onChanged: (v) => ...)
-class ToggleMode extends StatefulWidget {
+class ToggleMode extends ConsumerStatefulWidget {
   final bool isExpense;
   final ValueChanged<bool> onChanged;
   final double expenseTotal;
@@ -30,39 +30,17 @@ class ToggleMode extends StatefulWidget {
   });
 
   @override
-  State<ToggleMode> createState() => _ToggleModeState();
+  ConsumerState<ToggleMode> createState() => _ToggleModeState();
 }
 
-class _ToggleModeState extends State<ToggleMode> {
+class _ToggleModeState extends ConsumerState<ToggleMode> {
   late bool _isExpense;
   bool _showQuickAdd = false;
-  List<domain.Category> _categories = constants.categories;
 
   @override
   void initState() {
     super.initState();
     _isExpense = widget.isExpense;
-    _loadCategories();
-  }
-
-  Future<void> _loadCategories() async {
-    final db = AppDatabase();
-    final categoryRows = await db.categoriesDao.getAll();
-
-    // Convert database rows to domain categories
-    final customCategories = categoryRows.map((row) => row.category).toList();
-
-    // Combine with default categories, filtering out duplicates by id
-    final allCategories = [...constants.categories];
-    for (final customCategory in customCategories) {
-      if (!allCategories.any((cat) => cat.id == customCategory.id)) {
-        allCategories.add(customCategory);
-      }
-    }
-
-    setState(() {
-      _categories = allCategories;
-    });
   }
 
   @override
@@ -88,6 +66,7 @@ class _ToggleModeState extends State<ToggleMode> {
     try {
       final db = AppDatabase();
       final roomId = await RoomSelection.getSelectedRoomId();
+      final categories = ref.read(categoriesProvider);
 
       if (roomId == null || roomId.isEmpty) {
         if (mounted) {
@@ -108,15 +87,13 @@ class _ToggleModeState extends State<ToggleMode> {
       ];
 
       // Get the first available category for the current mode
-      final categories = _isExpense
-          ? _categories
-                .where((c) => expenseCategoryIds.contains(c.id))
-                .toList()
-          : _categories
+      final availableCategories = _isExpense
+          ? categories.where((c) => expenseCategoryIds.contains(c.id)).toList()
+          : categories
                 .where((c) => !expenseCategoryIds.contains(c.id))
                 .toList();
 
-      if (categories.isEmpty) {
+      if (availableCategories.isEmpty) {
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
             const SnackBar(content: Text('No categories available')),
@@ -125,7 +102,7 @@ class _ToggleModeState extends State<ToggleMode> {
         return;
       }
 
-      final category = categories.first;
+      final category = availableCategories.first;
       final id = 'quick-txn-${DateTime.now().millisecondsSinceEpoch}';
 
       final companion = TransactionsCompanion(
