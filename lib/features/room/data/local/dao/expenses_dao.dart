@@ -12,7 +12,6 @@ class TransactionsDao extends DatabaseAccessor<AppDatabase>
       (select(transactions)..where((t) => t.roomId.equals(roomId))).get();
   Stream<List<Transaction>> watchByRoomId(String roomId) =>
       (select(transactions)..where((t) => t.roomId.equals(roomId))).watch();
-
   Future<Transaction?> getById(String id) =>
       (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
 

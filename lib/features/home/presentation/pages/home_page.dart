@@ -305,10 +305,13 @@ class _HomePageState extends ConsumerState<HomePage> {
                       final List<dynamic> transactions;
                       if (searchEnabled) {
                         if (transactionType == TransactionType.both) {
-                          transactions = [
-                            ...filteredExpenses,
-                            ...filteredIncomes,
-                          ].cast<dynamic>();
+                          transactions =
+                              [
+                                ...filteredExpenses,
+                                ...filteredIncomes,
+                              ].cast<dynamic>()..sort(
+                                (a, b) => b.createdAt.compareTo(a.createdAt),
+                              );
                         } else {
                           transactions =
                               transactionType == TransactionType.expense
