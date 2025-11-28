@@ -4,6 +4,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
+import 'share_room_sheet.dart';
 
 void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
   final cs = Theme.of(context).colorScheme;
@@ -266,7 +267,7 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                   ),
                                 CustomSlidableAction(
                                   onPressed: (ctx) {
-                                    // Share placeholder
+                                    showShareRoomSheet(context, room: r);
                                   },
                                   backgroundColor: Colors.transparent,
                                   foregroundColor: cs.onSurface,
