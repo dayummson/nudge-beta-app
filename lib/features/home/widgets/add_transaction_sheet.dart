@@ -95,6 +95,12 @@ class _AddTransactionSheetContentState
   Future<void> _saveTransaction() async {
     if (_isSaving) return;
 
+    // Check if there's any pending hashtag text and add it to the list
+    final pendingHashtag = _hashtagController.text.trim();
+    if (pendingHashtag.isNotEmpty && !_hashtags.contains(pendingHashtag)) {
+      _hashtags.add(pendingHashtag);
+    }
+
     final amount = double.tryParse(_amountController.text.trim());
     if (amount == null || amount <= 0) {
       if (mounted) {
