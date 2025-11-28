@@ -4,7 +4,11 @@ import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
-import 'package:nudge_1/features/room/domain/entities/transaction.dart';
+import 'package:nudge_1/features/room/domain/entities/transaction.dart'
+    as domain;
+import 'package:nudge_1/features/room/domain/entities/transaction.dart'
+    show TransactionType;
+import 'package:nudge_1/firebase/firestore/firestore.dart';
 import 'action_buttons_section.dart';
 import 'amount_input_section.dart';
 import 'category_selection_section.dart';
@@ -158,6 +162,7 @@ class _AddTransactionSheetContentState
           _isExpense ? TransactionType.expense : TransactionType.income,
         ),
         createdAt: drift.Value(_selectedDate),
+        updatedAt: drift.Value(DateTime.now()),
       );
 
       if (isEditing) {
@@ -166,6 +171,39 @@ class _AddTransactionSheetContentState
       } else {
         // Insert new transaction
         await db.transactionsDao.insert(companion);
+      }
+
+      // Sync to Firestore after local operation
+      try {
+        final now = DateTime.now();
+        final transaction = domain.Transaction(
+          id: id,
+          description: description,
+          category: category,
+          amount: amount,
+          location: null,
+          hashtags: _hashtags,
+          createdAt: _selectedDate,
+          updatedAt: isEditing ? now : _selectedDate,
+          type: _isExpense ? TransactionType.expense : TransactionType.income,
+          isSynced: true,
+          lastUpdatedAt: now,
+        );
+
+        if (isEditing) {
+          await TransactionService().updateTransaction(
+            roomId: roomId,
+            transaction: transaction,
+          );
+        } else {
+          await TransactionService().createTransaction(
+            roomId: roomId,
+            transaction: transaction,
+          );
+        }
+      } catch (e) {
+        // Log error but don't fail the operation - local storage is preserved
+        debugPrint('Failed to sync transaction to Firestore: $e');
       }
 
       if (mounted) {

@@ -4,8 +4,10 @@ import 'package:sticky_headers/sticky_headers.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:ui';
 import 'package:nudge_1/core/db/app_database.dart';
+import 'package:nudge_1/core/settings/room_selection.dart';
 import 'package:nudge_1/features/room/domain/entities/transaction.dart';
 import 'package:nudge_1/features/home/widgets/add_transaction_sheet.dart';
+import 'package:nudge_1/firebase/firestore/firestore.dart';
 import 'transaction_notification.dart';
 
 class TransactionsList extends StatelessWidget {
@@ -219,6 +221,24 @@ class TransactionsList extends StatelessWidget {
                                   print(
                                     'Delete result: $deleteResult rows affected for ${isExpense ? "expense" : "income"} with id: ${transaction.id}',
                                   );
+
+                                  // Sync delete to Firestore
+                                  try {
+                                    final roomId =
+                                        await RoomSelection.getSelectedRoomId();
+                                    if (roomId != null && roomId.isNotEmpty) {
+                                      await TransactionService()
+                                          .deleteTransaction(
+                                            roomId: roomId,
+                                            transactionId: transaction.id,
+                                          );
+                                    }
+                                  } catch (e) {
+                                    // Log error but don't fail the operation - local deletion is preserved
+                                    debugPrint(
+                                      'Failed to sync transaction delete to Firestore: $e',
+                                    );
+                                  }
 
                                   // Show success message
                                   if (context.mounted) {

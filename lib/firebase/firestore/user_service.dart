@@ -1,4 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 import 'package:nudge_1/firebase/firestore/firestore_client.dart';
 
 class UserService {
@@ -21,6 +22,22 @@ class UserService {
     await userRef(
       uid,
     ).set({'displayName': displayName}, SetOptions(merge: true));
+  }
+
+  /// Get a user's display name
+  Future<String?> getDisplayName(String uid) async {
+    debugPrint('🔍 Getting display name for user: $uid');
+    final doc = await userRef(uid).get();
+    final displayName = doc.data()?['displayName'] as String?;
+    debugPrint('📝 Retrieved display name: $displayName');
+    return displayName;
+  }
+
+  /// Set a user's display name (alias for updateDisplayName)
+  Future<void> setDisplayName(String uid, String displayName) async {
+    debugPrint('💾 Setting display name for user $uid: $displayName');
+    await updateDisplayName(uid, displayName);
+    debugPrint('✅ Display name set successfully');
   }
 
   /// Create a user document with an email field. Uses `uid` as document id.

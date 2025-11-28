@@ -3,3 +3,5 @@
 // access to the client and services.
 export 'firestore_client.dart';
 export 'user_service.dart';
+export 'room_service.dart';
+export 'transaction_service.dart';
