@@ -4,7 +4,7 @@ import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
-import 'package:nudge_1/features/room/domain/entities/expense.dart';
+import 'package:nudge_1/features/room/domain/entities/transaction.dart';
 import 'action_buttons_section.dart';
 import 'amount_input_section.dart';
 import 'category_selection_section.dart';

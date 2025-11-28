@@ -3,7 +3,7 @@ class Room {
   final String name;
   final String ownerId;
   final bool isShared;
-  final List<String> users;
+  final List<String> users; // User ids
   final DateTime createdAt;
   final DateTime updatedAt;
   final bool showIncome;

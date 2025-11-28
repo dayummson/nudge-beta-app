@@ -3,7 +3,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/core/db/app_database.dart';
-import 'package:nudge_1/features/room/domain/entities/expense.dart' as domain;
+import 'package:nudge_1/features/room/domain/entities/transaction.dart'
+    as domain;
 import 'package:nudge_1/core/settings/room_selection.dart';
 import "../../widgets/header.dart";
 import "../../widgets/floating_action_buttons.dart";

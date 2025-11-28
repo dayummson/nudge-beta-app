@@ -4,7 +4,7 @@ import 'package:sticky_headers/sticky_headers.dart';
 import 'package:flutter_slidable/flutter_slidable.dart';
 import 'dart:ui';
 import 'package:nudge_1/core/db/app_database.dart';
-import 'package:nudge_1/features/room/domain/entities/expense.dart';
+import 'package:nudge_1/features/room/domain/entities/transaction.dart';
 import 'package:nudge_1/features/home/widgets/add_transaction_sheet.dart';
 import 'transaction_notification.dart';
 

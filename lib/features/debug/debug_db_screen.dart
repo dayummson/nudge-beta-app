@@ -3,7 +3,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
 import 'package:nudge_1/features/room/domain/entities/place_location.dart';
-import 'package:nudge_1/features/room/domain/entities/expense.dart';
+import 'package:nudge_1/features/room/domain/entities/transaction.dart';
 
 class DebugDbScreen extends StatefulWidget {
   const DebugDbScreen({super.key});

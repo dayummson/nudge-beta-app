@@ -1,7 +1,7 @@
 import 'package:drift/drift.dart';
 import '../../../domain/entities/category.dart';
 import '../../../domain/entities/place_location.dart';
-import '../../../domain/entities/expense.dart';
+import '../../../domain/entities/transaction.dart';
 import 'dart:convert';
 
 /// Shared converter for Category <-> JSON String

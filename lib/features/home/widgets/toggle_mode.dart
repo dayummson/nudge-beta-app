@@ -3,7 +3,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
-import 'package:nudge_1/features/room/domain/entities/expense.dart';
+import 'package:nudge_1/features/room/domain/entities/transaction.dart';
 
 // This is change
 /// A two-option sliding toggle for Income (left, green) and Expense (right, red).
