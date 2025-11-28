@@ -1,29 +1,46 @@
 {
-  "project_info": {
-    "project_number": "1010694656841",
-    "project_id": "nudge-beta-app",
-    "storage_bucket": "nudge-beta-app.firebasestorage.app"
-  },
-  "client": [
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:1010694656841:android:065eddf0a5712d428b8098",
-        "android_client_info": {
-          "package_name": "com.example.nudge_1"
-        }
-      },
-      "oauth_client": [],
-      "api_key": [
+    "project_info": {
+        "project_number": "1010694656841",
+        "project_id": "nudge-beta-app",
+        "storage_bucket": "nudge-beta-app.firebasestorage.app"
+    },
+    "client": [
         {
-          "current_key": "AIzaSyBMKkQKFfNlmHYb9Kqrj6t50ZosO0dsu5A"
+            "client_info": {
+                "mobilesdk_app_id": "1:1010694656841:android:065eddf0a5712d428b8098",
+                "android_client_info": {
+                    "package_name": "com.example.nudge_1"
+                }
+            },
+            "oauth_client": [
+                {
+                    "client_id": "1010694656841-4217n5p2np8eiod2trn8p7v971h045en.apps.googleusercontent.com",
+                    "client_type": 3
+                }
+            ],
+            "api_key": [
+                {
+                    "current_key": "AIzaSyBMKkQKFfNlmHYb9Kqrj6t50ZosO0dsu5A"
+                }
+            ],
+            "services": {
+                "appinvite_service": {
+                    "other_platform_oauth_client": [
+                        {
+                            "client_id": "1010694656841-4217n5p2np8eiod2trn8p7v971h045en.apps.googleusercontent.com",
+                            "client_type": 3
+                        },
+                        {
+                            "client_id": "1010694656841-lnald72uuntu1bqj78hsqfr2quulpmjg.apps.googleusercontent.com",
+                            "client_type": 2,
+                            "ios_info": {
+                                "bundle_id": "com.example.nudge1"
+                            }
+                        }
+                    ]
+                }
+            }
         }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": []
-        }
-      }
-    }
-  ],
-  "configuration_version": "1"
+    ],
+    "configuration_version": "1"
 }

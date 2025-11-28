@@ -7,6 +7,7 @@ import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nudge_1/firebase/firestore/user_service.dart';
 import 'package:nudge_1/firebase/firestore/room_service.dart';
+import 'package:nudge_1/features/auth/domain/auth_service.dart';
 
 /// Shows the share room bottom sheet.
 ///
@@ -91,14 +92,13 @@ class _ShareRoomSheetContentState extends State<_ShareRoomSheetContent> {
                 debugPrint('💾 Saving display name: $name');
                 // Authenticate anonymously if not already
                 UserCredential userCredential;
+                final authService = AuthService();
                 if (currentUser == null) {
                   debugPrint('🔐 Signing in anonymously (new user)');
-                  userCredential = await FirebaseAuth.instance
-                      .signInAnonymously();
+                  userCredential = await authService.signInAnonymously();
                 } else {
                   debugPrint('🔐 Signing in anonymously (existing user)');
-                  userCredential = await FirebaseAuth.instance
-                      .signInAnonymously();
+                  userCredential = await authService.signInAnonymously();
                   // Note: This will create a new anonymous user. In production,
                   // you might want to link the anonymous account to the existing user.
                 }
@@ -133,12 +133,13 @@ class _ShareRoomSheetContentState extends State<_ShareRoomSheetContent> {
         debugPrint('📝 Display name exists, proceeding with room creation');
         // User already has display name, authenticate if needed and create room
         UserCredential userCredential;
+        final authService = AuthService();
         if (currentUser == null) {
           debugPrint('🔐 Signing in anonymously (new user)');
-          userCredential = await FirebaseAuth.instance.signInAnonymously();
+          userCredential = await authService.signInAnonymously();
         } else {
           debugPrint('🔐 Signing in anonymously (existing user)');
-          userCredential = await FirebaseAuth.instance.signInAnonymously();
+          userCredential = await authService.signInAnonymously();
           // Note: Similar note as above about linking accounts.
         }
 
