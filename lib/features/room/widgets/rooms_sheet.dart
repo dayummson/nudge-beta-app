@@ -275,80 +275,123 @@ void showRoomsSheet(BuildContext context, {VoidCallback? onRoomChanged}) {
                                 ),
                               ],
                             ),
-                            child: InkWell(
-                              onTap: () async {
-                                await RoomSelection.setSelectedRoomId(r.id);
-                                onRoomChanged?.call();
-                                if (context.mounted) {
-                                  Navigator.pop(context);
-                                }
-                              },
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(
-                                  vertical: 10,
-                                  horizontal: 0,
-                                ),
-                                decoration: BoxDecoration(
-                                  color: Theme.of(context).colorScheme.surface,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Container(
-                                      width: 48,
-                                      height: 48,
-                                      decoration: BoxDecoration(
-                                        color: cs.surfaceContainerHighest,
-                                        shape: BoxShape.circle,
-                                      ),
-                                      child: Center(
-                                        child: Text(
-                                          r.isShared ? '🤝' : '🤫',
-                                          style: TextStyle(fontSize: 20),
-                                        ),
+                            child: Column(
+                              children: [
+                                if (isSelected)
+                                  Container(
+                                    margin: const EdgeInsets.only(bottom: 4),
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 8,
+                                      vertical: 2,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: cs.primary,
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: Text(
+                                      'Current Room',
+                                      style: TextStyle(
+                                        color: cs.onPrimary,
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.w600,
                                       ),
                                     ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            r.name,
-                                            style: TextStyle(
-                                              fontWeight: FontWeight.w700,
-                                              color: cs.onSurface,
+                                  ),
+                                InkWell(
+                                  onTap: () async {
+                                    await RoomSelection.setSelectedRoomId(r.id);
+                                    onRoomChanged?.call();
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                    }
+                                  },
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      vertical: 10,
+                                      horizontal: 0,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: isSelected
+                                          ? cs.primaryContainer
+                                          : Theme.of(
+                                              context,
+                                            ).colorScheme.surface,
+                                      borderRadius: BorderRadius.circular(12),
+                                      border: isSelected
+                                          ? Border.all(
+                                              color: cs.primary,
+                                              width: 2,
+                                            )
+                                          : null,
+                                    ),
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 48,
+                                          height: 48,
+                                          decoration: BoxDecoration(
+                                            color: cs.surfaceContainerHighest,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: Center(
+                                            child: Text(
+                                              r.isShared ? '🤝' : '🤫',
+                                              style: TextStyle(fontSize: 20),
                                             ),
                                           ),
-                                          const SizedBox(height: 4),
-                                          Row(
+                                        ),
+                                        const SizedBox(width: 12),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
                                             children: [
-                                              const Icon(
-                                                Icons.person,
-                                                size: 12,
-                                              ),
-                                              const SizedBox(width: 6),
                                               Text(
-                                                r.isShared
-                                                    ? 'Shared'
-                                                    : 'Only you',
+                                                r.name,
                                                 style: TextStyle(
-                                                  fontSize: 12,
-                                                  color: cs.onSurface
-                                                      .withOpacity(0.7),
+                                                  fontWeight: FontWeight.w700,
+                                                  color: cs.onSurface,
                                                 ),
+                                              ),
+                                              const SizedBox(height: 4),
+                                              Row(
+                                                children: [
+                                                  const Icon(
+                                                    Icons.person,
+                                                    size: 12,
+                                                  ),
+                                                  const SizedBox(width: 6),
+                                                  Text(
+                                                    '${r.users.length} ${r.users.length == 1 ? 'person' : 'people'}',
+                                                    style: TextStyle(
+                                                      fontSize: 12,
+                                                      color: cs.onSurface
+                                                          .withOpacity(0.7),
+                                                    ),
+                                                  ),
+                                                ],
                                               ),
                                             ],
                                           ),
-                                        ],
-                                      ),
+                                        ),
+                                        if (isSelected)
+                                          Container(
+                                            padding: const EdgeInsets.all(6),
+                                            decoration: BoxDecoration(
+                                              color: cs.primary,
+                                              shape: BoxShape.circle,
+                                            ),
+                                            child: Icon(
+                                              Icons.check,
+                                              color: cs.onPrimary,
+                                              size: 16,
+                                            ),
+                                          ),
+                                      ],
                                     ),
-                                    if (isSelected)
-                                      Icon(Icons.check, color: cs.primary),
-                                  ],
+                                  ),
                                 ),
-                              ),
+                              ],
                             ),
                           );
                         },
