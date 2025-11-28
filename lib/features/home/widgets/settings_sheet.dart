@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/features/home/widgets/theme_selector_sheet.dart';
 import 'package:nudge_1/features/home/presentation/pages/notifications_page.dart';
+import 'package:nudge_1/features/home/presentation/pages/profile_page.dart';
 import 'package:nudge_1/core/theme/theme_provider.dart';
 import 'package:nudge_1/main.dart' as main_app;
 
@@ -31,7 +32,9 @@ void showSettingsSheet(
           onTap: () {
             FocusManager.instance.primaryFocus?.unfocus();
             Navigator.pop(context);
-            // TODO: Navigate to profile
+            Navigator.of(
+              context,
+            ).push(MaterialPageRoute(builder: (_) => const ProfilePage()));
           },
         ),
         ListTile(
