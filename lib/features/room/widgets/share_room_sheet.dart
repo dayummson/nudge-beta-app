@@ -90,70 +90,95 @@ class _ShareRoomSheetContentState extends State<_ShareRoomSheetContent> {
             child: _DisplayNameSheet(
               onSave: (name) async {
                 debugPrint('💾 Saving display name: $name');
-                // Authenticate anonymously if not already
-                UserCredential userCredential;
-                final authService = AuthService();
-                if (currentUser == null) {
-                  debugPrint('🔐 Signing in anonymously (new user)');
-                  userCredential = await authService.signInAnonymously();
-                } else {
-                  debugPrint('🔐 Signing in anonymously (existing user)');
-                  userCredential = await authService.signInAnonymously();
-                  // Note: This will create a new anonymous user. In production,
-                  // you might want to link the anonymous account to the existing user.
+                try {
+                  // Authenticate anonymously if not already
+                  UserCredential userCredential;
+                  final authService = AuthService();
+                  if (currentUser == null) {
+                    debugPrint('🔐 Signing in anonymously (new user)');
+                    userCredential = await authService.signInAnonymously();
+                  } else {
+                    debugPrint('🔐 Signing in anonymously (existing user)');
+                    userCredential = await authService.signInAnonymously();
+                    // Note: This will create a new anonymous user. In production,
+                    // you might want to link the anonymous account to the existing user.
+                  }
+
+                  debugPrint(
+                    '✅ Auth successful, user ID: ${userCredential.user!.uid}',
+                  );
+
+                  // Save display name to Firestore
+                  await userService.setDisplayName(
+                    userCredential.user!.uid,
+                    name,
+                  );
+                  debugPrint('💾 Display name saved to Firestore');
+
+                  // Create shared room in Firestore
+                  final roomService = RoomService();
+                  await roomService.createSharedRoom(
+                    roomId: _currentRoom.id.toString(),
+                    name: _currentRoom.name,
+                    ownerId: userCredential.user!.uid,
+                    users: [userCredential.user!.uid],
+                  );
+                  debugPrint(
+                    '🏠 Shared room created in Firestore: ${_currentRoom.id}',
+                  );
+                } catch (e) {
+                  debugPrint('❌ Authentication failed: $e');
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Failed to share room: ${e.toString()}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
                 }
-
-                debugPrint(
-                  '✅ Auth successful, user ID: ${userCredential.user!.uid}',
-                );
-
-                // Save display name to Firestore
-                await userService.setDisplayName(
-                  userCredential.user!.uid,
-                  name,
-                );
-                debugPrint('💾 Display name saved to Firestore');
-
-                // Create shared room in Firestore
-                final roomService = RoomService();
-                await roomService.createSharedRoom(
-                  roomId: _currentRoom.id.toString(),
-                  name: _currentRoom.name,
-                  ownerId: userCredential.user!.uid,
-                  users: [userCredential.user!.uid],
-                );
-                debugPrint(
-                  '🏠 Shared room created in Firestore: ${_currentRoom.id}',
-                );
               },
             ),
           );
         }
       } else {
         debugPrint('📝 Display name exists, proceeding with room creation');
-        // User already has display name, authenticate if needed and create room
-        UserCredential userCredential;
-        final authService = AuthService();
-        if (currentUser == null) {
-          debugPrint('🔐 Signing in anonymously (new user)');
-          userCredential = await authService.signInAnonymously();
-        } else {
-          debugPrint('🔐 Signing in anonymously (existing user)');
-          userCredential = await authService.signInAnonymously();
-          // Note: Similar note as above about linking accounts.
+        try {
+          // User already has display name, authenticate if needed and create room
+          UserCredential userCredential;
+          final authService = AuthService();
+          if (currentUser == null) {
+            debugPrint('🔐 Signing in anonymously (new user)');
+            userCredential = await authService.signInAnonymously();
+          } else {
+            debugPrint('🔐 Signing in anonymously (existing user)');
+            userCredential = await authService.signInAnonymously();
+            // Note: Similar note as above about linking accounts.
+          }
+
+          debugPrint('✅ Auth successful, user ID: ${userCredential.user!.uid}');
+
+          // Create shared room in Firestore
+          final roomService = RoomService();
+          await roomService.createSharedRoom(
+            roomId: _currentRoom.id.toString(),
+            name: _currentRoom.name,
+            ownerId: userCredential.user!.uid,
+            users: [userCredential.user!.uid],
+          );
+          debugPrint('🏠 Shared room created in Firestore: ${_currentRoom.id}');
+        } catch (e) {
+          debugPrint('❌ Authentication failed: $e');
+          if (mounted) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Failed to share room: ${e.toString()}'),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+          return; // Exit early on auth failure
         }
-
-        debugPrint('✅ Auth successful, user ID: ${userCredential.user!.uid}');
-
-        // Create shared room in Firestore
-        final roomService = RoomService();
-        await roomService.createSharedRoom(
-          roomId: _currentRoom.id.toString(),
-          name: _currentRoom.name,
-          ownerId: userCredential.user!.uid,
-          users: [userCredential.user!.uid],
-        );
-        debugPrint('🏠 Shared room created in Firestore: ${_currentRoom.id}');
       }
 
       // Update local room to mark as shared

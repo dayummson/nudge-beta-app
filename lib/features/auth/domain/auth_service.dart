@@ -1,6 +1,17 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 import 'package:flutter/foundation.dart';
+import 'package:nudge_1/core/services/device_service.dart';
+
+/// Exception thrown when device account restrictions are violated.
+class DeviceAccountException implements Exception {
+  final String message;
+
+  DeviceAccountException(this.message);
+
+  @override
+  String toString() => 'DeviceAccountException: $message';
+}
 
 /// Result of a Google sign-in or link operation
 class GoogleSignInResult {
@@ -20,20 +31,40 @@ class GoogleSignInResult {
 /// simple and testable. To add other providers (Apple, Email/Password),
 /// add additional methods here and reuse them from the UI.
 class AuthService {
-  AuthService({GoogleSignIn? googleSignIn, FirebaseAuth? firebaseAuth})
-    : _googleSignIn =
-          googleSignIn ?? GoogleSignIn(scopes: ['email', 'profile']),
-      _auth = firebaseAuth ?? FirebaseAuth.instance;
+  AuthService({
+    GoogleSignIn? googleSignIn,
+    FirebaseAuth? firebaseAuth,
+    DeviceService? deviceService,
+  }) : _googleSignIn =
+           googleSignIn ?? GoogleSignIn(scopes: ['email', 'profile']),
+       _auth = firebaseAuth ?? FirebaseAuth.instance,
+       _deviceService = deviceService ?? DeviceService();
 
   final GoogleSignIn _googleSignIn;
   final FirebaseAuth _auth;
+  final DeviceService _deviceService;
 
   /// Sign in anonymously. Returns the [UserCredential] on success.
   ///
   /// This creates a new anonymous user account that can later be linked
   /// to a permanent account using [signInOrLinkWithGoogle].
+  ///
+  /// Throws [DeviceAccountException] if this device already has an associated account.
   Future<UserCredential> signInAnonymously() async {
-    return await _auth.signInAnonymously();
+    // Check if device already has an account
+    final hasDeviceAccount = await _deviceService.hasDeviceAccount();
+    if (hasDeviceAccount) {
+      throw DeviceAccountException(
+        'This device already has an associated account. Only one account per device is allowed.',
+      );
+    }
+
+    final userCredential = await _auth.signInAnonymously();
+
+    // Mark device as having an account
+    await _deviceService.markDeviceHasAccount(userCredential.user!.uid);
+
+    return userCredential;
   }
 
   /// Sign in using Google. Returns the signed-in [User] on success.
@@ -78,6 +109,14 @@ class AuthService {
 
     User? resultUser;
     if (currentUser != null && currentUser.isAnonymous) {
+      // Check if device already has an account (should be the current anonymous one)
+      final deviceAccountId = await _deviceService.getDeviceAccountId();
+      if (deviceAccountId != null && deviceAccountId != currentUser.uid) {
+        throw DeviceAccountException(
+          'Cannot link account: device is associated with a different account.',
+        );
+      }
+
       // Link the Google credential to the anonymous account
       debugPrint('🔗 Linking Google credential to anonymous account');
       final userCredential = await currentUser.linkWithCredential(credential);
@@ -92,6 +131,15 @@ class AuthService {
       debugPrint(
         '✅ Linked user photo URL after reload: ${resultUser?.photoURL}',
       );
+      debugPrint(
+        '✅ Linked user isAnonymous after reload: ${resultUser?.isAnonymous}',
+      );
+      debugPrint('✅ Linked user email after reload: ${resultUser?.email}');
+
+      // Update device association to the linked account
+      if (resultUser != null) {
+        await _deviceService.markDeviceHasAccount(resultUser.uid);
+      }
 
       // If Firebase user doesn't have photo URL but Google user does, we might need to handle this
       if (resultUser?.photoURL == null && googleUser.photoUrl != null) {
@@ -101,11 +149,23 @@ class AuthService {
         // Note: Firebase should populate photoURL from Google, but if not, we could manually set it
       }
     } else {
-      // Normal sign-in flow
+      // Normal sign-in flow - check if device already has an account
+      final hasDeviceAccount = await _deviceService.hasDeviceAccount();
+      if (hasDeviceAccount) {
+        throw DeviceAccountException(
+          'This device already has an associated account. Only one account per device is allowed.',
+        );
+      }
+
       debugPrint('🔐 Normal Google sign-in flow');
       final userCredential = await _auth.signInWithCredential(credential);
       resultUser = userCredential.user;
       debugPrint('✅ Signed in user photo URL: ${resultUser?.photoURL}');
+
+      // Mark device as having an account
+      if (resultUser != null) {
+        await _deviceService.markDeviceHasAccount(resultUser.uid);
+      }
     }
 
     return GoogleSignInResult(resultUser, googleUser.photoUrl);
@@ -156,5 +216,8 @@ class AuthService {
         // ignore errors during Google sign-out
       }
     }
+
+    // Clear device account association
+    await _deviceService.clearDeviceAccount();
   }
 }

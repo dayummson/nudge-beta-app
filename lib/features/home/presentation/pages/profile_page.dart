@@ -154,6 +154,10 @@ class ProfilePage extends ConsumerWidget {
       data: (firebaseUser) {
         if (firebaseUser == null) return _buildLoggedOutProfile(context, ref);
 
+        debugPrint(
+          '👤 Profile page - Firebase user: ${firebaseUser.uid}, isAnonymous: ${firebaseUser.isAnonymous}, email: ${firebaseUser.email}',
+        );
+
         final user = _firebaseUserToDomainUser(firebaseUser);
 
         return SingleChildScrollView(
@@ -220,14 +224,45 @@ class ProfilePage extends ConsumerWidget {
                           // Force refresh of user data provider
                           ref.invalidate(currentUserProvider);
 
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                'Successfully linked Google account!',
-                              ),
-                              backgroundColor: Colors.green,
-                            ),
+                          // Wait a bit for auth state to update, then check if linking was successful
+                          await Future.delayed(
+                            const Duration(milliseconds: 500),
                           );
+                          final updatedAuthState = ref.read(authStateProvider);
+                          final updatedUser = updatedAuthState.value;
+
+                          debugPrint(
+                            '🔄 After delay - Updated user isAnonymous: ${updatedUser?.isAnonymous}',
+                          );
+
+                          // Force refresh of auth state provider to ensure UI updates
+                          ref.invalidate(authStateProvider);
+
+                          if (updatedUser != null && !updatedUser.isAnonymous) {
+                            debugPrint(
+                              '✅ Linking successful - user is no longer anonymous',
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Successfully linked Google account!',
+                                ),
+                                backgroundColor: Colors.green,
+                              ),
+                            );
+                          } else {
+                            debugPrint(
+                              '⚠️ Linking may not have worked - user still anonymous',
+                            );
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              const SnackBar(
+                                content: Text(
+                                  'Account linking completed, but please refresh the page',
+                                ),
+                                backgroundColor: Colors.orange,
+                              ),
+                            );
+                          }
                         } catch (syncError) {
                           debugPrint('❌ Failed to sync user data: $syncError');
                           debugPrint('Stack trace: ${StackTrace.current}');
@@ -298,12 +333,9 @@ class ProfilePage extends ConsumerWidget {
                 icon: const Icon(Icons.logout),
                 label: const Text('Sign Out'),
                 style: ElevatedButton.styleFrom(
-                  backgroundColor: Theme.of(context).colorScheme.error,
-                  foregroundColor: Theme.of(context).colorScheme.onError,
-                  padding: const EdgeInsets.symmetric(
-                    horizontal: 32,
-                    vertical: 12,
-                  ),
+                  backgroundColor: const Color(0xFFEF5350),
+                  foregroundColor: Colors.white,
+                  minimumSize: const Size(double.infinity, 48),
                   shape: RoundedRectangleBorder(
                     borderRadius: BorderRadius.circular(12),
                   ),
