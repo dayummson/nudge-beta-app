@@ -77,7 +77,7 @@ class _AddTransactionSheetContentState
       _descriptionController.text = txn.description ?? '';
       _amountController.text = txn.amount.toString();
       _selectedCategoryId = txn.category.id;
-      _isExpense = txn.runtimeType.toString() == 'Expense';
+      _isExpense = txn.type == TransactionType.expense;
       _selectedDate = txn.createdAt;
       _hashtags = txn.hashtags ?? [];
     }

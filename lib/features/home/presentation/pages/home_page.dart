@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/core/db/app_database.dart';
+import 'package:nudge_1/features/room/domain/entities/expense.dart' as domain;
 import 'package:nudge_1/core/settings/room_selection.dart';
 import "../../widgets/header.dart";
 import "../../widgets/floating_action_buttons.dart";
@@ -280,10 +281,12 @@ class _HomePageState extends ConsumerState<HomePage> {
 
                       // Separate expenses and incomes from filtered transactions
                       final filteredExpenses = filteredTransactions
-                          .where((t) => t.type == TransactionType.expense)
+                          .where(
+                            (t) => t.type == domain.TransactionType.expense,
+                          )
                           .toList();
                       final filteredIncomes = filteredTransactions
-                          .where((t) => t.type == TransactionType.income)
+                          .where((t) => t.type == domain.TransactionType.income)
                           .toList();
 
                       // Calculate totals for filtered data
@@ -329,7 +332,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         final monthExpenses = _transactions
                             .where(
                               (t) =>
-                                  t.type == TransactionType.expense &&
+                                  t.type == domain.TransactionType.expense &&
                                   t.createdAt.month == month &&
                                   t.createdAt.year == currentYear &&
                                   t.roomId == _selectedRoomId,
@@ -338,7 +341,7 @@ class _HomePageState extends ConsumerState<HomePage> {
                         final monthIncomes = _transactions
                             .where(
                               (t) =>
-                                  t.type == TransactionType.income &&
+                                  t.type == domain.TransactionType.income &&
                                   t.createdAt.month == month &&
                                   t.createdAt.year == currentYear &&
                                   t.roomId == _selectedRoomId,
