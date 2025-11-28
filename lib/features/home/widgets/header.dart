@@ -1,4 +1,4 @@
-import "package:flutter/material.dart";
+import 'package:flutter/material.dart';
 import 'dart:ui';
 import 'toggle_mode.dart';
 import 'package:nudge_1/core/db/app_database.dart';
@@ -11,6 +11,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/selected_category_provider.dart';
 import '../presentation/providers/transaction_type_provider.dart';
 import 'transaction_type_sheet.dart';
+import 'package:mobile_scanner/mobile_scanner.dart';
 
 class Header extends ConsumerStatefulWidget {
   final double blurSigma;
@@ -146,12 +147,8 @@ class _HeaderState extends ConsumerState<Header> {
                     children: [
                       IconButton(
                         onPressed: () {
-                          // TODO: Implement QR scan functionality
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text('QR scan coming soon!'),
-                            ),
-                          );
+                          FocusScope.of(context).unfocus();
+                          _scanQRCode(context);
                         },
                         iconSize: 18,
                         padding: EdgeInsets.zero,
@@ -557,6 +554,30 @@ class _HeaderState extends ConsumerState<Header> {
     );
   }
 
+  Future<void> _scanQRCode(BuildContext context) async {
+    try {
+      final result = await Navigator.push(
+        context,
+        MaterialPageRoute(builder: (context) => QRViewExample()),
+      );
+
+      if (result != null && result is String) {
+        // Handle the scanned QR code result
+        if (mounted) {
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text('Scanned: $result')));
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(const SnackBar(content: Text('Failed to scan QR code')));
+      }
+    }
+  }
+
   void _showMonthSheet(BuildContext context) {
     showMonthSheet(
       context,
@@ -581,5 +602,62 @@ class _HeaderState extends ConsumerState<Header> {
 
   void _showRoomsSheet(BuildContext context) {
     showRoomsSheet(context, onRoomChanged: widget.onRoomChanged);
+  }
+}
+
+class QRViewExample extends StatefulWidget {
+  const QRViewExample({super.key});
+
+  @override
+  State<StatefulWidget> createState() => _QRViewExampleState();
+}
+
+class _QRViewExampleState extends State<QRViewExample> {
+  MobileScannerController controller = MobileScannerController();
+  bool _isScanning = true;
+
+  @override
+  void dispose() {
+    controller.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Scan QR Code'),
+        leading: IconButton(
+          icon: const Icon(Icons.close),
+          onPressed: () => Navigator.pop(context),
+        ),
+        actions: [
+          IconButton(
+            icon: Icon(
+              controller.torchEnabled ? Icons.flash_on : Icons.flash_off,
+            ),
+            onPressed: () => controller.toggleTorch(),
+          ),
+          IconButton(
+            icon: controller.facing == CameraFacing.front
+                ? const Icon(Icons.camera_front)
+                : const Icon(Icons.camera_rear),
+            onPressed: () => controller.switchCamera(),
+          ),
+        ],
+      ),
+      body: MobileScanner(
+        controller: controller,
+        onDetect: (capture) {
+          if (!_isScanning) return;
+          _isScanning = false;
+
+          final List<Barcode> barcodes = capture.barcodes;
+          if (barcodes.isNotEmpty && barcodes.first.rawValue != null) {
+            Navigator.pop(context, barcodes.first.rawValue);
+          }
+        },
+      ),
+    );
   }
 }
