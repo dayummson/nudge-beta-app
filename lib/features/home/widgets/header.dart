@@ -199,13 +199,29 @@ class _HeaderState extends ConsumerState<Header> {
                               ),
                             ),
                           ),
-                          Text(
-                            widget.totalAmount.toStringAsFixed(2),
-                            style: TextStyle(
-                              color: colorScheme.onSurface,
-                              fontSize: 40,
-                              fontWeight: FontWeight.w900,
-                            ),
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            crossAxisAlignment: CrossAxisAlignment.baseline,
+                            textBaseline: TextBaseline.alphabetic,
+                            children: [
+                              Text(
+                                widget.totalAmount.toStringAsFixed(2),
+                                style: TextStyle(
+                                  color: colorScheme.onSurface,
+                                  fontSize: 40,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                              const SizedBox(width: 4),
+                              Text(
+                                'P',
+                                style: TextStyle(
+                                  color: colorScheme.onSurface.withOpacity(0.7),
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
