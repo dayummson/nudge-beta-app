@@ -7,6 +7,7 @@ import 'package:path/path.dart' as p;
 // Make domain types available to generated part
 import 'package:nudge_1/features/room/domain/entities/category.dart';
 import 'package:nudge_1/features/room/domain/entities/place_location.dart';
+import 'package:nudge_1/features/room/domain/entities/expense.dart';
 import 'package:nudge_1/features/room/data/local/tables/type_converters.dart';
 
 // Import your tables
@@ -36,8 +37,7 @@ part '../../features/room/data/local/dao/attachments_dao.dart';
     Rooms,
     RoomMembers,
     Categories,
-    Expenses,
-    Incomes,
+    Transactions,
     ExpenseUsers,
     Reactions,
     Attachments,
@@ -46,8 +46,7 @@ part '../../features/room/data/local/dao/attachments_dao.dart';
     RoomsDao,
     RoomMembersDao,
     CategoriesDao,
-    ExpensesDao,
-    IncomesDao,
+    TransactionsDao,
     ExpenseUsersDao,
     ReactionsDao,
     AttachmentsDao,
@@ -76,16 +75,16 @@ class AppDatabase extends _$AppDatabase {
     },
     onUpgrade: (Migrator m, int from, int to) async {
       if (from == 1) {
-        // Add roomId column to existing tables
-        await m.addColumn(expenses, expenses.roomId);
-        await m.addColumn(incomes, incomes.roomId);
+        // Migrate from separate expenses/incomes tables to unified transactions table
+        // This is a major schema change, so we recreate the tables
+        await m.deleteTable('expenses');
+        await m.deleteTable('incomes');
+        await m.createTable(transactions);
       }
       if (from < 4) {
-        // Recreate tables to add hashtags column
-        await m.deleteTable(expenses.actualTableName);
-        await m.deleteTable(incomes.actualTableName);
-        await m.createTable(expenses);
-        await m.createTable(incomes);
+        // Ensure transactions table has all required columns
+        await m.deleteTable(transactions.actualTableName);
+        await m.createTable(transactions);
       }
     },
   );

@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
 import 'package:nudge_1/features/room/domain/entities/place_location.dart';
+import 'package:nudge_1/features/room/domain/entities/expense.dart';
 
 class DebugDbScreen extends StatefulWidget {
   const DebugDbScreen({super.key});
@@ -58,9 +59,10 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
       _append('Upserted category eatout');
 
       // Expense
-      await db.expensesDao.insert(
-        ExpensesCompanion(
+      await db.transactionsDao.insert(
+        TransactionsCompanion(
           id: const drift.Value('expense-debug-1'),
+          roomId: const drift.Value('debug-room'),
           description: const drift.Value('Burger dinner'),
           category: drift.Value(eatout),
           amount: const drift.Value(18.5),
@@ -71,6 +73,9 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
               lng: -122.084,
             ),
           ),
+          type: const drift.Value(TransactionType.expense),
+          hashtags: const drift.Value([]),
+          createdAt: drift.Value(DateTime.now()),
         ),
       );
       _append('Inserted expense expense-debug-1');
@@ -82,9 +87,10 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
         name: 'Salary',
         color: const Color(0xFF43A047),
       );
-      await db.incomesDao.insert(
-        IncomesCompanion(
+      await db.transactionsDao.insert(
+        TransactionsCompanion(
           id: const drift.Value('income-debug-1'),
+          roomId: const drift.Value('debug-room'),
           description: const drift.Value('Paycheck'),
           category: drift.Value(salary),
           amount: const drift.Value(1500.0),
@@ -95,6 +101,9 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
               lng: -122.3958,
             ),
           ),
+          type: const drift.Value(TransactionType.income),
+          hashtags: const drift.Value([]),
+          createdAt: drift.Value(DateTime.now()),
         ),
       );
       _append('Inserted income income-debug-1');
@@ -107,8 +116,7 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
     try {
       final rooms = await db.roomsDao.getAllRooms();
       final cats = await db.categoriesDao.getAll();
-      final exps = await db.expensesDao.getAll();
-      final incs = await db.incomesDao.getAll();
+      final txns = await db.transactionsDao.getAll();
 
       _append('Rooms(${rooms.length}):');
       for (final r in rooms) {
@@ -126,29 +134,16 @@ class _DebugDbScreenState extends State<DebugDbScreen> {
         );
       }
 
-      _append('Expenses(${exps.length}):');
-      for (final e in exps) {
-        final cat = e.category; // domain.Category
-        final loc = e.location;
+      _append('Transactions(${txns.length}):');
+      for (final t in txns) {
+        final cat = t.category; // domain.Category
+        final loc = t.location;
         final locStr = loc == null
             ? ''
             : '${loc.address} (lat: ${loc.lat}, lng: ${loc.lng})';
         _append(
-          ' - ${e.id} | ${e.description} | amount: ${e.amount} | '
-          'category: ${cat.name} (${cat.id}) | location: $locStr',
-        );
-      }
-
-      _append('Incomes(${incs.length}):');
-      for (final i in incs) {
-        final cat = i.category; // domain.Category
-        final loc = i.location;
-        final locStr = loc == null
-            ? ''
-            : '${loc.address} (lat: ${loc.lat}, lng: ${loc.lng})';
-        _append(
-          ' - ${i.id} | ${i.description} | amount: ${i.amount} | '
-          'category: ${cat.name} (${cat.id}) | location: $locStr',
+          ' - ${t.id} | ${t.description} | amount: ${t.amount} | '
+          'type: ${t.type} | category: ${cat.name} (${cat.id}) | location: $locStr',
         );
       }
     } catch (e) {

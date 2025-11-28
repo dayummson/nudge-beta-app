@@ -4,6 +4,7 @@ import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
+import 'package:nudge_1/features/room/domain/entities/expense.dart';
 import 'action_buttons_section.dart';
 import 'amount_input_section.dart';
 import 'category_selection_section.dart';
@@ -123,9 +124,6 @@ class _AddTransactionSheetContentState
       final db = AppDatabase();
 
       final isEditing = widget.transaction != null;
-      final originalIsExpense = isEditing
-          ? widget.transaction.runtimeType.toString() == 'Expense'
-          : _isExpense;
       final id = isEditing
           ? widget.transaction.id
           : 'txn-${DateTime.now().millisecondsSinceEpoch}';
@@ -142,53 +140,26 @@ class _AddTransactionSheetContentState
         return;
       }
 
-      final companion = _isExpense
-          ? ExpensesCompanion(
-              id: drift.Value(id),
-              roomId: drift.Value(roomId),
-              description: drift.Value(description),
-              category: drift.Value(category),
-              amount: drift.Value(amount),
-              location: const drift.Value(null),
-              hashtags: drift.Value(_hashtags),
-              createdAt: drift.Value(_selectedDate),
-            )
-          : IncomesCompanion(
-              id: drift.Value(id),
-              roomId: drift.Value(roomId),
-              description: drift.Value(description),
-              category: drift.Value(category),
-              amount: drift.Value(amount),
-              location: const drift.Value(null),
-              hashtags: drift.Value(_hashtags),
-              createdAt: drift.Value(_selectedDate),
-            );
+      final companion = TransactionsCompanion(
+        id: drift.Value(id),
+        roomId: drift.Value(roomId),
+        description: drift.Value(description),
+        category: drift.Value(category),
+        amount: drift.Value(amount),
+        location: const drift.Value(null),
+        hashtags: drift.Value(_hashtags),
+        type: drift.Value(
+          _isExpense ? TransactionType.expense : TransactionType.income,
+        ),
+        createdAt: drift.Value(_selectedDate),
+      );
 
       if (isEditing) {
-        if (originalIsExpense != _isExpense) {
-          // Type changed, delete from old table and insert to new
-          if (originalIsExpense) {
-            await db.expensesDao.deleteById(id);
-            await db.incomesDao.insert(companion as IncomesCompanion);
-          } else {
-            await db.incomesDao.deleteById(id);
-            await db.expensesDao.insert(companion as ExpensesCompanion);
-          }
-        } else {
-          // Same type, update
-          if (_isExpense) {
-            await db.expensesDao.updateEntry(companion as ExpensesCompanion);
-          } else {
-            await db.incomesDao.updateEntry(companion as IncomesCompanion);
-          }
-        }
+        // Update existing transaction
+        await db.transactionsDao.updateEntry(companion);
       } else {
-        // New transaction
-        if (_isExpense) {
-          await db.expensesDao.insert(companion as ExpensesCompanion);
-        } else {
-          await db.incomesDao.insert(companion as IncomesCompanion);
-        }
+        // Insert new transaction
+        await db.transactionsDao.insert(companion);
       }
 
       if (mounted) {

@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
 import 'package:nudge_1/features/room/domain/entities/place_location.dart';
+import 'package:nudge_1/features/room/domain/entities/expense.dart';
 
 void main() {
   TestWidgetsFlutterBinding.ensureInitialized();
@@ -39,10 +40,11 @@ void main() {
     final cats = await db.categoriesDao.getAll();
     expect(cats.length, 1);
 
-    // Expenses
-    await db.expensesDao.insert(
-      ExpensesCompanion(
+    // Transactions
+    await db.transactionsDao.insert(
+      TransactionsCompanion(
         id: const Value('expense-1'),
+        roomId: const Value('room-1'),
         description: const Value('Burger dinner'),
         category: Value(eatOut),
         amount: const Value(18.5),
@@ -53,9 +55,12 @@ void main() {
             lng: -122.084,
           ),
         ),
+        type: const Value(TransactionType.expense),
+        hashtags: const Value([]),
+        createdAt: Value(DateTime.now()),
       ),
     );
-    final exps = await db.expensesDao.getAll();
+    final exps = await db.transactionsDao.getAll();
     expect(exps.length, 1);
 
     // Incomes
@@ -65,9 +70,10 @@ void main() {
       name: 'Salary',
       color: const Color(0xFF43A047),
     );
-    await db.incomesDao.insert(
-      IncomesCompanion(
+    await db.transactionsDao.insert(
+      TransactionsCompanion(
         id: const Value('income-1'),
+        roomId: const Value('room-1'),
         description: const Value('Paycheck'),
         category: Value(salary),
         amount: const Value(1500.0),
@@ -78,10 +84,13 @@ void main() {
             lng: -122.3958,
           ),
         ),
+        type: const Value(TransactionType.income),
+        hashtags: const Value([]),
+        createdAt: Value(DateTime.now()),
       ),
     );
-    final incs = await db.incomesDao.getAll();
-    expect(incs.length, 1);
+    final incs = await db.transactionsDao.getAll();
+    expect(incs.length, 2); // Both expense and income
 
     await db.close();
   });

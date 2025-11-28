@@ -1,6 +1,7 @@
 import 'package:drift/drift.dart';
 import '../../../domain/entities/category.dart';
 import '../../../domain/entities/place_location.dart';
+import '../../../domain/entities/expense.dart';
 import 'dart:convert';
 
 /// Shared converter for Category <-> JSON String
@@ -49,5 +50,23 @@ class LocationJsonConverter extends TypeConverter<PlaceLocation, String> {
   @override
   String toSql(PlaceLocation value) {
     return jsonEncode(value.toJson());
+  }
+}
+
+/// Converter for TransactionType <-> String
+class TransactionTypeConverter extends TypeConverter<TransactionType, String> {
+  const TransactionTypeConverter();
+
+  @override
+  TransactionType fromSql(String fromDb) {
+    return TransactionType.values.firstWhere(
+      (e) => e.name == fromDb,
+      orElse: () => TransactionType.expense, // default fallback
+    );
+  }
+
+  @override
+  String toSql(TransactionType value) {
+    return value.name;
   }
 }

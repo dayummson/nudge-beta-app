@@ -4,6 +4,7 @@ import 'package:drift/native.dart';
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/features/room/domain/entities/category.dart' as domain;
 import 'package:nudge_1/features/room/domain/entities/place_location.dart';
+import 'package:nudge_1/features/room/domain/entities/expense.dart';
 
 Future<void> main() async {
   final db = AppDatabase.forTesting(NativeDatabase.memory());
@@ -36,9 +37,10 @@ Future<void> main() async {
   print('Categories: ${cats.length} -> ${cats.map((c) => c.id).toList()}');
 
   // Expenses
-  await db.expensesDao.insert(
-    ExpensesCompanion(
+  await db.transactionsDao.insert(
+    TransactionsCompanion(
       id: const Value('expense-1'),
+      roomId: const Value('room-1'),
       description: const Value('Burger dinner'),
       category: Value(eatOut),
       amount: const Value(18.5),
@@ -49,15 +51,19 @@ Future<void> main() async {
           lng: -122.084,
         ),
       ),
+      type: const Value(TransactionType.expense),
+      hashtags: const Value([]),
+      createdAt: Value(DateTime.now()),
     ),
   );
-  final exps = await db.expensesDao.getAll();
-  print('Expenses: ${exps.length} -> ${exps.map((e) => e.id).toList()}');
+  final exps = await db.transactionsDao.getAll();
+  print('Transactions: ${exps.length} -> ${exps.map((e) => e.id).toList()}');
 
   // Incomes
-  await db.incomesDao.insert(
-    IncomesCompanion(
+  await db.transactionsDao.insert(
+    TransactionsCompanion(
       id: const Value('income-1'),
+      roomId: const Value('room-1'),
       description: const Value('Paycheck'),
       category: Value(
         domain.Category(
@@ -75,10 +81,15 @@ Future<void> main() async {
           lng: -122.3958,
         ),
       ),
+      type: const Value(TransactionType.income),
+      hashtags: const Value([]),
+      createdAt: Value(DateTime.now()),
     ),
   );
-  final incs = await db.incomesDao.getAll();
-  print('Incomes: ${incs.length} -> ${incs.map((i) => i.id).toList()}');
+  final incs = await db.transactionsDao.getAll();
+  print(
+    'All Transactions: ${incs.length} -> ${incs.map((i) => i.id).toList()}',
+  );
 
   await db.close();
 }

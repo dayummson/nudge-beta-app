@@ -1081,11 +1081,12 @@ class CategoriesCompanion extends UpdateCompanion<CategoryRow> {
   }
 }
 
-class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
+class $TransactionsTable extends Transactions
+    with TableInfo<$TransactionsTable, Transaction> {
   @override
   final GeneratedDatabase attachedDatabase;
   final String? _alias;
-  $ExpensesTable(this.attachedDatabase, [this._alias]);
+  $TransactionsTable(this.attachedDatabase, [this._alias]);
   static const VerificationMeta _idMeta = const VerificationMeta('id');
   @override
   late final GeneratedColumn<String> id = GeneratedColumn<String>(
@@ -1123,7 +1124,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: true,
-      ).withConverter<Category>($ExpensesTable.$convertercategory);
+      ).withConverter<Category>($TransactionsTable.$convertercategory);
   static const VerificationMeta _amountMeta = const VerificationMeta('amount');
   @override
   late final GeneratedColumn<double> amount = GeneratedColumn<double>(
@@ -1141,7 +1142,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         true,
         type: DriftSqlType.string,
         requiredDuringInsert: false,
-      ).withConverter<PlaceLocation?>($ExpensesTable.$converterlocationn);
+      ).withConverter<PlaceLocation?>($TransactionsTable.$converterlocationn);
   @override
   late final GeneratedColumnWithTypeConverter<List<String>, String> hashtags =
       GeneratedColumn<String>(
@@ -1150,7 +1151,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         false,
         type: DriftSqlType.string,
         requiredDuringInsert: true,
-      ).withConverter<List<String>>($ExpensesTable.$converterhashtags);
+      ).withConverter<List<String>>($TransactionsTable.$converterhashtags);
   static const VerificationMeta _createdAtMeta = const VerificationMeta(
     'createdAt',
   );
@@ -1175,6 +1176,43 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     requiredDuringInsert: false,
   );
   @override
+  late final GeneratedColumnWithTypeConverter<TransactionType, String> type =
+      GeneratedColumn<String>(
+        'type',
+        aliasedName,
+        false,
+        type: DriftSqlType.string,
+        requiredDuringInsert: true,
+      ).withConverter<TransactionType>($TransactionsTable.$convertertype);
+  static const VerificationMeta _isSyncedMeta = const VerificationMeta(
+    'isSynced',
+  );
+  @override
+  late final GeneratedColumn<bool> isSynced = GeneratedColumn<bool>(
+    'is_synced',
+    aliasedName,
+    false,
+    type: DriftSqlType.bool,
+    requiredDuringInsert: false,
+    defaultConstraints: GeneratedColumn.constraintIsAlways(
+      'CHECK ("is_synced" IN (0, 1))',
+    ),
+    defaultValue: const Constant(false),
+  );
+  static const VerificationMeta _lastUpdatedAtMeta = const VerificationMeta(
+    'lastUpdatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> lastUpdatedAt =
+      GeneratedColumn<DateTime>(
+        'last_updated_at',
+        aliasedName,
+        false,
+        type: DriftSqlType.dateTime,
+        requiredDuringInsert: false,
+        defaultValue: currentDateAndTime,
+      );
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     roomId,
@@ -1185,15 +1223,18 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
     hashtags,
     createdAt,
     updatedAt,
+    type,
+    isSynced,
+    lastUpdatedAt,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
   @override
   String get actualTableName => $name;
-  static const String $name = 'expenses';
+  static const String $name = 'transactions';
   @override
   VerificationContext validateIntegrity(
-    Insertable<Expense> instance, {
+    Insertable<Transaction> instance, {
     bool isInserting = false,
   }) {
     final context = VerificationContext();
@@ -1242,15 +1283,30 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
       );
     }
+    if (data.containsKey('is_synced')) {
+      context.handle(
+        _isSyncedMeta,
+        isSynced.isAcceptableOrUnknown(data['is_synced']!, _isSyncedMeta),
+      );
+    }
+    if (data.containsKey('last_updated_at')) {
+      context.handle(
+        _lastUpdatedAtMeta,
+        lastUpdatedAt.isAcceptableOrUnknown(
+          data['last_updated_at']!,
+          _lastUpdatedAtMeta,
+        ),
+      );
+    }
     return context;
   }
 
   @override
   Set<GeneratedColumn> get $primaryKey => {id};
   @override
-  Expense map(Map<String, dynamic> data, {String? tablePrefix}) {
+  Transaction map(Map<String, dynamic> data, {String? tablePrefix}) {
     final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Expense(
+    return Transaction(
       id: attachedDatabase.typeMapping.read(
         DriftSqlType.string,
         data['${effectivePrefix}id'],
@@ -1263,7 +1319,7 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.string,
         data['${effectivePrefix}description'],
       )!,
-      category: $ExpensesTable.$convertercategory.fromSql(
+      category: $TransactionsTable.$convertercategory.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}category'],
@@ -1273,13 +1329,13 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.double,
         data['${effectivePrefix}amount'],
       )!,
-      location: $ExpensesTable.$converterlocationn.fromSql(
+      location: $TransactionsTable.$converterlocationn.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}location'],
         ),
       ),
-      hashtags: $ExpensesTable.$converterhashtags.fromSql(
+      hashtags: $TransactionsTable.$converterhashtags.fromSql(
         attachedDatabase.typeMapping.read(
           DriftSqlType.string,
           data['${effectivePrefix}hashtags'],
@@ -1293,12 +1349,26 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
       ),
+      type: $TransactionsTable.$convertertype.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}type'],
+        )!,
+      ),
+      isSynced: attachedDatabase.typeMapping.read(
+        DriftSqlType.bool,
+        data['${effectivePrefix}is_synced'],
+      )!,
+      lastUpdatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}last_updated_at'],
+      )!,
     );
   }
 
   @override
-  $ExpensesTable createAlias(String alias) {
-    return $ExpensesTable(attachedDatabase, alias);
+  $TransactionsTable createAlias(String alias) {
+    return $TransactionsTable(attachedDatabase, alias);
   }
 
   static TypeConverter<Category, String> $convertercategory =
@@ -1308,10 +1378,12 @@ class $ExpensesTable extends Expenses with TableInfo<$ExpensesTable, Expense> {
   static TypeConverter<PlaceLocation?, String?> $converterlocationn =
       NullAwareTypeConverter.wrap($converterlocation);
   static TypeConverter<List<String>, String> $converterhashtags =
-      const HashtagsJsonConverter();
+      HashtagsJsonConverter();
+  static TypeConverter<TransactionType, String> $convertertype =
+      const TransactionTypeConverter();
 }
 
-class Expense extends DataClass implements Insertable<Expense> {
+class Transaction extends DataClass implements Insertable<Transaction> {
   final String id;
   final String roomId;
   final String description;
@@ -1321,7 +1393,10 @@ class Expense extends DataClass implements Insertable<Expense> {
   final List<String> hashtags;
   final DateTime createdAt;
   final DateTime? updatedAt;
-  const Expense({
+  final TransactionType type;
+  final bool isSynced;
+  final DateTime lastUpdatedAt;
+  const Transaction({
     required this.id,
     required this.roomId,
     required this.description,
@@ -1331,6 +1406,9 @@ class Expense extends DataClass implements Insertable<Expense> {
     required this.hashtags,
     required this.createdAt,
     this.updatedAt,
+    required this.type,
+    required this.isSynced,
+    required this.lastUpdatedAt,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1340,29 +1418,36 @@ class Expense extends DataClass implements Insertable<Expense> {
     map['description'] = Variable<String>(description);
     {
       map['category'] = Variable<String>(
-        $ExpensesTable.$convertercategory.toSql(category),
+        $TransactionsTable.$convertercategory.toSql(category),
       );
     }
     map['amount'] = Variable<double>(amount);
     if (!nullToAbsent || location != null) {
       map['location'] = Variable<String>(
-        $ExpensesTable.$converterlocationn.toSql(location),
+        $TransactionsTable.$converterlocationn.toSql(location),
       );
     }
     {
       map['hashtags'] = Variable<String>(
-        $ExpensesTable.$converterhashtags.toSql(hashtags),
+        $TransactionsTable.$converterhashtags.toSql(hashtags),
       );
     }
     map['created_at'] = Variable<DateTime>(createdAt);
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
     }
+    {
+      map['type'] = Variable<String>(
+        $TransactionsTable.$convertertype.toSql(type),
+      );
+    }
+    map['is_synced'] = Variable<bool>(isSynced);
+    map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
     return map;
   }
 
-  ExpensesCompanion toCompanion(bool nullToAbsent) {
-    return ExpensesCompanion(
+  TransactionsCompanion toCompanion(bool nullToAbsent) {
+    return TransactionsCompanion(
       id: Value(id),
       roomId: Value(roomId),
       description: Value(description),
@@ -1376,15 +1461,18 @@ class Expense extends DataClass implements Insertable<Expense> {
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedAt),
+      type: Value(type),
+      isSynced: Value(isSynced),
+      lastUpdatedAt: Value(lastUpdatedAt),
     );
   }
 
-  factory Expense.fromJson(
+  factory Transaction.fromJson(
     Map<String, dynamic> json, {
     ValueSerializer? serializer,
   }) {
     serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Expense(
+    return Transaction(
       id: serializer.fromJson<String>(json['id']),
       roomId: serializer.fromJson<String>(json['roomId']),
       description: serializer.fromJson<String>(json['description']),
@@ -1394,6 +1482,9 @@ class Expense extends DataClass implements Insertable<Expense> {
       hashtags: serializer.fromJson<List<String>>(json['hashtags']),
       createdAt: serializer.fromJson<DateTime>(json['createdAt']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      type: serializer.fromJson<TransactionType>(json['type']),
+      isSynced: serializer.fromJson<bool>(json['isSynced']),
+      lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
     );
   }
   @override
@@ -1409,10 +1500,13 @@ class Expense extends DataClass implements Insertable<Expense> {
       'hashtags': serializer.toJson<List<String>>(hashtags),
       'createdAt': serializer.toJson<DateTime>(createdAt),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'type': serializer.toJson<TransactionType>(type),
+      'isSynced': serializer.toJson<bool>(isSynced),
+      'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
     };
   }
 
-  Expense copyWith({
+  Transaction copyWith({
     String? id,
     String? roomId,
     String? description,
@@ -1422,7 +1516,10 @@ class Expense extends DataClass implements Insertable<Expense> {
     List<String>? hashtags,
     DateTime? createdAt,
     Value<DateTime?> updatedAt = const Value.absent(),
-  }) => Expense(
+    TransactionType? type,
+    bool? isSynced,
+    DateTime? lastUpdatedAt,
+  }) => Transaction(
     id: id ?? this.id,
     roomId: roomId ?? this.roomId,
     description: description ?? this.description,
@@ -1432,9 +1529,12 @@ class Expense extends DataClass implements Insertable<Expense> {
     hashtags: hashtags ?? this.hashtags,
     createdAt: createdAt ?? this.createdAt,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    type: type ?? this.type,
+    isSynced: isSynced ?? this.isSynced,
+    lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
   );
-  Expense copyWithCompanion(ExpensesCompanion data) {
-    return Expense(
+  Transaction copyWithCompanion(TransactionsCompanion data) {
+    return Transaction(
       id: data.id.present ? data.id.value : this.id,
       roomId: data.roomId.present ? data.roomId.value : this.roomId,
       description: data.description.present
@@ -1446,12 +1546,17 @@ class Expense extends DataClass implements Insertable<Expense> {
       hashtags: data.hashtags.present ? data.hashtags.value : this.hashtags,
       createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      type: data.type.present ? data.type.value : this.type,
+      isSynced: data.isSynced.present ? data.isSynced.value : this.isSynced,
+      lastUpdatedAt: data.lastUpdatedAt.present
+          ? data.lastUpdatedAt.value
+          : this.lastUpdatedAt,
     );
   }
 
   @override
   String toString() {
-    return (StringBuffer('Expense(')
+    return (StringBuffer('Transaction(')
           ..write('id: $id, ')
           ..write('roomId: $roomId, ')
           ..write('description: $description, ')
@@ -1460,7 +1565,10 @@ class Expense extends DataClass implements Insertable<Expense> {
           ..write('location: $location, ')
           ..write('hashtags: $hashtags, ')
           ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('type: $type, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt')
           ..write(')'))
         .toString();
   }
@@ -1476,11 +1584,14 @@ class Expense extends DataClass implements Insertable<Expense> {
     hashtags,
     createdAt,
     updatedAt,
+    type,
+    isSynced,
+    lastUpdatedAt,
   );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
-      (other is Expense &&
+      (other is Transaction &&
           other.id == this.id &&
           other.roomId == this.roomId &&
           other.description == this.description &&
@@ -1489,10 +1600,13 @@ class Expense extends DataClass implements Insertable<Expense> {
           other.location == this.location &&
           other.hashtags == this.hashtags &&
           other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
+          other.updatedAt == this.updatedAt &&
+          other.type == this.type &&
+          other.isSynced == this.isSynced &&
+          other.lastUpdatedAt == this.lastUpdatedAt);
 }
 
-class ExpensesCompanion extends UpdateCompanion<Expense> {
+class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<String> id;
   final Value<String> roomId;
   final Value<String> description;
@@ -1502,8 +1616,11 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
   final Value<List<String>> hashtags;
   final Value<DateTime> createdAt;
   final Value<DateTime?> updatedAt;
+  final Value<TransactionType> type;
+  final Value<bool> isSynced;
+  final Value<DateTime> lastUpdatedAt;
   final Value<int> rowid;
-  const ExpensesCompanion({
+  const TransactionsCompanion({
     this.id = const Value.absent(),
     this.roomId = const Value.absent(),
     this.description = const Value.absent(),
@@ -1513,9 +1630,12 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     this.hashtags = const Value.absent(),
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    this.type = const Value.absent(),
+    this.isSynced = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   });
-  ExpensesCompanion.insert({
+  TransactionsCompanion.insert({
     required String id,
     required String roomId,
     required String description,
@@ -1525,14 +1645,18 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     required List<String> hashtags,
     this.createdAt = const Value.absent(),
     this.updatedAt = const Value.absent(),
+    required TransactionType type,
+    this.isSynced = const Value.absent(),
+    this.lastUpdatedAt = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        roomId = Value(roomId),
        description = Value(description),
        category = Value(category),
        amount = Value(amount),
-       hashtags = Value(hashtags);
-  static Insertable<Expense> custom({
+       hashtags = Value(hashtags),
+       type = Value(type);
+  static Insertable<Transaction> custom({
     Expression<String>? id,
     Expression<String>? roomId,
     Expression<String>? description,
@@ -1542,6 +1666,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Expression<String>? hashtags,
     Expression<DateTime>? createdAt,
     Expression<DateTime>? updatedAt,
+    Expression<String>? type,
+    Expression<bool>? isSynced,
+    Expression<DateTime>? lastUpdatedAt,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1554,11 +1681,14 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       if (hashtags != null) 'hashtags': hashtags,
       if (createdAt != null) 'created_at': createdAt,
       if (updatedAt != null) 'updated_at': updatedAt,
+      if (type != null) 'type': type,
+      if (isSynced != null) 'is_synced': isSynced,
+      if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
       if (rowid != null) 'rowid': rowid,
     });
   }
 
-  ExpensesCompanion copyWith({
+  TransactionsCompanion copyWith({
     Value<String>? id,
     Value<String>? roomId,
     Value<String>? description,
@@ -1568,9 +1698,12 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     Value<List<String>>? hashtags,
     Value<DateTime>? createdAt,
     Value<DateTime?>? updatedAt,
+    Value<TransactionType>? type,
+    Value<bool>? isSynced,
+    Value<DateTime>? lastUpdatedAt,
     Value<int>? rowid,
   }) {
-    return ExpensesCompanion(
+    return TransactionsCompanion(
       id: id ?? this.id,
       roomId: roomId ?? this.roomId,
       description: description ?? this.description,
@@ -1580,6 +1713,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
       hashtags: hashtags ?? this.hashtags,
       createdAt: createdAt ?? this.createdAt,
       updatedAt: updatedAt ?? this.updatedAt,
+      type: type ?? this.type,
+      isSynced: isSynced ?? this.isSynced,
+      lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1598,7 +1734,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     }
     if (category.present) {
       map['category'] = Variable<String>(
-        $ExpensesTable.$convertercategory.toSql(category.value),
+        $TransactionsTable.$convertercategory.toSql(category.value),
       );
     }
     if (amount.present) {
@@ -1606,12 +1742,12 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     }
     if (location.present) {
       map['location'] = Variable<String>(
-        $ExpensesTable.$converterlocationn.toSql(location.value),
+        $TransactionsTable.$converterlocationn.toSql(location.value),
       );
     }
     if (hashtags.present) {
       map['hashtags'] = Variable<String>(
-        $ExpensesTable.$converterhashtags.toSql(hashtags.value),
+        $TransactionsTable.$converterhashtags.toSql(hashtags.value),
       );
     }
     if (createdAt.present) {
@@ -1619,6 +1755,17 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
     }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(
+        $TransactionsTable.$convertertype.toSql(type.value),
+      );
+    }
+    if (isSynced.present) {
+      map['is_synced'] = Variable<bool>(isSynced.value);
+    }
+    if (lastUpdatedAt.present) {
+      map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
     }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
@@ -1628,7 +1775,7 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
 
   @override
   String toString() {
-    return (StringBuffer('ExpensesCompanion(')
+    return (StringBuffer('TransactionsCompanion(')
           ..write('id: $id, ')
           ..write('roomId: $roomId, ')
           ..write('description: $description, ')
@@ -1638,569 +1785,9 @@ class ExpensesCompanion extends UpdateCompanion<Expense> {
           ..write('hashtags: $hashtags, ')
           ..write('createdAt: $createdAt, ')
           ..write('updatedAt: $updatedAt, ')
-          ..write('rowid: $rowid')
-          ..write(')'))
-        .toString();
-  }
-}
-
-class $IncomesTable extends Incomes with TableInfo<$IncomesTable, Income> {
-  @override
-  final GeneratedDatabase attachedDatabase;
-  final String? _alias;
-  $IncomesTable(this.attachedDatabase, [this._alias]);
-  static const VerificationMeta _idMeta = const VerificationMeta('id');
-  @override
-  late final GeneratedColumn<String> id = GeneratedColumn<String>(
-    'id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _roomIdMeta = const VerificationMeta('roomId');
-  @override
-  late final GeneratedColumn<String> roomId = GeneratedColumn<String>(
-    'room_id',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  static const VerificationMeta _descriptionMeta = const VerificationMeta(
-    'description',
-  );
-  @override
-  late final GeneratedColumn<String> description = GeneratedColumn<String>(
-    'description',
-    aliasedName,
-    false,
-    type: DriftSqlType.string,
-    requiredDuringInsert: true,
-  );
-  @override
-  late final GeneratedColumnWithTypeConverter<Category, String> category =
-      GeneratedColumn<String>(
-        'category',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<Category>($IncomesTable.$convertercategory);
-  static const VerificationMeta _amountMeta = const VerificationMeta('amount');
-  @override
-  late final GeneratedColumn<double> amount = GeneratedColumn<double>(
-    'amount',
-    aliasedName,
-    false,
-    type: DriftSqlType.double,
-    requiredDuringInsert: true,
-  );
-  @override
-  late final GeneratedColumnWithTypeConverter<PlaceLocation?, String> location =
-      GeneratedColumn<String>(
-        'location',
-        aliasedName,
-        true,
-        type: DriftSqlType.string,
-        requiredDuringInsert: false,
-      ).withConverter<PlaceLocation?>($IncomesTable.$converterlocationn);
-  @override
-  late final GeneratedColumnWithTypeConverter<List<String>, String> hashtags =
-      GeneratedColumn<String>(
-        'hashtags',
-        aliasedName,
-        false,
-        type: DriftSqlType.string,
-        requiredDuringInsert: true,
-      ).withConverter<List<String>>($IncomesTable.$converterhashtags);
-  static const VerificationMeta _createdAtMeta = const VerificationMeta(
-    'createdAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> createdAt = GeneratedColumn<DateTime>(
-    'created_at',
-    aliasedName,
-    false,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-    defaultValue: currentDateAndTime,
-  );
-  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
-    'updatedAt',
-  );
-  @override
-  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
-    'updated_at',
-    aliasedName,
-    true,
-    type: DriftSqlType.dateTime,
-    requiredDuringInsert: false,
-  );
-  @override
-  List<GeneratedColumn> get $columns => [
-    id,
-    roomId,
-    description,
-    category,
-    amount,
-    location,
-    hashtags,
-    createdAt,
-    updatedAt,
-  ];
-  @override
-  String get aliasedName => _alias ?? actualTableName;
-  @override
-  String get actualTableName => $name;
-  static const String $name = 'incomes';
-  @override
-  VerificationContext validateIntegrity(
-    Insertable<Income> instance, {
-    bool isInserting = false,
-  }) {
-    final context = VerificationContext();
-    final data = instance.toColumns(true);
-    if (data.containsKey('id')) {
-      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
-    } else if (isInserting) {
-      context.missing(_idMeta);
-    }
-    if (data.containsKey('room_id')) {
-      context.handle(
-        _roomIdMeta,
-        roomId.isAcceptableOrUnknown(data['room_id']!, _roomIdMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_roomIdMeta);
-    }
-    if (data.containsKey('description')) {
-      context.handle(
-        _descriptionMeta,
-        description.isAcceptableOrUnknown(
-          data['description']!,
-          _descriptionMeta,
-        ),
-      );
-    } else if (isInserting) {
-      context.missing(_descriptionMeta);
-    }
-    if (data.containsKey('amount')) {
-      context.handle(
-        _amountMeta,
-        amount.isAcceptableOrUnknown(data['amount']!, _amountMeta),
-      );
-    } else if (isInserting) {
-      context.missing(_amountMeta);
-    }
-    if (data.containsKey('created_at')) {
-      context.handle(
-        _createdAtMeta,
-        createdAt.isAcceptableOrUnknown(data['created_at']!, _createdAtMeta),
-      );
-    }
-    if (data.containsKey('updated_at')) {
-      context.handle(
-        _updatedAtMeta,
-        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
-      );
-    }
-    return context;
-  }
-
-  @override
-  Set<GeneratedColumn> get $primaryKey => {id};
-  @override
-  Income map(Map<String, dynamic> data, {String? tablePrefix}) {
-    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
-    return Income(
-      id: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}id'],
-      )!,
-      roomId: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}room_id'],
-      )!,
-      description: attachedDatabase.typeMapping.read(
-        DriftSqlType.string,
-        data['${effectivePrefix}description'],
-      )!,
-      category: $IncomesTable.$convertercategory.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}category'],
-        )!,
-      ),
-      amount: attachedDatabase.typeMapping.read(
-        DriftSqlType.double,
-        data['${effectivePrefix}amount'],
-      )!,
-      location: $IncomesTable.$converterlocationn.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}location'],
-        ),
-      ),
-      hashtags: $IncomesTable.$converterhashtags.fromSql(
-        attachedDatabase.typeMapping.read(
-          DriftSqlType.string,
-          data['${effectivePrefix}hashtags'],
-        )!,
-      ),
-      createdAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}created_at'],
-      )!,
-      updatedAt: attachedDatabase.typeMapping.read(
-        DriftSqlType.dateTime,
-        data['${effectivePrefix}updated_at'],
-      ),
-    );
-  }
-
-  @override
-  $IncomesTable createAlias(String alias) {
-    return $IncomesTable(attachedDatabase, alias);
-  }
-
-  static TypeConverter<Category, String> $convertercategory =
-      const CategoryJsonConverter();
-  static TypeConverter<PlaceLocation, String> $converterlocation =
-      const LocationJsonConverter();
-  static TypeConverter<PlaceLocation?, String?> $converterlocationn =
-      NullAwareTypeConverter.wrap($converterlocation);
-  static TypeConverter<List<String>, String> $converterhashtags =
-      const HashtagsJsonConverter();
-}
-
-class Income extends DataClass implements Insertable<Income> {
-  final String id;
-  final String roomId;
-  final String description;
-  final Category category;
-  final double amount;
-  final PlaceLocation? location;
-  final List<String> hashtags;
-  final DateTime createdAt;
-  final DateTime? updatedAt;
-  const Income({
-    required this.id,
-    required this.roomId,
-    required this.description,
-    required this.category,
-    required this.amount,
-    this.location,
-    required this.hashtags,
-    required this.createdAt,
-    this.updatedAt,
-  });
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    map['id'] = Variable<String>(id);
-    map['room_id'] = Variable<String>(roomId);
-    map['description'] = Variable<String>(description);
-    {
-      map['category'] = Variable<String>(
-        $IncomesTable.$convertercategory.toSql(category),
-      );
-    }
-    map['amount'] = Variable<double>(amount);
-    if (!nullToAbsent || location != null) {
-      map['location'] = Variable<String>(
-        $IncomesTable.$converterlocationn.toSql(location),
-      );
-    }
-    {
-      map['hashtags'] = Variable<String>(
-        $IncomesTable.$converterhashtags.toSql(hashtags),
-      );
-    }
-    map['created_at'] = Variable<DateTime>(createdAt);
-    if (!nullToAbsent || updatedAt != null) {
-      map['updated_at'] = Variable<DateTime>(updatedAt);
-    }
-    return map;
-  }
-
-  IncomesCompanion toCompanion(bool nullToAbsent) {
-    return IncomesCompanion(
-      id: Value(id),
-      roomId: Value(roomId),
-      description: Value(description),
-      category: Value(category),
-      amount: Value(amount),
-      location: location == null && nullToAbsent
-          ? const Value.absent()
-          : Value(location),
-      hashtags: Value(hashtags),
-      createdAt: Value(createdAt),
-      updatedAt: updatedAt == null && nullToAbsent
-          ? const Value.absent()
-          : Value(updatedAt),
-    );
-  }
-
-  factory Income.fromJson(
-    Map<String, dynamic> json, {
-    ValueSerializer? serializer,
-  }) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return Income(
-      id: serializer.fromJson<String>(json['id']),
-      roomId: serializer.fromJson<String>(json['roomId']),
-      description: serializer.fromJson<String>(json['description']),
-      category: serializer.fromJson<Category>(json['category']),
-      amount: serializer.fromJson<double>(json['amount']),
-      location: serializer.fromJson<PlaceLocation?>(json['location']),
-      hashtags: serializer.fromJson<List<String>>(json['hashtags']),
-      createdAt: serializer.fromJson<DateTime>(json['createdAt']),
-      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
-    );
-  }
-  @override
-  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
-    serializer ??= driftRuntimeOptions.defaultSerializer;
-    return <String, dynamic>{
-      'id': serializer.toJson<String>(id),
-      'roomId': serializer.toJson<String>(roomId),
-      'description': serializer.toJson<String>(description),
-      'category': serializer.toJson<Category>(category),
-      'amount': serializer.toJson<double>(amount),
-      'location': serializer.toJson<PlaceLocation?>(location),
-      'hashtags': serializer.toJson<List<String>>(hashtags),
-      'createdAt': serializer.toJson<DateTime>(createdAt),
-      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
-    };
-  }
-
-  Income copyWith({
-    String? id,
-    String? roomId,
-    String? description,
-    Category? category,
-    double? amount,
-    Value<PlaceLocation?> location = const Value.absent(),
-    List<String>? hashtags,
-    DateTime? createdAt,
-    Value<DateTime?> updatedAt = const Value.absent(),
-  }) => Income(
-    id: id ?? this.id,
-    roomId: roomId ?? this.roomId,
-    description: description ?? this.description,
-    category: category ?? this.category,
-    amount: amount ?? this.amount,
-    location: location.present ? location.value : this.location,
-    hashtags: hashtags ?? this.hashtags,
-    createdAt: createdAt ?? this.createdAt,
-    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
-  );
-  Income copyWithCompanion(IncomesCompanion data) {
-    return Income(
-      id: data.id.present ? data.id.value : this.id,
-      roomId: data.roomId.present ? data.roomId.value : this.roomId,
-      description: data.description.present
-          ? data.description.value
-          : this.description,
-      category: data.category.present ? data.category.value : this.category,
-      amount: data.amount.present ? data.amount.value : this.amount,
-      location: data.location.present ? data.location.value : this.location,
-      hashtags: data.hashtags.present ? data.hashtags.value : this.hashtags,
-      createdAt: data.createdAt.present ? data.createdAt.value : this.createdAt,
-      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
-    );
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('Income(')
-          ..write('id: $id, ')
-          ..write('roomId: $roomId, ')
-          ..write('description: $description, ')
-          ..write('category: $category, ')
-          ..write('amount: $amount, ')
-          ..write('location: $location, ')
-          ..write('hashtags: $hashtags, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt')
-          ..write(')'))
-        .toString();
-  }
-
-  @override
-  int get hashCode => Object.hash(
-    id,
-    roomId,
-    description,
-    category,
-    amount,
-    location,
-    hashtags,
-    createdAt,
-    updatedAt,
-  );
-  @override
-  bool operator ==(Object other) =>
-      identical(this, other) ||
-      (other is Income &&
-          other.id == this.id &&
-          other.roomId == this.roomId &&
-          other.description == this.description &&
-          other.category == this.category &&
-          other.amount == this.amount &&
-          other.location == this.location &&
-          other.hashtags == this.hashtags &&
-          other.createdAt == this.createdAt &&
-          other.updatedAt == this.updatedAt);
-}
-
-class IncomesCompanion extends UpdateCompanion<Income> {
-  final Value<String> id;
-  final Value<String> roomId;
-  final Value<String> description;
-  final Value<Category> category;
-  final Value<double> amount;
-  final Value<PlaceLocation?> location;
-  final Value<List<String>> hashtags;
-  final Value<DateTime> createdAt;
-  final Value<DateTime?> updatedAt;
-  final Value<int> rowid;
-  const IncomesCompanion({
-    this.id = const Value.absent(),
-    this.roomId = const Value.absent(),
-    this.description = const Value.absent(),
-    this.category = const Value.absent(),
-    this.amount = const Value.absent(),
-    this.location = const Value.absent(),
-    this.hashtags = const Value.absent(),
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  });
-  IncomesCompanion.insert({
-    required String id,
-    required String roomId,
-    required String description,
-    required Category category,
-    required double amount,
-    this.location = const Value.absent(),
-    required List<String> hashtags,
-    this.createdAt = const Value.absent(),
-    this.updatedAt = const Value.absent(),
-    this.rowid = const Value.absent(),
-  }) : id = Value(id),
-       roomId = Value(roomId),
-       description = Value(description),
-       category = Value(category),
-       amount = Value(amount),
-       hashtags = Value(hashtags);
-  static Insertable<Income> custom({
-    Expression<String>? id,
-    Expression<String>? roomId,
-    Expression<String>? description,
-    Expression<String>? category,
-    Expression<double>? amount,
-    Expression<String>? location,
-    Expression<String>? hashtags,
-    Expression<DateTime>? createdAt,
-    Expression<DateTime>? updatedAt,
-    Expression<int>? rowid,
-  }) {
-    return RawValuesInsertable({
-      if (id != null) 'id': id,
-      if (roomId != null) 'room_id': roomId,
-      if (description != null) 'description': description,
-      if (category != null) 'category': category,
-      if (amount != null) 'amount': amount,
-      if (location != null) 'location': location,
-      if (hashtags != null) 'hashtags': hashtags,
-      if (createdAt != null) 'created_at': createdAt,
-      if (updatedAt != null) 'updated_at': updatedAt,
-      if (rowid != null) 'rowid': rowid,
-    });
-  }
-
-  IncomesCompanion copyWith({
-    Value<String>? id,
-    Value<String>? roomId,
-    Value<String>? description,
-    Value<Category>? category,
-    Value<double>? amount,
-    Value<PlaceLocation?>? location,
-    Value<List<String>>? hashtags,
-    Value<DateTime>? createdAt,
-    Value<DateTime?>? updatedAt,
-    Value<int>? rowid,
-  }) {
-    return IncomesCompanion(
-      id: id ?? this.id,
-      roomId: roomId ?? this.roomId,
-      description: description ?? this.description,
-      category: category ?? this.category,
-      amount: amount ?? this.amount,
-      location: location ?? this.location,
-      hashtags: hashtags ?? this.hashtags,
-      createdAt: createdAt ?? this.createdAt,
-      updatedAt: updatedAt ?? this.updatedAt,
-      rowid: rowid ?? this.rowid,
-    );
-  }
-
-  @override
-  Map<String, Expression> toColumns(bool nullToAbsent) {
-    final map = <String, Expression>{};
-    if (id.present) {
-      map['id'] = Variable<String>(id.value);
-    }
-    if (roomId.present) {
-      map['room_id'] = Variable<String>(roomId.value);
-    }
-    if (description.present) {
-      map['description'] = Variable<String>(description.value);
-    }
-    if (category.present) {
-      map['category'] = Variable<String>(
-        $IncomesTable.$convertercategory.toSql(category.value),
-      );
-    }
-    if (amount.present) {
-      map['amount'] = Variable<double>(amount.value);
-    }
-    if (location.present) {
-      map['location'] = Variable<String>(
-        $IncomesTable.$converterlocationn.toSql(location.value),
-      );
-    }
-    if (hashtags.present) {
-      map['hashtags'] = Variable<String>(
-        $IncomesTable.$converterhashtags.toSql(hashtags.value),
-      );
-    }
-    if (createdAt.present) {
-      map['created_at'] = Variable<DateTime>(createdAt.value);
-    }
-    if (updatedAt.present) {
-      map['updated_at'] = Variable<DateTime>(updatedAt.value);
-    }
-    if (rowid.present) {
-      map['rowid'] = Variable<int>(rowid.value);
-    }
-    return map;
-  }
-
-  @override
-  String toString() {
-    return (StringBuffer('IncomesCompanion(')
-          ..write('id: $id, ')
-          ..write('roomId: $roomId, ')
-          ..write('description: $description, ')
-          ..write('category: $category, ')
-          ..write('amount: $amount, ')
-          ..write('location: $location, ')
-          ..write('hashtags: $hashtags, ')
-          ..write('createdAt: $createdAt, ')
-          ..write('updatedAt: $updatedAt, ')
+          ..write('type: $type, ')
+          ..write('isSynced: $isSynced, ')
+          ..write('lastUpdatedAt: $lastUpdatedAt, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3152,8 +2739,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   late final $RoomsTable rooms = $RoomsTable(this);
   late final $RoomMembersTable roomMembers = $RoomMembersTable(this);
   late final $CategoriesTable categories = $CategoriesTable(this);
-  late final $ExpensesTable expenses = $ExpensesTable(this);
-  late final $IncomesTable incomes = $IncomesTable(this);
+  late final $TransactionsTable transactions = $TransactionsTable(this);
   late final $ExpenseUsersTable expenseUsers = $ExpenseUsersTable(this);
   late final $ReactionsTable reactions = $ReactionsTable(this);
   late final $AttachmentsTable attachments = $AttachmentsTable(this);
@@ -3162,8 +2748,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     this as AppDatabase,
   );
   late final CategoriesDao categoriesDao = CategoriesDao(this as AppDatabase);
-  late final ExpensesDao expensesDao = ExpensesDao(this as AppDatabase);
-  late final IncomesDao incomesDao = IncomesDao(this as AppDatabase);
+  late final TransactionsDao transactionsDao = TransactionsDao(
+    this as AppDatabase,
+  );
   late final ExpenseUsersDao expenseUsersDao = ExpenseUsersDao(
     this as AppDatabase,
   );
@@ -3179,8 +2766,7 @@ abstract class _$AppDatabase extends GeneratedDatabase {
     rooms,
     roomMembers,
     categories,
-    expenses,
-    incomes,
+    transactions,
     expenseUsers,
     reactions,
     attachments,
@@ -3783,8 +3369,8 @@ typedef $$CategoriesTableProcessedTableManager =
       CategoryRow,
       PrefetchHooks Function()
     >;
-typedef $$ExpensesTableCreateCompanionBuilder =
-    ExpensesCompanion Function({
+typedef $$TransactionsTableCreateCompanionBuilder =
+    TransactionsCompanion Function({
       required String id,
       required String roomId,
       required String description,
@@ -3794,10 +3380,13 @@ typedef $$ExpensesTableCreateCompanionBuilder =
       required List<String> hashtags,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
+      required TransactionType type,
+      Value<bool> isSynced,
+      Value<DateTime> lastUpdatedAt,
       Value<int> rowid,
     });
-typedef $$ExpensesTableUpdateCompanionBuilder =
-    ExpensesCompanion Function({
+typedef $$TransactionsTableUpdateCompanionBuilder =
+    TransactionsCompanion Function({
       Value<String> id,
       Value<String> roomId,
       Value<String> description,
@@ -3807,12 +3396,15 @@ typedef $$ExpensesTableUpdateCompanionBuilder =
       Value<List<String>> hashtags,
       Value<DateTime> createdAt,
       Value<DateTime?> updatedAt,
+      Value<TransactionType> type,
+      Value<bool> isSynced,
+      Value<DateTime> lastUpdatedAt,
       Value<int> rowid,
     });
 
-class $$ExpensesTableFilterComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
-  $$ExpensesTableFilterComposer({
+class $$TransactionsTableFilterComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableFilterComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3866,11 +3458,27 @@ class $$ExpensesTableFilterComposer
     column: $table.updatedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<TransactionType, TransactionType, String>
+  get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
+
+  ColumnFilters<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get lastUpdatedAt => $composableBuilder(
+    column: $table.lastUpdatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
 }
 
-class $$ExpensesTableOrderingComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
-  $$ExpensesTableOrderingComposer({
+class $$TransactionsTableOrderingComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableOrderingComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3921,11 +3529,26 @@ class $$ExpensesTableOrderingComposer
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<bool> get isSynced => $composableBuilder(
+    column: $table.isSynced,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get lastUpdatedAt => $composableBuilder(
+    column: $table.lastUpdatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
-class $$ExpensesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $ExpensesTable> {
-  $$ExpensesTableAnnotationComposer({
+class $$TransactionsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $TransactionsTable> {
+  $$TransactionsTableAnnotationComposer({
     required super.$db,
     required super.$table,
     super.joinBuilder,
@@ -3960,309 +3583,48 @@ class $$ExpensesTableAnnotationComposer
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
-}
 
-class $$ExpensesTableTableManager
-    extends
-        RootTableManager<
-          _$AppDatabase,
-          $ExpensesTable,
-          Expense,
-          $$ExpensesTableFilterComposer,
-          $$ExpensesTableOrderingComposer,
-          $$ExpensesTableAnnotationComposer,
-          $$ExpensesTableCreateCompanionBuilder,
-          $$ExpensesTableUpdateCompanionBuilder,
-          (Expense, BaseReferences<_$AppDatabase, $ExpensesTable, Expense>),
-          Expense,
-          PrefetchHooks Function()
-        > {
-  $$ExpensesTableTableManager(_$AppDatabase db, $ExpensesTable table)
-    : super(
-        TableManagerState(
-          db: db,
-          table: table,
-          createFilteringComposer: () =>
-              $$ExpensesTableFilterComposer($db: db, $table: table),
-          createOrderingComposer: () =>
-              $$ExpensesTableOrderingComposer($db: db, $table: table),
-          createComputedFieldComposer: () =>
-              $$ExpensesTableAnnotationComposer($db: db, $table: table),
-          updateCompanionCallback:
-              ({
-                Value<String> id = const Value.absent(),
-                Value<String> roomId = const Value.absent(),
-                Value<String> description = const Value.absent(),
-                Value<Category> category = const Value.absent(),
-                Value<double> amount = const Value.absent(),
-                Value<PlaceLocation?> location = const Value.absent(),
-                Value<List<String>> hashtags = const Value.absent(),
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime?> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ExpensesCompanion(
-                id: id,
-                roomId: roomId,
-                description: description,
-                category: category,
-                amount: amount,
-                location: location,
-                hashtags: hashtags,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
-          createCompanionCallback:
-              ({
-                required String id,
-                required String roomId,
-                required String description,
-                required Category category,
-                required double amount,
-                Value<PlaceLocation?> location = const Value.absent(),
-                required List<String> hashtags,
-                Value<DateTime> createdAt = const Value.absent(),
-                Value<DateTime?> updatedAt = const Value.absent(),
-                Value<int> rowid = const Value.absent(),
-              }) => ExpensesCompanion.insert(
-                id: id,
-                roomId: roomId,
-                description: description,
-                category: category,
-                amount: amount,
-                location: location,
-                hashtags: hashtags,
-                createdAt: createdAt,
-                updatedAt: updatedAt,
-                rowid: rowid,
-              ),
-          withReferenceMapper: (p0) => p0
-              .map((e) => (e.readTable(table), BaseReferences(db, table, e)))
-              .toList(),
-          prefetchHooksCallback: null,
-        ),
-      );
-}
+  GeneratedColumnWithTypeConverter<TransactionType, String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
 
-typedef $$ExpensesTableProcessedTableManager =
-    ProcessedTableManager<
-      _$AppDatabase,
-      $ExpensesTable,
-      Expense,
-      $$ExpensesTableFilterComposer,
-      $$ExpensesTableOrderingComposer,
-      $$ExpensesTableAnnotationComposer,
-      $$ExpensesTableCreateCompanionBuilder,
-      $$ExpensesTableUpdateCompanionBuilder,
-      (Expense, BaseReferences<_$AppDatabase, $ExpensesTable, Expense>),
-      Expense,
-      PrefetchHooks Function()
-    >;
-typedef $$IncomesTableCreateCompanionBuilder =
-    IncomesCompanion Function({
-      required String id,
-      required String roomId,
-      required String description,
-      required Category category,
-      required double amount,
-      Value<PlaceLocation?> location,
-      required List<String> hashtags,
-      Value<DateTime> createdAt,
-      Value<DateTime?> updatedAt,
-      Value<int> rowid,
-    });
-typedef $$IncomesTableUpdateCompanionBuilder =
-    IncomesCompanion Function({
-      Value<String> id,
-      Value<String> roomId,
-      Value<String> description,
-      Value<Category> category,
-      Value<double> amount,
-      Value<PlaceLocation?> location,
-      Value<List<String>> hashtags,
-      Value<DateTime> createdAt,
-      Value<DateTime?> updatedAt,
-      Value<int> rowid,
-    });
+  GeneratedColumn<bool> get isSynced =>
+      $composableBuilder(column: $table.isSynced, builder: (column) => column);
 
-class $$IncomesTableFilterComposer
-    extends Composer<_$AppDatabase, $IncomesTable> {
-  $$IncomesTableFilterComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnFilters<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get roomId => $composableBuilder(
-    column: $table.roomId,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<Category, Category, String> get category =>
-      $composableBuilder(
-        column: $table.category,
-        builder: (column) => ColumnWithTypeConverterFilters(column),
-      );
-
-  ColumnFilters<double> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<PlaceLocation?, PlaceLocation, String>
-  get location => $composableBuilder(
-    column: $table.location,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
-  );
-
-  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
-  get hashtags => $composableBuilder(
-    column: $table.hashtags,
-    builder: (column) => ColumnWithTypeConverterFilters(column),
-  );
-
-  ColumnFilters<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnFilters(column),
-  );
-
-  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnFilters(column),
-  );
-}
-
-class $$IncomesTableOrderingComposer
-    extends Composer<_$AppDatabase, $IncomesTable> {
-  $$IncomesTableOrderingComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  ColumnOrderings<String> get id => $composableBuilder(
-    column: $table.id,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get roomId => $composableBuilder(
-    column: $table.roomId,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get description => $composableBuilder(
-    column: $table.description,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get category => $composableBuilder(
-    column: $table.category,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<double> get amount => $composableBuilder(
-    column: $table.amount,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get location => $composableBuilder(
-    column: $table.location,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<String> get hashtags => $composableBuilder(
-    column: $table.hashtags,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get createdAt => $composableBuilder(
-    column: $table.createdAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-
-  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
-    column: $table.updatedAt,
-    builder: (column) => ColumnOrderings(column),
-  );
-}
-
-class $$IncomesTableAnnotationComposer
-    extends Composer<_$AppDatabase, $IncomesTable> {
-  $$IncomesTableAnnotationComposer({
-    required super.$db,
-    required super.$table,
-    super.joinBuilder,
-    super.$addJoinBuilderToRootComposer,
-    super.$removeJoinBuilderFromRootComposer,
-  });
-  GeneratedColumn<String> get id =>
-      $composableBuilder(column: $table.id, builder: (column) => column);
-
-  GeneratedColumn<String> get roomId =>
-      $composableBuilder(column: $table.roomId, builder: (column) => column);
-
-  GeneratedColumn<String> get description => $composableBuilder(
-    column: $table.description,
+  GeneratedColumn<DateTime> get lastUpdatedAt => $composableBuilder(
+    column: $table.lastUpdatedAt,
     builder: (column) => column,
   );
-
-  GeneratedColumnWithTypeConverter<Category, String> get category =>
-      $composableBuilder(column: $table.category, builder: (column) => column);
-
-  GeneratedColumn<double> get amount =>
-      $composableBuilder(column: $table.amount, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<PlaceLocation?, String> get location =>
-      $composableBuilder(column: $table.location, builder: (column) => column);
-
-  GeneratedColumnWithTypeConverter<List<String>, String> get hashtags =>
-      $composableBuilder(column: $table.hashtags, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get createdAt =>
-      $composableBuilder(column: $table.createdAt, builder: (column) => column);
-
-  GeneratedColumn<DateTime> get updatedAt =>
-      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
 }
 
-class $$IncomesTableTableManager
+class $$TransactionsTableTableManager
     extends
         RootTableManager<
           _$AppDatabase,
-          $IncomesTable,
-          Income,
-          $$IncomesTableFilterComposer,
-          $$IncomesTableOrderingComposer,
-          $$IncomesTableAnnotationComposer,
-          $$IncomesTableCreateCompanionBuilder,
-          $$IncomesTableUpdateCompanionBuilder,
-          (Income, BaseReferences<_$AppDatabase, $IncomesTable, Income>),
-          Income,
+          $TransactionsTable,
+          Transaction,
+          $$TransactionsTableFilterComposer,
+          $$TransactionsTableOrderingComposer,
+          $$TransactionsTableAnnotationComposer,
+          $$TransactionsTableCreateCompanionBuilder,
+          $$TransactionsTableUpdateCompanionBuilder,
+          (
+            Transaction,
+            BaseReferences<_$AppDatabase, $TransactionsTable, Transaction>,
+          ),
+          Transaction,
           PrefetchHooks Function()
         > {
-  $$IncomesTableTableManager(_$AppDatabase db, $IncomesTable table)
+  $$TransactionsTableTableManager(_$AppDatabase db, $TransactionsTable table)
     : super(
         TableManagerState(
           db: db,
           table: table,
           createFilteringComposer: () =>
-              $$IncomesTableFilterComposer($db: db, $table: table),
+              $$TransactionsTableFilterComposer($db: db, $table: table),
           createOrderingComposer: () =>
-              $$IncomesTableOrderingComposer($db: db, $table: table),
+              $$TransactionsTableOrderingComposer($db: db, $table: table),
           createComputedFieldComposer: () =>
-              $$IncomesTableAnnotationComposer($db: db, $table: table),
+              $$TransactionsTableAnnotationComposer($db: db, $table: table),
           updateCompanionCallback:
               ({
                 Value<String> id = const Value.absent(),
@@ -4274,8 +3636,11 @@ class $$IncomesTableTableManager
                 Value<List<String>> hashtags = const Value.absent(),
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
+                Value<TransactionType> type = const Value.absent(),
+                Value<bool> isSynced = const Value.absent(),
+                Value<DateTime> lastUpdatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => IncomesCompanion(
+              }) => TransactionsCompanion(
                 id: id,
                 roomId: roomId,
                 description: description,
@@ -4285,6 +3650,9 @@ class $$IncomesTableTableManager
                 hashtags: hashtags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                type: type,
+                isSynced: isSynced,
+                lastUpdatedAt: lastUpdatedAt,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -4298,8 +3666,11 @@ class $$IncomesTableTableManager
                 required List<String> hashtags,
                 Value<DateTime> createdAt = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
+                required TransactionType type,
+                Value<bool> isSynced = const Value.absent(),
+                Value<DateTime> lastUpdatedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
-              }) => IncomesCompanion.insert(
+              }) => TransactionsCompanion.insert(
                 id: id,
                 roomId: roomId,
                 description: description,
@@ -4309,6 +3680,9 @@ class $$IncomesTableTableManager
                 hashtags: hashtags,
                 createdAt: createdAt,
                 updatedAt: updatedAt,
+                type: type,
+                isSynced: isSynced,
+                lastUpdatedAt: lastUpdatedAt,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0
@@ -4319,18 +3693,21 @@ class $$IncomesTableTableManager
       );
 }
 
-typedef $$IncomesTableProcessedTableManager =
+typedef $$TransactionsTableProcessedTableManager =
     ProcessedTableManager<
       _$AppDatabase,
-      $IncomesTable,
-      Income,
-      $$IncomesTableFilterComposer,
-      $$IncomesTableOrderingComposer,
-      $$IncomesTableAnnotationComposer,
-      $$IncomesTableCreateCompanionBuilder,
-      $$IncomesTableUpdateCompanionBuilder,
-      (Income, BaseReferences<_$AppDatabase, $IncomesTable, Income>),
-      Income,
+      $TransactionsTable,
+      Transaction,
+      $$TransactionsTableFilterComposer,
+      $$TransactionsTableOrderingComposer,
+      $$TransactionsTableAnnotationComposer,
+      $$TransactionsTableCreateCompanionBuilder,
+      $$TransactionsTableUpdateCompanionBuilder,
+      (
+        Transaction,
+        BaseReferences<_$AppDatabase, $TransactionsTable, Transaction>,
+      ),
+      Transaction,
       PrefetchHooks Function()
     >;
 typedef $$ExpenseUsersTableCreateCompanionBuilder =
@@ -4888,10 +4265,8 @@ class $AppDatabaseManager {
       $$RoomMembersTableTableManager(_db, _db.roomMembers);
   $$CategoriesTableTableManager get categories =>
       $$CategoriesTableTableManager(_db, _db.categories);
-  $$ExpensesTableTableManager get expenses =>
-      $$ExpensesTableTableManager(_db, _db.expenses);
-  $$IncomesTableTableManager get incomes =>
-      $$IncomesTableTableManager(_db, _db.incomes);
+  $$TransactionsTableTableManager get transactions =>
+      $$TransactionsTableTableManager(_db, _db.transactions);
   $$ExpenseUsersTableTableManager get expenseUsers =>
       $$ExpenseUsersTableTableManager(_db, _db.expenseUsers);
   $$ReactionsTableTableManager get reactions =>
@@ -4909,11 +4284,8 @@ mixin _$RoomMembersDaoMixin on DatabaseAccessor<AppDatabase> {
 mixin _$CategoriesDaoMixin on DatabaseAccessor<AppDatabase> {
   $CategoriesTable get categories => attachedDatabase.categories;
 }
-mixin _$ExpensesDaoMixin on DatabaseAccessor<AppDatabase> {
-  $ExpensesTable get expenses => attachedDatabase.expenses;
-}
-mixin _$IncomesDaoMixin on DatabaseAccessor<AppDatabase> {
-  $IncomesTable get incomes => attachedDatabase.incomes;
+mixin _$TransactionsDaoMixin on DatabaseAccessor<AppDatabase> {
+  $TransactionsTable get transactions => attachedDatabase.transactions;
 }
 mixin _$ExpenseUsersDaoMixin on DatabaseAccessor<AppDatabase> {
   $ExpenseUsersTable get expenseUsers => attachedDatabase.expenseUsers;

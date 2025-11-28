@@ -1,46 +1,38 @@
 part of '../../../../../core/db/app_database.dart';
 
-@DriftAccessor(tables: [Expenses])
-class ExpensesDao extends DatabaseAccessor<AppDatabase>
-    with _$ExpensesDaoMixin {
-  ExpensesDao(super.db);
+@DriftAccessor(tables: [Transactions])
+class TransactionsDao extends DatabaseAccessor<AppDatabase>
+    with _$TransactionsDaoMixin {
+  TransactionsDao(super.db);
 
-  Future<List<Expense>> getAll() => select(expenses).get();
-  Stream<List<Expense>> watchAll() => select(expenses).watch();
+  Future<List<Transaction>> getAll() => select(transactions).get();
+  Stream<List<Transaction>> watchAll() => select(transactions).watch();
 
-  Future<List<Expense>> getByRoomId(String roomId) =>
-      (select(expenses)..where((t) => t.roomId.equals(roomId))).get();
-  Stream<List<Expense>> watchByRoomId(String roomId) =>
-      (select(expenses)..where((t) => t.roomId.equals(roomId))).watch();
+  Future<List<Transaction>> getByRoomId(String roomId) =>
+      (select(transactions)..where((t) => t.roomId.equals(roomId))).get();
+  Stream<List<Transaction>> watchByRoomId(String roomId) =>
+      (select(transactions)..where((t) => t.roomId.equals(roomId))).watch();
 
-  Future<Expense?> getById(String id) =>
-      (select(expenses)..where((t) => t.id.equals(id))).getSingleOrNull();
+  Future<Transaction?> getById(String id) =>
+      (select(transactions)..where((t) => t.id.equals(id))).getSingleOrNull();
 
-  Future<void> insert(ExpensesCompanion entry) => into(expenses).insert(entry);
-  Future<bool> updateEntry(ExpensesCompanion entry) =>
-      update(expenses).replace(entry);
+  Future<void> insert(TransactionsCompanion entry) =>
+      into(transactions).insert(entry);
+  Future<bool> updateEntry(TransactionsCompanion entry) =>
+      update(transactions).replace(entry);
   Future<int> deleteById(String id) =>
-      (delete(expenses)..where((t) => t.id.equals(id))).go();
-}
+      (delete(transactions)..where((t) => t.id.equals(id))).go();
 
-@DriftAccessor(tables: [Incomes])
-class IncomesDao extends DatabaseAccessor<AppDatabase> with _$IncomesDaoMixin {
-  IncomesDao(super.db);
+  // Get transactions by type
+  Future<List<Transaction>> getByType(String roomId, TransactionType type) =>
+      (select(transactions)
+            ..where((t) => t.roomId.equals(roomId))
+            ..where((t) => t.type.equals(type.name)))
+          .get();
 
-  Future<List<Income>> getAll() => select(incomes).get();
-  Stream<List<Income>> watchAll() => select(incomes).watch();
-
-  Future<List<Income>> getByRoomId(String roomId) =>
-      (select(incomes)..where((t) => t.roomId.equals(roomId))).get();
-  Stream<List<Income>> watchByRoomId(String roomId) =>
-      (select(incomes)..where((t) => t.roomId.equals(roomId))).watch();
-
-  Future<Income?> getById(String id) =>
-      (select(incomes)..where((t) => t.id.equals(id))).getSingleOrNull();
-
-  Future<void> insert(IncomesCompanion entry) => into(incomes).insert(entry);
-  Future<bool> updateEntry(IncomesCompanion entry) =>
-      update(incomes).replace(entry);
-  Future<int> deleteById(String id) =>
-      (delete(incomes)..where((t) => t.id.equals(id))).go();
+  Stream<List<Transaction>> watchByType(String roomId, TransactionType type) =>
+      (select(transactions)
+            ..where((t) => t.roomId.equals(roomId))
+            ..where((t) => t.type.equals(type.name)))
+          .watch();
 }

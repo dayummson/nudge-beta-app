@@ -3,6 +3,7 @@ import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/constants/categories.dart' as constants;
 import 'package:nudge_1/core/db/app_database.dart';
 import 'package:nudge_1/core/settings/room_selection.dart';
+import 'package:nudge_1/features/room/domain/entities/expense.dart';
 
 // This is change
 /// A two-option sliding toggle for Income (left, green) and Expense (right, red).
@@ -104,29 +105,20 @@ class _ToggleModeState extends State<ToggleMode> {
       final category = categories.first;
       final id = 'quick-txn-${DateTime.now().millisecondsSinceEpoch}';
 
-      if (_isExpense) {
-        final companion = ExpensesCompanion(
-          id: drift.Value(id),
-          roomId: drift.Value(roomId),
-          description: drift.Value('Quick expense'),
-          category: drift.Value(category),
-          amount: drift.Value(amount),
-          location: const drift.Value(null),
-          createdAt: drift.Value(DateTime.now()),
-        );
-        await db.expensesDao.insert(companion);
-      } else {
-        final companion = IncomesCompanion(
-          id: drift.Value(id),
-          roomId: drift.Value(roomId),
-          description: drift.Value('Quick income'),
-          category: drift.Value(category),
-          amount: drift.Value(amount),
-          location: const drift.Value(null),
-          createdAt: drift.Value(DateTime.now()),
-        );
-        await db.incomesDao.insert(companion);
-      }
+      final companion = TransactionsCompanion(
+        id: drift.Value(id),
+        roomId: drift.Value(roomId),
+        description: drift.Value(_isExpense ? 'Quick expense' : 'Quick income'),
+        category: drift.Value(category),
+        amount: drift.Value(amount),
+        location: const drift.Value(null),
+        type: drift.Value(
+          _isExpense ? TransactionType.expense : TransactionType.income,
+        ),
+        hashtags: const drift.Value([]),
+        createdAt: drift.Value(DateTime.now()),
+      );
+      await db.transactionsDao.insert(companion);
 
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(

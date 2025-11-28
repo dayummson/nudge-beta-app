@@ -35,9 +35,8 @@ class _HomePageState extends ConsumerState<HomePage> {
   final ScrollController _scrollController = ScrollController();
   double _scrollOffset = 0.0;
 
-  // Cache both lists to avoid flicker when toggling
-  List<Expense> _expenses = [];
-  List<Income> _incomes = [];
+  // Cache transactions list
+  List<Transaction> _transactions = [];
 
   // Flag to track initial load
   bool _initialLoadDone = false;
@@ -98,8 +97,7 @@ class _HomePageState extends ConsumerState<HomePage> {
       setState(() {
         _selectedRoomId = roomId;
         // Clear cache when room changes to prevent showing old data
-        _expenses = [];
-        _incomes = [];
+        _transactions = [];
         _initialLoadDone = false;
         // Reset scroll position when room changes
         _scrollOffset = 0.0;
@@ -178,41 +176,16 @@ class _HomePageState extends ConsumerState<HomePage> {
     // Filter by month/year if selected
     if (_selectedMonth != null && _selectedYear != null) {
       filtered = filtered.where((transaction) {
-        DateTime? date;
-        if (transaction is Expense) {
-          date = transaction.createdAt;
-        } else if (transaction is Income) {
-          date = transaction.createdAt;
-        }
-
-        if (date != null) {
-          return date.year == _selectedYear && date.month == _selectedMonth;
-        }
-        return false;
+        return transaction.createdAt.year == _selectedYear &&
+            transaction.createdAt.month == _selectedMonth;
       }).toList();
     }
 
     // Sort from latest to oldest
     filtered.sort((a, b) {
-      DateTime? dateA;
-      DateTime? dateB;
-
-      if (a is Expense) {
-        dateA = a.createdAt;
-      } else if (a is Income) {
-        dateA = a.createdAt;
-      }
-
-      if (b is Expense) {
-        dateB = b.createdAt;
-      } else if (b is Income) {
-        dateB = b.createdAt;
-      }
-
-      if (dateA != null && dateB != null) {
-        return dateB.compareTo(dateA); // Descending order (latest first)
-      }
-      return 0;
+      return b.createdAt.compareTo(
+        a.createdAt,
+      ); // Descending order (latest first)
     });
 
     return filtered;
@@ -268,275 +241,251 @@ class _HomePageState extends ConsumerState<HomePage> {
             padding: const EdgeInsets.symmetric(horizontal: 12),
             child: _selectedRoomId == null
                 ? const Center(child: CircularProgressIndicator())
-                : StreamBuilder<List<Expense>>(
-                    key: ValueKey('expense_$_selectedRoomId'),
-                    stream: _db.expensesDao.watchByRoomId(_selectedRoomId!),
-                    builder: (context, expenseSnapshot) {
-                      // Update cached expenses only if data is available
-                      if (expenseSnapshot.hasData) {
-                        _expenses = expenseSnapshot.data!;
+                : StreamBuilder<List<Transaction>>(
+                    key: ValueKey('transactions_$_selectedRoomId'),
+                    stream: _db.transactionsDao.watchByRoomId(_selectedRoomId!),
+                    builder: (context, transactionSnapshot) {
+                      // Update cached transactions only if data is available
+                      if (transactionSnapshot.hasData) {
+                        _transactions = transactionSnapshot.data!;
+                        _initialLoadDone = true;
                       }
 
-                      return StreamBuilder<List<Income>>(
-                        key: ValueKey('income_$_selectedRoomId'),
-                        stream: _db.incomesDao.watchByRoomId(_selectedRoomId!),
-                        builder: (context, incomeSnapshot) {
-                          // Update cached incomes only if data is available
-                          if (incomeSnapshot.hasData) {
-                            _incomes = incomeSnapshot.data!;
-                            if (expenseSnapshot.hasData) {
-                              _initialLoadDone = true;
-                              if (expenseSnapshot.hasData) {
-                                _initialLoadDone = true;
-                              }
-                            }
-                          }
+                      if (!_initialLoadDone &&
+                          transactionSnapshot.connectionState ==
+                              ConnectionState.waiting) {
+                        return const Center(child: CircularProgressIndicator());
+                      }
 
-                          if (!_initialLoadDone &&
-                              (expenseSnapshot.connectionState ==
-                                      ConnectionState.waiting ||
-                                  incomeSnapshot.connectionState ==
-                                      ConnectionState.waiting)) {
-                            return const Center(
-                              child: CircularProgressIndicator(),
-                            );
-                          }
+                      if (transactionSnapshot.hasError) {
+                        return Center(
+                          child: Text('Error: ${transactionSnapshot.error}'),
+                        );
+                      }
 
-                          if (expenseSnapshot.hasError ||
-                              incomeSnapshot.hasError) {
-                            return Center(
-                              child: Text(
-                                'Error: ${expenseSnapshot.error ?? incomeSnapshot.error}',
-                              ),
-                            );
-                          }
+                      // Filter and sort transactions
+                      final selectedCategory = ref.watch(
+                        selectedCategoryProvider,
+                      );
+                      final searchEnabled = ref.watch(searchEnabledProvider);
+                      final transactionType = ref.watch(
+                        transactionTypeProvider,
+                      );
 
-                          // Filter and sort transactions
-                          final selectedCategory = ref.watch(
-                            selectedCategoryProvider,
-                          );
-                          final searchEnabled = ref.watch(
-                            searchEnabledProvider,
-                          );
-                          final transactionType = ref.watch(
-                            transactionTypeProvider,
-                          );
+                      final filteredTransactions = _filterAndSortTransactions(
+                        _transactions,
+                        searchInput,
+                        selectedCategory?.id,
+                      );
 
-                          final filteredExpenses = _filterAndSortTransactions(
-                            _expenses,
-                            searchInput,
-                            selectedCategory?.id,
-                          );
-                          final filteredIncomes = _filterAndSortTransactions(
-                            _incomes,
-                            searchInput,
-                            selectedCategory?.id,
-                          );
+                      // Separate expenses and incomes from filtered transactions
+                      final filteredExpenses = filteredTransactions
+                          .where((t) => t.type == TransactionType.expense)
+                          .toList();
+                      final filteredIncomes = filteredTransactions
+                          .where((t) => t.type == TransactionType.income)
+                          .toList();
 
-                          // Calculate totals for filtered data
-                          final expenseTotal = filteredExpenses.fold<double>(
-                            0.0,
-                            (sum, expense) => sum + expense.amount,
-                          );
-                          final incomeTotal = filteredIncomes.fold<double>(
-                            0.0,
-                            (sum, income) => sum + income.amount,
-                          );
+                      // Calculate totals for filtered data
+                      final expenseTotal = filteredExpenses.fold<double>(
+                        0.0,
+                        (sum, expense) => sum + expense.amount,
+                      );
+                      final incomeTotal = filteredIncomes.fold<double>(
+                        0.0,
+                        (sum, income) => sum + income.amount,
+                      );
 
-                          // Use filtered and sorted data for display
-                          // When search is enabled, use transaction type filter
-                          final List<dynamic> transactions;
-                          if (searchEnabled) {
-                            if (transactionType == TransactionType.both) {
-                              transactions = [
-                                ...filteredExpenses,
-                                ...filteredIncomes,
-                              ].cast<dynamic>();
-                            } else {
-                              transactions =
-                                  transactionType == TransactionType.expense
+                      // Use filtered and sorted data for display
+                      // When search is enabled, use transaction type filter
+                      final List<dynamic> transactions;
+                      if (searchEnabled) {
+                        if (transactionType == TransactionType.both) {
+                          transactions = [
+                            ...filteredExpenses,
+                            ...filteredIncomes,
+                          ].cast<dynamic>();
+                        } else {
+                          transactions =
+                              transactionType == TransactionType.expense
+                              ? filteredExpenses.cast<dynamic>()
+                              : filteredIncomes.cast<dynamic>();
+                        }
+                      } else {
+                        // Normal mode: use toggle state
+                        transactions =
+                            (filteredExpenses.isEmpty &&
+                                filteredIncomes.isEmpty)
+                            ? const <dynamic>[]
+                            : (isExpense
                                   ? filteredExpenses.cast<dynamic>()
-                                  : filteredIncomes.cast<dynamic>();
-                            }
-                          } else {
-                            // Normal mode: use toggle state
-                            transactions =
-                                (filteredExpenses.isEmpty &&
-                                    filteredIncomes.isEmpty)
-                                ? const <dynamic>[]
-                                : (isExpense
-                                      ? filteredExpenses.cast<dynamic>()
-                                      : filteredIncomes.cast<dynamic>());
-                          }
+                                  : filteredIncomes.cast<dynamic>());
+                      }
 
-                          // Calculate month totals for the month sheet
-                          Map<int, double> monthTotals = {};
-                          final currentYear = DateTime.now().year;
-                          for (int month = 1; month <= 12; month++) {
-                            final monthExpenses = _expenses
-                                .where(
-                                  (e) =>
-                                      e.createdAt.month == month &&
-                                      e.createdAt.year == currentYear &&
-                                      e.roomId == _selectedRoomId,
-                                )
-                                .toList();
-                            final monthIncomes = _incomes
-                                .where(
-                                  (i) =>
-                                      i.createdAt.month == month &&
-                                      i.createdAt.year == currentYear &&
-                                      i.roomId == _selectedRoomId,
-                                )
-                                .toList();
-                            // Filter by category if selected
-                            final selectedCategory = ref.watch(
-                              selectedCategoryProvider,
-                            );
-                            if (selectedCategory != null) {
-                              monthExpenses.retainWhere(
-                                (e) => e.category.id == selectedCategory.id,
-                              );
-                              monthIncomes.retainWhere(
-                                (i) => i.category.id == selectedCategory.id,
-                              );
-                            }
-                            final expenseSum = monthExpenses.fold(
-                              0.0,
-                              (sum, e) => sum + e.amount,
-                            );
-                            final incomeSum = monthIncomes.fold(
-                              0.0,
-                              (sum, i) => sum + i.amount,
-                            );
-                            final net = expenseSum - incomeSum;
-                            if (net.abs() > 0) monthTotals[month] = net.abs();
-                          }
+                      // Calculate month totals for the month sheet
+                      Map<int, double> monthTotals = {};
+                      final currentYear = DateTime.now().year;
+                      for (int month = 1; month <= 12; month++) {
+                        final monthExpenses = _transactions
+                            .where(
+                              (t) =>
+                                  t.type == TransactionType.expense &&
+                                  t.createdAt.month == month &&
+                                  t.createdAt.year == currentYear &&
+                                  t.roomId == _selectedRoomId,
+                            )
+                            .toList();
+                        final monthIncomes = _transactions
+                            .where(
+                              (t) =>
+                                  t.type == TransactionType.income &&
+                                  t.createdAt.month == month &&
+                                  t.createdAt.year == currentYear &&
+                                  t.roomId == _selectedRoomId,
+                            )
+                            .toList();
+                        // Filter by category if selected
+                        final selectedCategory = ref.watch(
+                          selectedCategoryProvider,
+                        );
+                        if (selectedCategory != null) {
+                          monthExpenses.retainWhere(
+                            (e) => e.category.id == selectedCategory.id,
+                          );
+                          monthIncomes.retainWhere(
+                            (i) => i.category.id == selectedCategory.id,
+                          );
+                        }
+                        final expenseSum = monthExpenses.fold(
+                          0.0,
+                          (sum, e) => sum + e.amount,
+                        );
+                        final incomeSum = monthIncomes.fold(
+                          0.0,
+                          (sum, i) => sum + i.amount,
+                        );
+                        final net = expenseSum - incomeSum;
+                        if (net.abs() > 0) monthTotals[month] = net.abs();
+                      }
 
-                          // Net total = Expenses - Incomes (overall balance)
-                          final totalAmount = expenseTotal - incomeTotal;
+                      // Net total = Expenses - Incomes (overall balance)
+                      final totalAmount = expenseTotal - incomeTotal;
 
-                          return Stack(
+                      return Stack(
+                        children: [
+                          Stack(
                             children: [
-                              Stack(
-                                children: [
-                                  // Scrollable content - starts at top of screen so it can scroll under the header
-                                  // Wrapped with Opacity for content fade effect
-                                  Opacity(
-                                    opacity: contentOpacity,
-                                    child: SingleChildScrollView(
-                                      controller: _scrollController,
-                                      child: Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          // Add top spacing equal to header height so first item isn't hidden
-                                          SizedBox(height: headerHeight),
-                                          // Horizontal categories with fade animation
-                                          (filteredExpenses.isEmpty &&
-                                                  filteredIncomes.isEmpty)
-                                              ? CategoriesList(
-                                                  key: const ValueKey(
-                                                    'categories_empty',
-                                                  ),
-                                                  transactions: transactions,
-                                                  scrollOffset: _scrollOffset,
-                                                  hasBothEmptyTransactions:
-                                                      true,
-                                                )
-                                              : AnimatedSwitcher(
-                                                  duration: const Duration(
-                                                    milliseconds: 200,
-                                                  ),
-                                                  switchInCurve: Curves.easeIn,
-                                                  switchOutCurve:
-                                                      Curves.easeOut,
-                                                  transitionBuilder:
-                                                      (child, animation) {
-                                                        return FadeTransition(
-                                                          opacity: animation,
-                                                          child: child,
-                                                        );
-                                                      },
-                                                  child: CategoriesList(
-                                                    key: ValueKey(
-                                                      searchEnabled
-                                                          ? 'categories_search_${transactionType.name}'
-                                                          : 'categories_$isExpense',
-                                                    ),
-                                                    transactions: transactions,
-                                                    scrollOffset: _scrollOffset,
-                                                    hasBothEmptyTransactions:
-                                                        false,
-                                                  ),
-                                                ),
-
-                                          // Transactions list with mini total and fade animation
-                                          AnimatedSwitcher(
-                                            duration: Duration(
-                                              milliseconds: transactions.isEmpty
-                                                  ? 0
-                                                  : 200,
-                                            ),
-                                            switchInCurve: Curves.easeIn,
-                                            switchOutCurve: Curves.easeOut,
-                                            transitionBuilder:
-                                                (child, animation) {
-                                                  return FadeTransition(
-                                                    opacity: animation,
-                                                    child: child,
-                                                  );
-                                                },
-                                            child: TransactionsList(
-                                              key: ValueKey(
-                                                transactions.isEmpty
-                                                    ? 'transactions_empty'
-                                                    : 'transactions_$isExpense',
+                              // Scrollable content - starts at top of screen so it can scroll under the header
+                              // Wrapped with Opacity for content fade effect
+                              Opacity(
+                                opacity: contentOpacity,
+                                child: SingleChildScrollView(
+                                  controller: _scrollController,
+                                  child: Column(
+                                    crossAxisAlignment:
+                                        CrossAxisAlignment.start,
+                                    children: [
+                                      // Add top spacing equal to header height so first item isn't hidden
+                                      SizedBox(height: headerHeight),
+                                      // Horizontal categories with fade animation
+                                      (filteredExpenses.isEmpty &&
+                                              filteredIncomes.isEmpty)
+                                          ? CategoriesList(
+                                              key: const ValueKey(
+                                                'categories_empty',
                                               ),
                                               transactions: transactions,
-                                              miniTextColor: miniTextColor,
-                                              totalAmount: totalAmount,
-                                              onRoomChanged: _loadSelectedRoom,
+                                              scrollOffset: _scrollOffset,
+                                              hasBothEmptyTransactions: true,
+                                            )
+                                          : AnimatedSwitcher(
+                                              duration: const Duration(
+                                                milliseconds: 200,
+                                              ),
+                                              switchInCurve: Curves.easeIn,
+                                              switchOutCurve: Curves.easeOut,
+                                              transitionBuilder:
+                                                  (child, animation) {
+                                                    return FadeTransition(
+                                                      opacity: animation,
+                                                      child: child,
+                                                    );
+                                                  },
+                                              child: CategoriesList(
+                                                key: ValueKey(
+                                                  searchEnabled
+                                                      ? 'categories_search_${transactionType.name}'
+                                                      : 'categories_$isExpense',
+                                                ),
+                                                transactions: transactions,
+                                                scrollOffset: _scrollOffset,
+                                                hasBothEmptyTransactions: false,
+                                              ),
                                             ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
 
-                                  // Sticky header with blur
-                                  Header(
-                                    key: _headerKey,
-                                    blurSigma: blurSigma,
-                                    overlayOpacity: overlayOpacity,
-                                    isExpense: isExpense,
-                                    totalAmount: totalAmount.abs(),
-                                    expenseTotal: expenseTotal,
-                                    incomeTotal: incomeTotal,
-                                    toggleMode: toggleMode,
-                                    onRoomChanged: _loadSelectedRoom,
-                                    onMonthFilterChanged: _onMonthFilterChanged,
-                                    monthTotals: monthTotals,
-                                    isSearchActive: ref.watch(
-                                      searchEnabledProvider,
-                                    ),
-                                    // debug overrides
-                                    debugBlurOverride: _debugMode == 1
-                                        ? 20.0
-                                        : null,
-                                    debugOverlayColor: _debugMode == 2
-                                        ? Colors.purple.withOpacity(0.16)
-                                        : null,
+                                      // Transactions list with mini total and fade animation
+                                      AnimatedSwitcher(
+                                        duration: Duration(
+                                          milliseconds: transactions.isEmpty
+                                              ? 0
+                                              : 200,
+                                        ),
+                                        switchInCurve: Curves.easeIn,
+                                        switchOutCurve: Curves.easeOut,
+                                        transitionBuilder: (child, animation) {
+                                          return FadeTransition(
+                                            opacity: animation,
+                                            child: child,
+                                          );
+                                        },
+                                        child: TransactionsList(
+                                          key: ValueKey(
+                                            transactions.isEmpty
+                                                ? 'transactions_empty'
+                                                : 'transactions_$isExpense',
+                                          ),
+                                          transactions: transactions,
+                                          miniTextColor: miniTextColor,
+                                          totalAmount: totalAmount,
+                                          onRoomChanged: _loadSelectedRoom,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                ],
+                                ),
                               ),
-                              // Floating action buttons with search transition
-                              FloatingActionButtons(
+
+                              // Sticky header with blur
+                              Header(
+                                key: _headerKey,
+                                blurSigma: blurSigma,
+                                overlayOpacity: overlayOpacity,
+                                isExpense: isExpense,
+                                totalAmount: totalAmount.abs(),
+                                expenseTotal: expenseTotal,
+                                incomeTotal: incomeTotal,
+                                toggleMode: toggleMode,
                                 onRoomChanged: _loadSelectedRoom,
+                                onMonthFilterChanged: _onMonthFilterChanged,
+                                monthTotals: monthTotals,
+                                isSearchActive: ref.watch(
+                                  searchEnabledProvider,
+                                ),
+                                // debug overrides
+                                debugBlurOverride: _debugMode == 1
+                                    ? 20.0
+                                    : null,
+                                debugOverlayColor: _debugMode == 2
+                                    ? Colors.purple.withOpacity(0.16)
+                                    : null,
                               ),
                             ],
-                          );
-                        },
+                          ),
+                          // Floating action buttons with search transition
+                          FloatingActionButtons(
+                            onRoomChanged: _loadSelectedRoom,
+                          ),
+                        ],
                       );
                     },
                   ),
