@@ -175,13 +175,13 @@ class _CategoriesSheetContentState extends State<_CategoriesSheetContent> {
                   },
                 ),
               ),
-              // Save button
+              // Done button
               Padding(
                 padding: const EdgeInsets.all(16),
                 child: SizedBox(
                   width: double.infinity,
                   child: ElevatedButton(
-                    onPressed: () {},
+                    onPressed: () => Navigator.of(context).pop(),
                     style: ElevatedButton.styleFrom(
                       backgroundColor: const Color(0xFF58CC02),
                       foregroundColor: Colors.white,
@@ -194,7 +194,7 @@ class _CategoriesSheetContentState extends State<_CategoriesSheetContent> {
                       ),
                     ),
                     child: const Text(
-                      'Save',
+                      'Done',
                       style: TextStyle(
                         fontWeight: FontWeight.bold,
                         fontSize: 16,

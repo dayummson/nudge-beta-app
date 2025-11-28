@@ -3,6 +3,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../presentation/providers/search_enabled_provider.dart';
 import '../presentation/providers/selected_category_provider.dart';
 import '../../../constants/categories.dart' as constants;
+import '../../../core/db/app_database.dart';
+import '../../../features/room/domain/entities/category.dart' as domain;
 
 class CategoriesList extends ConsumerStatefulWidget {
   final List<dynamic> transactions;
@@ -24,11 +26,39 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
   static const double maxCategoryHeight = 200.0;
   static const double minCategoryHeight = 60.0;
 
+  List<domain.Category> _categories = constants.categories;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadCategories();
+  }
+
+  Future<void> _loadCategories() async {
+    final db = AppDatabase();
+    final categoryRows = await db.categoriesDao.getAll();
+
+    // Convert database rows to domain categories
+    final customCategories = categoryRows.map((row) => row.category).toList();
+
+    // Combine with default categories, filtering out duplicates by id
+    final allCategories = [...constants.categories];
+    for (final customCategory in customCategories) {
+      if (!allCategories.any((cat) => cat.id == customCategory.id)) {
+        allCategories.add(customCategory);
+      }
+    }
+
+    setState(() {
+      _categories = allCategories;
+    });
+  }
+
   // Calculate total per category for current transaction list
   Map<String, double> _calculateCategoryTotals() {
     final Map<String, double> totals = {};
 
-    for (final category in constants.categories) {
+    for (final category in _categories) {
       totals[category.id] = 0.0;
     }
 
@@ -114,7 +144,7 @@ class _CategoriesListState extends ConsumerState<CategoriesList> {
     final isDark = Theme.of(context).brightness == Brightness.dark;
 
     // Sort categories by their total values (descending - highest first)
-    final sortedCategories = List.from(constants.categories)
+    final sortedCategories = List.from(_categories)
       ..sort((a, b) {
         final aTotal = (categoryTotals[a.id] ?? 0.0).abs();
         final bTotal = (categoryTotals[b.id] ?? 0.0).abs();
