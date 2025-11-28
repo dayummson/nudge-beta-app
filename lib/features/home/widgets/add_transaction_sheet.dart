@@ -10,6 +10,7 @@ import 'category_selection_section.dart';
 import 'date_selector_button.dart';
 import 'room_selector_button.dart';
 import 'transaction_notification.dart';
+import 'frequency_sheet.dart';
 
 /// Shows the add transaction bottom sheet.
 ///
@@ -227,6 +228,8 @@ class _AddTransactionSheetContentState
             children: [
               RoomSelectorButton(onRoomChanged: widget.onRoomChanged),
               const SizedBox(width: 12),
+              _FrequencySelectorButton(),
+              const SizedBox(width: 12),
               DateSelectorButton(
                 selectedDate: _selectedDate,
                 onDateSelected: (date) => setState(() => _selectedDate = date),
@@ -274,6 +277,49 @@ class _AddTransactionSheetContentState
           height: 20,
         ), // Add space to avoid keyboard covering bottom
       ],
+    );
+  }
+}
+
+class _FrequencySelectorButton extends StatelessWidget {
+  const _FrequencySelectorButton();
+
+  @override
+  Widget build(BuildContext context) {
+    final colorScheme = Theme.of(context).colorScheme;
+
+    return OutlinedButton(
+      onPressed: () {
+        showFrequencySheet(
+          context,
+          onFrequencySelected: (frequency) {
+            // TODO: Handle frequency selection
+            print('Selected frequency: ${frequency.displayName}');
+          },
+        );
+      },
+      style: OutlinedButton.styleFrom(
+        padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
+        shape: const StadiumBorder(),
+        minimumSize: const Size(64, 36),
+        tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
+        side: BorderSide(color: colorScheme.onSurface.withOpacity(0.12)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Text(
+            'Frequency',
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontWeight: FontWeight.w600,
+            ),
+          ),
+          const SizedBox(width: 8),
+          Icon(Icons.unfold_more, size: 18, color: colorScheme.onSurface),
+        ],
+      ),
     );
   }
 }

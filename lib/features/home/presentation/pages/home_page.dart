@@ -52,11 +52,19 @@ class _HomePageState extends ConsumerState<HomePage> {
   @override
   void initState() {
     super.initState();
+    // Reset scroll position on app start
+    _scrollOffset = 0.0;
     _loadSelectedRoom();
     _scrollController.addListener(() {
       setState(() {
         _scrollOffset = _scrollController.offset;
       });
+    });
+    // Ensure scroll position is reset after first layout
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (_scrollController.hasClients) {
+        _scrollController.jumpTo(0.0);
+      }
     });
   }
 
@@ -93,6 +101,14 @@ class _HomePageState extends ConsumerState<HomePage> {
         _expenses = [];
         _incomes = [];
         _initialLoadDone = false;
+        // Reset scroll position when room changes
+        _scrollOffset = 0.0;
+      });
+      // Reset scroll position after layout is complete
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (_scrollController.hasClients) {
+          _scrollController.jumpTo(0.0);
+        }
       });
     }
   }
@@ -140,9 +156,13 @@ class _HomePageState extends ConsumerState<HomePage> {
         final cleanSearchInput = searchInput.toLowerCase().startsWith('#')
             ? searchInput.toLowerCase().substring(1)
             : searchInput.toLowerCase();
-        final hashtagMatch = (hashtags as List<String>).any(
-          (hashtag) => hashtag.toLowerCase().contains(cleanSearchInput),
-        );
+        final hashtagMatch =
+            hashtags.isNotEmpty &&
+            hashtags.any(
+              (dynamic hashtag) =>
+                  hashtag is String &&
+                  hashtag.toLowerCase().contains(cleanSearchInput),
+            );
 
         return descriptionMatch || hashtagMatch;
       }).toList();
