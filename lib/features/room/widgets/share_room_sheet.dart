@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:drift/drift.dart' as drift;
 import 'package:nudge_1/components/sheet/bottom_sheet_helper.dart';
 import 'package:nudge_1/core/db/app_database.dart';
+import 'package:connectivity_plus/connectivity_plus.dart';
 
 /// Shows the share room bottom sheet.
 ///
@@ -35,6 +36,25 @@ class _ShareRoomSheetContentState extends State<_ShareRoomSheetContent> {
 
   Future<void> _confirmShare() async {
     if (_isConfirming) return;
+
+    // Check internet connectivity
+    final connectivityResults = await Connectivity().checkConnectivity();
+    final hasInternet = !connectivityResults.every(
+      (result) => result == ConnectivityResult.none,
+    );
+
+    if (!hasInternet) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+              'No internet connection. Please check your connection and try again.',
+            ),
+          ),
+        );
+      }
+      return;
+    }
 
     setState(() => _isConfirming = true);
 
