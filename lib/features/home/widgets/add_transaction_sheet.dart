@@ -272,20 +272,16 @@ class _FrequencySelectorButton extends StatelessWidget {
       style: OutlinedButton.styleFrom(
         padding: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
         shape: const StadiumBorder(),
-        minimumSize: const Size(64, 36),
+        side: BorderSide(color: colorScheme.onSurface.withOpacity(0.2)),
+        minimumSize: Size.zero,
         tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-        textStyle: const TextStyle(fontSize: 13, fontWeight: FontWeight.w600),
-        side: BorderSide(color: colorScheme.onSurface.withOpacity(0.12)),
       ),
       child: Row(
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            'Frequency',
-            style: TextStyle(
-              color: colorScheme.onSurface,
-              fontWeight: FontWeight.w600,
-            ),
+            'Once',
+            style: TextStyle(color: colorScheme.onSurface, fontSize: 13),
           ),
           const SizedBox(width: 8),
           Icon(Icons.unfold_more, size: 18, color: colorScheme.onSurface),
