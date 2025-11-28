@@ -79,20 +79,29 @@ class FrequencySheet extends StatelessWidget {
                     frequency.displayName,
                     style: TextStyle(
                       color: colorScheme.onSurface,
-                      fontSize: 16,
+                      fontSize: 14,
+                      fontWeight: frequency == Frequency.once
+                          ? FontWeight.bold
+                          : FontWeight.normal,
                     ),
+                  ),
+                  trailing: Icon(
+                    Icons.chevron_right,
+                    color: colorScheme.onSurface.withOpacity(0.6),
+                    size: 20,
                   ),
                   onTap: () {
                     Navigator.of(context).pop();
                     onFrequencySelected(frequency);
                   },
                   shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(8),
+                    borderRadius: BorderRadius.circular(12),
                   ),
                   contentPadding: const EdgeInsets.symmetric(
                     horizontal: 16,
-                    vertical: 8,
+                    vertical: 6,
                   ),
+                  dense: true,
                 );
               }).toList(),
             ),

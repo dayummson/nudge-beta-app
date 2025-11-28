@@ -281,7 +281,11 @@ class _FrequencySelectorButton extends StatelessWidget {
         children: [
           Text(
             'Once',
-            style: TextStyle(color: colorScheme.onSurface, fontSize: 13),
+            style: TextStyle(
+              color: colorScheme.onSurface,
+              fontSize: 13,
+              fontWeight: FontWeight.bold,
+            ),
           ),
           const SizedBox(width: 8),
           Icon(Icons.unfold_more, size: 18, color: colorScheme.onSurface),
