@@ -15,6 +15,7 @@ class Transaction {
   final TransactionType type;
   final bool isSynced; // offline-first flag
   final DateTime lastUpdatedAt; // fixed type
+  final List<String> involvedUsers; // users involved in this transaction
 
   const Transaction({
     required this.id,
@@ -28,5 +29,6 @@ class Transaction {
     required this.type,
     this.isSynced = false,
     required this.lastUpdatedAt,
+    this.involvedUsers = const [], // default to empty list
   });
 }

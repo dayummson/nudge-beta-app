@@ -10,7 +10,7 @@ import 'package:nudge_1/features/home/widgets/add_transaction_sheet.dart';
 import 'package:nudge_1/firebase/firestore/firestore.dart';
 import 'transaction_notification.dart';
 
-class TransactionsList extends StatelessWidget {
+class TransactionsList extends StatefulWidget {
   final List<dynamic> transactions; // Can be Expense or Income
   final Color miniTextColor;
   final double totalAmount;
@@ -24,11 +24,74 @@ class TransactionsList extends StatelessWidget {
     this.onRoomChanged,
   });
 
+  @override
+  State<TransactionsList> createState() => _TransactionsListState();
+}
+
+class _TransactionsListState extends State<TransactionsList> {
+  final Map<String, int> _userCounts =
+      {}; // Cache for user counts per transaction
+  final Set<String> _loadingTransactions =
+      {}; // Track which transactions are loading
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserCounts();
+  }
+
+  @override
+  void didUpdateWidget(TransactionsList oldWidget) {
+    super.didUpdateWidget(oldWidget);
+    if (oldWidget.transactions != widget.transactions) {
+      _loadUserCounts();
+    }
+  }
+
+  Future<void> _loadUserCounts() async {
+    final db = AppDatabase();
+
+    // Initialize all transactions with count 1 (current user)
+    for (final transaction in widget.transactions) {
+      if (!_userCounts.containsKey(transaction.id)) {
+        _userCounts[transaction.id] = 1;
+      }
+    }
+
+    // For expenses, check if there are additional users
+    for (final transaction in widget.transactions) {
+      if (transaction.type == TransactionType.expense) {
+        _loadingTransactions.add(transaction.id);
+        try {
+          final users = await db.expenseUsersDao.getByExpense(transaction.id);
+          if (mounted) {
+            setState(() {
+              // Use the actual count from database, minimum 1
+              _userCounts[transaction.id] = users.isNotEmpty ? users.length : 1;
+              _loadingTransactions.remove(transaction.id);
+            });
+          }
+        } catch (e) {
+          debugPrint(
+            'Error loading user count for transaction ${transaction.id}: $e',
+          );
+          if (mounted) {
+            setState(() {
+              // Keep the default of 1 on error
+              _userCounts[transaction.id] = 1;
+              _loadingTransactions.remove(transaction.id);
+            });
+          }
+        }
+      }
+    }
+  }
+
   // Group transactions by date
   Map<String, List<dynamic>> _groupTransactionsByDate() {
     final Map<String, List<dynamic>> grouped = {};
 
-    for (final transaction in transactions) {
+    for (final transaction in widget.transactions) {
       final dateKey = DateFormat('yyyy-MM-dd').format(transaction.createdAt);
       if (!grouped.containsKey(dateKey)) {
         grouped[dateKey] = [];
@@ -103,7 +166,7 @@ class TransactionsList extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    if (transactions.isEmpty) {
+    if (widget.transactions.isEmpty) {
       return _buildEmptyState(context);
     }
 
@@ -119,8 +182,8 @@ class TransactionsList extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(top: 12, left: 20, bottom: 20),
           child: Text(
-            "Total: \$${totalAmount.toStringAsFixed(2)}",
-            style: TextStyle(fontSize: 12, color: miniTextColor),
+            "Total: \$${widget.totalAmount.toStringAsFixed(2)}",
+            style: TextStyle(fontSize: 12, color: widget.miniTextColor),
           ),
         ),
 
@@ -162,7 +225,7 @@ class TransactionsList extends StatelessWidget {
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.w600,
-                          color: miniTextColor.withOpacity(0.9),
+                          color: widget.miniTextColor.withOpacity(0.9),
                         ),
                       ),
                     ),
@@ -172,6 +235,10 @@ class TransactionsList extends StatelessWidget {
               content: Column(
                 children: dateTransactions.map((transaction) {
                   final isExpense = transaction.type == TransactionType.expense;
+                  final userCount = _userCounts[transaction.id] ?? 1;
+                  final isLoading = _loadingTransactions.contains(
+                    transaction.id,
+                  );
 
                   return Padding(
                     padding: const EdgeInsets.symmetric(vertical: 8),
@@ -288,7 +355,7 @@ class TransactionsList extends StatelessWidget {
                           // Open edit sheet when tapping the transaction
                           showAddTransactionSheet(
                             context,
-                            onRoomChanged: onRoomChanged,
+                            onRoomChanged: widget.onRoomChanged,
                             transaction: transaction,
                           );
                         },
@@ -325,7 +392,7 @@ class TransactionsList extends StatelessWidget {
                                     Text(
                                       transaction.description,
                                       style: TextStyle(
-                                        color: miniTextColor,
+                                        color: widget.miniTextColor,
                                         fontSize: 14,
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -429,6 +496,69 @@ class TransactionsList extends StatelessWidget {
                                   fontSize: 12,
                                 ),
                               ),
+                              const SizedBox(width: 8),
+                              // User count indicator
+                              if (isLoading)
+                                Container(
+                                  width: 20,
+                                  height: 20,
+                                  padding: const EdgeInsets.all(2),
+                                  child: const CircularProgressIndicator(
+                                    strokeWidth: 2,
+                                  ),
+                                )
+                              else
+                                Container(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 6,
+                                    vertical: 3,
+                                  ),
+                                  decoration: BoxDecoration(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .primaryContainer
+                                        .withOpacity(0.8),
+                                    border: Border.all(
+                                      color: Theme.of(
+                                        context,
+                                      ).colorScheme.primary.withOpacity(0.3),
+                                      width: 1,
+                                    ),
+                                    borderRadius: BorderRadius.circular(10),
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.shadow.withOpacity(0.1),
+                                        blurRadius: 2,
+                                        offset: const Offset(0, 1),
+                                      ),
+                                    ],
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(
+                                        Icons.people,
+                                        size: 10,
+                                        color: Theme.of(
+                                          context,
+                                        ).colorScheme.onPrimaryContainer,
+                                      ),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        userCount == 1 ? '1' : '${userCount}+',
+                                        style: TextStyle(
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.w700,
+                                          color: Theme.of(
+                                            context,
+                                          ).colorScheme.onPrimaryContainer,
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
                             ],
                           ),
                         ),
