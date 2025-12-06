@@ -1213,6 +1213,15 @@ class $TransactionsTable extends Transactions
         defaultValue: currentDateAndTime,
       );
   @override
+  late final GeneratedColumnWithTypeConverter<List<String>, String>
+  involvedUsers = GeneratedColumn<String>(
+    'involved_users',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  ).withConverter<List<String>>($TransactionsTable.$converterinvolvedUsers);
+  @override
   List<GeneratedColumn> get $columns => [
     id,
     roomId,
@@ -1226,6 +1235,7 @@ class $TransactionsTable extends Transactions
     type,
     isSynced,
     lastUpdatedAt,
+    involvedUsers,
   ];
   @override
   String get aliasedName => _alias ?? actualTableName;
@@ -1363,6 +1373,12 @@ class $TransactionsTable extends Transactions
         DriftSqlType.dateTime,
         data['${effectivePrefix}last_updated_at'],
       )!,
+      involvedUsers: $TransactionsTable.$converterinvolvedUsers.fromSql(
+        attachedDatabase.typeMapping.read(
+          DriftSqlType.string,
+          data['${effectivePrefix}involved_users'],
+        )!,
+      ),
     );
   }
 
@@ -1381,6 +1397,8 @@ class $TransactionsTable extends Transactions
       HashtagsJsonConverter();
   static TypeConverter<TransactionType, String> $convertertype =
       const TransactionTypeConverter();
+  static TypeConverter<List<String>, String> $converterinvolvedUsers =
+      HashtagsJsonConverter();
 }
 
 class Transaction extends DataClass implements Insertable<Transaction> {
@@ -1396,6 +1414,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
   final TransactionType type;
   final bool isSynced;
   final DateTime lastUpdatedAt;
+  final List<String> involvedUsers;
   const Transaction({
     required this.id,
     required this.roomId,
@@ -1409,6 +1428,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     required this.type,
     required this.isSynced,
     required this.lastUpdatedAt,
+    required this.involvedUsers,
   });
   @override
   Map<String, Expression> toColumns(bool nullToAbsent) {
@@ -1443,6 +1463,11 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     }
     map['is_synced'] = Variable<bool>(isSynced);
     map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt);
+    {
+      map['involved_users'] = Variable<String>(
+        $TransactionsTable.$converterinvolvedUsers.toSql(involvedUsers),
+      );
+    }
     return map;
   }
 
@@ -1464,6 +1489,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       type: Value(type),
       isSynced: Value(isSynced),
       lastUpdatedAt: Value(lastUpdatedAt),
+      involvedUsers: Value(involvedUsers),
     );
   }
 
@@ -1485,6 +1511,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       type: serializer.fromJson<TransactionType>(json['type']),
       isSynced: serializer.fromJson<bool>(json['isSynced']),
       lastUpdatedAt: serializer.fromJson<DateTime>(json['lastUpdatedAt']),
+      involvedUsers: serializer.fromJson<List<String>>(json['involvedUsers']),
     );
   }
   @override
@@ -1503,6 +1530,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       'type': serializer.toJson<TransactionType>(type),
       'isSynced': serializer.toJson<bool>(isSynced),
       'lastUpdatedAt': serializer.toJson<DateTime>(lastUpdatedAt),
+      'involvedUsers': serializer.toJson<List<String>>(involvedUsers),
     };
   }
 
@@ -1519,6 +1547,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     TransactionType? type,
     bool? isSynced,
     DateTime? lastUpdatedAt,
+    List<String>? involvedUsers,
   }) => Transaction(
     id: id ?? this.id,
     roomId: roomId ?? this.roomId,
@@ -1532,6 +1561,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     type: type ?? this.type,
     isSynced: isSynced ?? this.isSynced,
     lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+    involvedUsers: involvedUsers ?? this.involvedUsers,
   );
   Transaction copyWithCompanion(TransactionsCompanion data) {
     return Transaction(
@@ -1551,6 +1581,9 @@ class Transaction extends DataClass implements Insertable<Transaction> {
       lastUpdatedAt: data.lastUpdatedAt.present
           ? data.lastUpdatedAt.value
           : this.lastUpdatedAt,
+      involvedUsers: data.involvedUsers.present
+          ? data.involvedUsers.value
+          : this.involvedUsers,
     );
   }
 
@@ -1568,7 +1601,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           ..write('updatedAt: $updatedAt, ')
           ..write('type: $type, ')
           ..write('isSynced: $isSynced, ')
-          ..write('lastUpdatedAt: $lastUpdatedAt')
+          ..write('lastUpdatedAt: $lastUpdatedAt, ')
+          ..write('involvedUsers: $involvedUsers')
           ..write(')'))
         .toString();
   }
@@ -1587,6 +1621,7 @@ class Transaction extends DataClass implements Insertable<Transaction> {
     type,
     isSynced,
     lastUpdatedAt,
+    involvedUsers,
   );
   @override
   bool operator ==(Object other) =>
@@ -1603,7 +1638,8 @@ class Transaction extends DataClass implements Insertable<Transaction> {
           other.updatedAt == this.updatedAt &&
           other.type == this.type &&
           other.isSynced == this.isSynced &&
-          other.lastUpdatedAt == this.lastUpdatedAt);
+          other.lastUpdatedAt == this.lastUpdatedAt &&
+          other.involvedUsers == this.involvedUsers);
 }
 
 class TransactionsCompanion extends UpdateCompanion<Transaction> {
@@ -1619,6 +1655,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
   final Value<TransactionType> type;
   final Value<bool> isSynced;
   final Value<DateTime> lastUpdatedAt;
+  final Value<List<String>> involvedUsers;
   final Value<int> rowid;
   const TransactionsCompanion({
     this.id = const Value.absent(),
@@ -1633,6 +1670,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     this.type = const Value.absent(),
     this.isSynced = const Value.absent(),
     this.lastUpdatedAt = const Value.absent(),
+    this.involvedUsers = const Value.absent(),
     this.rowid = const Value.absent(),
   });
   TransactionsCompanion.insert({
@@ -1648,6 +1686,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     required TransactionType type,
     this.isSynced = const Value.absent(),
     this.lastUpdatedAt = const Value.absent(),
+    required List<String> involvedUsers,
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        roomId = Value(roomId),
@@ -1655,7 +1694,8 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
        category = Value(category),
        amount = Value(amount),
        hashtags = Value(hashtags),
-       type = Value(type);
+       type = Value(type),
+       involvedUsers = Value(involvedUsers);
   static Insertable<Transaction> custom({
     Expression<String>? id,
     Expression<String>? roomId,
@@ -1669,6 +1709,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Expression<String>? type,
     Expression<bool>? isSynced,
     Expression<DateTime>? lastUpdatedAt,
+    Expression<String>? involvedUsers,
     Expression<int>? rowid,
   }) {
     return RawValuesInsertable({
@@ -1684,6 +1725,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       if (type != null) 'type': type,
       if (isSynced != null) 'is_synced': isSynced,
       if (lastUpdatedAt != null) 'last_updated_at': lastUpdatedAt,
+      if (involvedUsers != null) 'involved_users': involvedUsers,
       if (rowid != null) 'rowid': rowid,
     });
   }
@@ -1701,6 +1743,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     Value<TransactionType>? type,
     Value<bool>? isSynced,
     Value<DateTime>? lastUpdatedAt,
+    Value<List<String>>? involvedUsers,
     Value<int>? rowid,
   }) {
     return TransactionsCompanion(
@@ -1716,6 +1759,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
       type: type ?? this.type,
       isSynced: isSynced ?? this.isSynced,
       lastUpdatedAt: lastUpdatedAt ?? this.lastUpdatedAt,
+      involvedUsers: involvedUsers ?? this.involvedUsers,
       rowid: rowid ?? this.rowid,
     );
   }
@@ -1767,6 +1811,11 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     if (lastUpdatedAt.present) {
       map['last_updated_at'] = Variable<DateTime>(lastUpdatedAt.value);
     }
+    if (involvedUsers.present) {
+      map['involved_users'] = Variable<String>(
+        $TransactionsTable.$converterinvolvedUsers.toSql(involvedUsers.value),
+      );
+    }
     if (rowid.present) {
       map['rowid'] = Variable<int>(rowid.value);
     }
@@ -1788,6 +1837,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
           ..write('type: $type, ')
           ..write('isSynced: $isSynced, ')
           ..write('lastUpdatedAt: $lastUpdatedAt, ')
+          ..write('involvedUsers: $involvedUsers, ')
           ..write('rowid: $rowid')
           ..write(')'))
         .toString();
@@ -3383,6 +3433,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       required TransactionType type,
       Value<bool> isSynced,
       Value<DateTime> lastUpdatedAt,
+      required List<String> involvedUsers,
       Value<int> rowid,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
@@ -3399,6 +3450,7 @@ typedef $$TransactionsTableUpdateCompanionBuilder =
       Value<TransactionType> type,
       Value<bool> isSynced,
       Value<DateTime> lastUpdatedAt,
+      Value<List<String>> involvedUsers,
       Value<int> rowid,
     });
 
@@ -3474,6 +3526,12 @@ class $$TransactionsTableFilterComposer
     column: $table.lastUpdatedAt,
     builder: (column) => ColumnFilters(column),
   );
+
+  ColumnWithTypeConverterFilters<List<String>, List<String>, String>
+  get involvedUsers => $composableBuilder(
+    column: $table.involvedUsers,
+    builder: (column) => ColumnWithTypeConverterFilters(column),
+  );
 }
 
 class $$TransactionsTableOrderingComposer
@@ -3544,6 +3602,11 @@ class $$TransactionsTableOrderingComposer
     column: $table.lastUpdatedAt,
     builder: (column) => ColumnOrderings(column),
   );
+
+  ColumnOrderings<String> get involvedUsers => $composableBuilder(
+    column: $table.involvedUsers,
+    builder: (column) => ColumnOrderings(column),
+  );
 }
 
 class $$TransactionsTableAnnotationComposer
@@ -3594,6 +3657,12 @@ class $$TransactionsTableAnnotationComposer
     column: $table.lastUpdatedAt,
     builder: (column) => column,
   );
+
+  GeneratedColumnWithTypeConverter<List<String>, String> get involvedUsers =>
+      $composableBuilder(
+        column: $table.involvedUsers,
+        builder: (column) => column,
+      );
 }
 
 class $$TransactionsTableTableManager
@@ -3639,6 +3708,7 @@ class $$TransactionsTableTableManager
                 Value<TransactionType> type = const Value.absent(),
                 Value<bool> isSynced = const Value.absent(),
                 Value<DateTime> lastUpdatedAt = const Value.absent(),
+                Value<List<String>> involvedUsers = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransactionsCompanion(
                 id: id,
@@ -3653,6 +3723,7 @@ class $$TransactionsTableTableManager
                 type: type,
                 isSynced: isSynced,
                 lastUpdatedAt: lastUpdatedAt,
+                involvedUsers: involvedUsers,
                 rowid: rowid,
               ),
           createCompanionCallback:
@@ -3669,6 +3740,7 @@ class $$TransactionsTableTableManager
                 required TransactionType type,
                 Value<bool> isSynced = const Value.absent(),
                 Value<DateTime> lastUpdatedAt = const Value.absent(),
+                required List<String> involvedUsers,
                 Value<int> rowid = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,
@@ -3683,6 +3755,7 @@ class $$TransactionsTableTableManager
                 type: type,
                 isSynced: isSynced,
                 lastUpdatedAt: lastUpdatedAt,
+                involvedUsers: involvedUsers,
                 rowid: rowid,
               ),
           withReferenceMapper: (p0) => p0

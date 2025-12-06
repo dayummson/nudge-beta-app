@@ -20,6 +20,9 @@ class Transactions extends Table {
       boolean().withDefault(const Constant(false))(); // offline-first flag
   DateTimeColumn get lastUpdatedAt =>
       dateTime().withDefault(currentDateAndTime)(); // fixed type
+  TextColumn get involvedUsers => text().map(
+    HashtagsJsonConverter(),
+  )(); // users involved in this transaction
 
   @override
   Set<Column> get primaryKey => {id};

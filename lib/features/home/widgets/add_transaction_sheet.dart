@@ -16,6 +16,7 @@ import 'date_selector_button.dart';
 import 'room_selector_button.dart';
 import 'transaction_notification.dart';
 import 'frequency_sheet.dart';
+import 'user_selector_button.dart';
 
 /// Shows the add transaction bottom sheet.
 ///
@@ -65,6 +66,7 @@ class _AddTransactionSheetContentState
   late DateTime _selectedDate;
   bool _isSaving = false;
   List<String> _hashtags = [];
+  List<String> _selectedUsers = []; // For shared expenses
 
   @override
   void initState() {
@@ -84,6 +86,7 @@ class _AddTransactionSheetContentState
       _isExpense = txn.type == TransactionType.expense;
       _selectedDate = txn.createdAt;
       _hashtags = txn.hashtags ?? [];
+      _selectedUsers = txn.involvedUsers ?? [];
     }
   }
 
@@ -163,6 +166,7 @@ class _AddTransactionSheetContentState
         ),
         createdAt: drift.Value(_selectedDate),
         updatedAt: drift.Value(DateTime.now()),
+        involvedUsers: drift.Value(_selectedUsers),
       );
 
       if (isEditing) {
@@ -188,6 +192,7 @@ class _AddTransactionSheetContentState
           type: _isExpense ? TransactionType.expense : TransactionType.income,
           isSynced: true,
           lastUpdatedAt: now,
+          involvedUsers: _selectedUsers,
         );
 
         if (isEditing) {
@@ -244,6 +249,12 @@ class _AddTransactionSheetContentState
               RoomSelectorButton(onRoomChanged: widget.onRoomChanged),
               const SizedBox(width: 12),
               _FrequencySelectorButton(),
+              const SizedBox(width: 12),
+              UserSelectorButton(
+                selectedUsers: _selectedUsers,
+                onUsersSelected: (users) =>
+                    setState(() => _selectedUsers = users),
+              ),
               const SizedBox(width: 12),
               DateSelectorButton(
                 selectedDate: _selectedDate,
