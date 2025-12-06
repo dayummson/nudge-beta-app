@@ -244,23 +244,27 @@ class _AddTransactionSheetContentState
         // Room and Date selector buttons
         Padding(
           padding: const EdgeInsets.symmetric(horizontal: 16),
-          child: Row(
-            children: [
-              RoomSelectorButton(onRoomChanged: widget.onRoomChanged),
-              const SizedBox(width: 12),
-              _FrequencySelectorButton(),
-              const SizedBox(width: 12),
-              UserSelectorButton(
-                selectedUsers: _selectedUsers,
-                onUsersSelected: (users) =>
-                    setState(() => _selectedUsers = users),
-              ),
-              const SizedBox(width: 12),
-              DateSelectorButton(
-                selectedDate: _selectedDate,
-                onDateSelected: (date) => setState(() => _selectedDate = date),
-              ),
-            ],
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            child: Row(
+              children: [
+                RoomSelectorButton(onRoomChanged: widget.onRoomChanged),
+                const SizedBox(width: 8),
+                _FrequencySelectorButton(),
+                const SizedBox(width: 8),
+                UserSelectorButton(
+                  selectedUsers: _selectedUsers,
+                  onUsersSelected: (users) =>
+                      setState(() => _selectedUsers = users),
+                ),
+                const SizedBox(width: 8),
+                DateSelectorButton(
+                  selectedDate: _selectedDate,
+                  onDateSelected: (date) =>
+                      setState(() => _selectedDate = date),
+                ),
+              ],
+            ),
           ),
         ),
         const SizedBox(height: 16),

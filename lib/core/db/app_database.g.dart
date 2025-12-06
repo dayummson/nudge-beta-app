@@ -1219,7 +1219,8 @@ class $TransactionsTable extends Transactions
     aliasedName,
     false,
     type: DriftSqlType.string,
-    requiredDuringInsert: true,
+    requiredDuringInsert: false,
+    defaultValue: const Constant('[]'),
   ).withConverter<List<String>>($TransactionsTable.$converterinvolvedUsers);
   @override
   List<GeneratedColumn> get $columns => [
@@ -1686,7 +1687,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
     required TransactionType type,
     this.isSynced = const Value.absent(),
     this.lastUpdatedAt = const Value.absent(),
-    required List<String> involvedUsers,
+    this.involvedUsers = const Value.absent(),
     this.rowid = const Value.absent(),
   }) : id = Value(id),
        roomId = Value(roomId),
@@ -1694,8 +1695,7 @@ class TransactionsCompanion extends UpdateCompanion<Transaction> {
        category = Value(category),
        amount = Value(amount),
        hashtags = Value(hashtags),
-       type = Value(type),
-       involvedUsers = Value(involvedUsers);
+       type = Value(type);
   static Insertable<Transaction> custom({
     Expression<String>? id,
     Expression<String>? roomId,
@@ -3433,7 +3433,7 @@ typedef $$TransactionsTableCreateCompanionBuilder =
       required TransactionType type,
       Value<bool> isSynced,
       Value<DateTime> lastUpdatedAt,
-      required List<String> involvedUsers,
+      Value<List<String>> involvedUsers,
       Value<int> rowid,
     });
 typedef $$TransactionsTableUpdateCompanionBuilder =
@@ -3740,7 +3740,7 @@ class $$TransactionsTableTableManager
                 required TransactionType type,
                 Value<bool> isSynced = const Value.absent(),
                 Value<DateTime> lastUpdatedAt = const Value.absent(),
-                required List<String> involvedUsers,
+                Value<List<String>> involvedUsers = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
               }) => TransactionsCompanion.insert(
                 id: id,

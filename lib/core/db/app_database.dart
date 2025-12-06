@@ -66,7 +66,7 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.e);
 
   @override
-  int get schemaVersion => 4;
+  int get schemaVersion => 5;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
@@ -85,6 +85,10 @@ class AppDatabase extends _$AppDatabase {
         // Ensure transactions table has all required columns
         await m.deleteTable(transactions.actualTableName);
         await m.createTable(transactions);
+      }
+      if (from < 5) {
+        // Add involvedUsers column for shared expenses feature
+        await m.addColumn(transactions, transactions.involvedUsers);
       }
     },
   );
