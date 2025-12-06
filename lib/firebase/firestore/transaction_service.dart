@@ -43,6 +43,7 @@ class TransactionService {
       'type': transaction.type.name,
       'isSynced': true,
       'lastUpdatedAt': firestore.Timestamp.fromDate(transaction.lastUpdatedAt),
+      'involvedUsers': transaction.involvedUsers,
     };
 
     await _firestore
@@ -84,6 +85,7 @@ class TransactionService {
       'type': transaction.type.name,
       'isSynced': true,
       'lastUpdatedAt': firestore.Timestamp.fromDate(transaction.lastUpdatedAt),
+      'involvedUsers': transaction.involvedUsers,
     };
 
     await _firestore
@@ -150,6 +152,7 @@ class TransactionService {
             : TransactionType.expense,
         isSynced: true,
         lastUpdatedAt: (data['lastUpdatedAt'] as firestore.Timestamp).toDate(),
+        involvedUsers: List<String>.from(data['involvedUsers'] ?? []),
       );
     }).toList();
 
@@ -195,6 +198,7 @@ class TransactionService {
               isSynced: true,
               lastUpdatedAt: (data['lastUpdatedAt'] as firestore.Timestamp)
                   .toDate(),
+              involvedUsers: List<String>.from(data['involvedUsers'] ?? []),
             );
           }).toList();
         });
