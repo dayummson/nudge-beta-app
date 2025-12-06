@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:nudge_1/firebase/firestore/user_service.dart';
 import 'package:nudge_1/firebase/firestore/room_service.dart';
 import 'package:nudge_1/features/auth/domain/auth_service.dart';
+import 'package:qr_flutter/qr_flutter.dart';
 
 /// Shows the share room bottom sheet.
 ///
@@ -246,7 +247,7 @@ class _ShareRoomSheetContentState extends State<_ShareRoomSheetContent> {
         ),
         const SizedBox(height: 16),
         if (_currentRoom.isShared)
-          // QR Code Placeholder
+          // QR Code for Room Link
           Container(
             width: 200,
             height: 200,
@@ -256,9 +257,13 @@ class _ShareRoomSheetContentState extends State<_ShareRoomSheetContent> {
               borderRadius: BorderRadius.circular(12),
             ),
             child: Center(
-              child: Text(
-                'QR Code Placeholder',
-                style: TextStyle(color: cs.onSurfaceVariant, fontSize: 16),
+              child: QrImageView(
+                data: 'nudge://room/${_currentRoom.id}',
+                version: QrVersions.auto,
+                size: 180.0,
+                backgroundColor: cs.surface,
+                eyeStyle: QrEyeStyle(color: cs.onSurface),
+                dataModuleStyle: QrDataModuleStyle(color: cs.onSurface),
               ),
             ),
           ),
@@ -277,7 +282,7 @@ class _ShareRoomSheetContentState extends State<_ShareRoomSheetContent> {
                 children: [
                   Expanded(
                     child: Text(
-                      'https://nudge.app/room/${_currentRoom.id}',
+                      'nudge://room/${_currentRoom.id}',
                       style: TextStyle(color: cs.onSurface, fontSize: 14),
                     ),
                   ),
